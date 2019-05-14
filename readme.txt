@@ -8,4 +8,4 @@ Requires packages:
 
 - ATSynEdit
 - ATFlatControls
-- EControl
+- EControl_v1
