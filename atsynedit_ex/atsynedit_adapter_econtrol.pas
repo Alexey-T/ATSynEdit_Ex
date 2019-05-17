@@ -930,8 +930,10 @@ begin
     begin
       if FStopTreeUpdate then exit;
       if Application.Terminated then exit;
-      if (i mod cProgressRangeCount)=0 then
-        Application.ProcessMessages;
+
+      ////don't do it, otherwise RangeCount may change-> crash
+      //if (i mod cProgressRangeCount)=0 then
+      //  Application.ProcessMessages;
 
       R:= AnClient.Ranges[i];
       if R.Rule=nil then Continue;
