@@ -24,9 +24,6 @@ object FormATSynEditComplete: TFormATSynEditComplete
     Width = 312
     Align = alClient
     BorderSpacing.Around = 4
-    Color = clSilver
-    DoubleBuffered = True
-    ItemHeight = 28
     OwnerDrawn = True
     ParentColor = False
     OnClick = ListClick

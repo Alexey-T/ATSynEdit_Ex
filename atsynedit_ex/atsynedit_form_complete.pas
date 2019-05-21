@@ -17,6 +17,7 @@ uses
   ATSynEdit_Commands,
   ATStringProc,
   ATListbox,
+  ATFlatThemes,
   Math;
 
 type
@@ -113,7 +114,6 @@ type
     AppendOpeningBracket: boolean;
     ListSort: boolean;
     UpDownAtEdge: TATCompletionUpDownAtEdge;
-    ItemHeight: integer;
     BorderSize: integer;
     FormSizeX: integer;
     FormSizeY: integer;
@@ -410,7 +410,9 @@ begin
   else
     C.Brush.Color:= CompletionOps.ColorBg;
   C.FillRect(ARect);
-  C.Font.Assign(List.Font);
+
+  C.Font.Name:= ATFlatTheme.FontName;
+  C.Font.Size:= ATFlatTheme.DoScaleFont(ATFlatTheme.FontSize);
 
   //alternate listbox: OnResult is set, then 3 columns, tab-separated:
   //paint column1 at left,
@@ -495,10 +497,6 @@ begin
   List.ItemIndex:= 0;
 
   Color:= CompletionOps.ColorBg;
-  List.Color:= CompletionOps.ColorBg;
-  List.Font.Name:= CompletionOps.FontName;
-  List.Font.Size:= CompletionOps.FontSize;
-  List.ItemHeight:= CompletionOps.ItemHeight;
   List.BorderSpacing.Around:= CompletionOps.BorderSize;
   List.Invalidate;
 
@@ -603,7 +601,6 @@ initialization
     AppendOpeningBracket:= true;
     ListSort := false;
     UpDownAtEdge := cudWrap;
-    ItemHeight := 17;
     BorderSize := 4;
     FormSizeX := 500;
     FormSizeY := 200;
