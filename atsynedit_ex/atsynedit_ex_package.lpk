@@ -15,9 +15,9 @@
 - Adapter for CudaText lite lexers
 - Adapter to simply highlight lines by regex
 
-Requires packages: ATSynEdit, ATFlatControls, EControl."/>
+Requires packages: ATSynEdit, EControl."/>
     <License Value="MPL 2.0 or LGPL"/>
-    <Version Major="1" Minor="2"/>
+    <Version Major="1" Minor="3"/>
     <Files Count="5">
       <Item1>
         <Filename Value="atsynedit_adapter_econtrol.pas"/>
