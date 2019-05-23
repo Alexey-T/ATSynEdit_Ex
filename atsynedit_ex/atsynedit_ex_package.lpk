@@ -10,13 +10,12 @@
         <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
     </CompilerOptions>
-    <Description Value="Package, additional to ATSynEdit. It has the following parts splitted from ATSynEdit, to avoid build errors:
-- Adapter for EControl (SynWrite) lexers
+    <Description Value="Package, additional to ATSynEdit. It has the following parts:
+- Adapter for EControl lexers
 - Adapter for CudaText lite lexers
-- Units which implement smart auto-completion forms (base form, for CSS lexer, for HTML lexer, for SynWrite files)
+- Adapter to simply highlight lines by regex
 
-Requires packages: ATSynEdit, ATFlatControls, EControl
-"/>
+Requires packages: ATSynEdit, ATFlatControls, EControl."/>
     <License Value="MPL 2.0 or LGPL"/>
     <Version Major="1" Minor="2"/>
     <Files Count="5">
