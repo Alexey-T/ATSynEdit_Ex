@@ -694,7 +694,7 @@ begin
   for j:= 0 to EdList.Count-1 do
   begin
     Ed:= TATSynEdit(EdList[j]);
-    Ed.Fold.Clear;
+    Ed.Fold.DeleteAllExceptTag(-1); //Tag=-1 means persistent range from command "Fold selection"
     //Ed.Strings.ClearSeparators; //separators are not used in this adapter
   end;
 end;
