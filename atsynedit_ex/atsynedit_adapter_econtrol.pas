@@ -1262,9 +1262,10 @@ begin
       if Style<>nil then
         if Style.BgColor<>clNone then
         begin
-          //support lexer opt "Hilite lines of block"
+          //support lexer opt "Highlight lines of block"
           if R.Rule.Highlight then
           begin
+            Pnt1.X:= 0;
             Pnt2.X:= Buffer.LineLength(Pnt2.Y) + 1;
               //+1 to make range longer, to hilite line to screen end
           end;
