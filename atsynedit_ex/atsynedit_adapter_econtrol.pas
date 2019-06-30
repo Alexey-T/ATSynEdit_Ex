@@ -93,6 +93,7 @@ type
     procedure UpdateRangesActive(AEdit: TATSynEdit);
     procedure UpdateRangesActiveAll;
     procedure UpdateRangesActive_Ex(AEdit: TATSynEdit; List: TATSortedRanges);
+    procedure DeactivateNotMinimalRanges(AEdit: TATSynEdit; List: TATSortedRanges);
     procedure UpdateRangesSublex;
     procedure UpdateData(AUpdateBuffer, AAnalyze: boolean);
     procedure UpdateRangesFoldAndColored;
@@ -387,22 +388,14 @@ begin
   end;
 end;
 
-procedure TATAdapterEControl.UpdateRangesActive(AEdit: TATSynEdit);
+procedure TATAdapterEControl.DeactivateNotMinimalRanges(AEdit: TATSynEdit; List: TATSortedRanges);
 var
   Rng, RngOut: PATSortedRange;
   i, j: integer;
 begin
-  if not IsDynamicHiliteEnabled then Exit;
-
-  UpdateRangesActive_Ex(AEdit, FRangesColored);
-  UpdateRangesActive_Ex(AEdit, FRangesColoredBounds);
-
-  //deactivate ranges by DynSelectMin
-  //cycle back, to see first nested ranges
-
-  for i:= FRangesColored.Count-1 downto 0 do
+  for i:= List.Count-1 downto 0 do
   begin
-    Rng:= FRangesColored.ItemPtr(i);
+    Rng:= List.ItemPtr(i);
     if not Rng^.Active[AEdit.EditorIndex] then Continue;
     if Rng^.Rule=nil then Continue;
     if not Rng^.Rule.DynSelectMin then Continue;
@@ -410,7 +403,7 @@ begin
     //take prev ranges which contain this range
     for j:= i-1 downto 0 do
     begin
-      RngOut:= FRangesColored.ItemPtr(j);
+      RngOut:= List.ItemPtr(j);
       if RngOut^.Rule=Rng^.Rule then
         if RngOut^.Active[AEdit.EditorIndex] then
           if (ComparePoints(RngOut^.Pos1, Rng^.Pos1)<=0) and
@@ -418,6 +411,17 @@ begin
             RngOut^.Active[AEdit.EditorIndex]:= false;
     end;
   end;
+end;
+
+procedure TATAdapterEControl.UpdateRangesActive(AEdit: TATSynEdit);
+begin
+  if not IsDynamicHiliteEnabled then Exit;
+
+  UpdateRangesActive_Ex(AEdit, FRangesColored);
+  UpdateRangesActive_Ex(AEdit, FRangesColoredBounds);
+
+  DeactivateNotMinimalRanges(AEdit, FRangesColored);
+  DeactivateNotMinimalRanges(AEdit, FRangesColoredBounds);
 end;
 
 
