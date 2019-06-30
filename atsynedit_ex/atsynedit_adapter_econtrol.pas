@@ -1198,9 +1198,12 @@ begin
 
   if AAnalyze then
   begin
+    {
+    //don't clear ranges too early (avoid blinking ranges in Bash lexer)
     FRangesColored.Clear;
     FRangesColoredBounds.Clear;
     FRangesSublexer.Clear;
+    }
 
     InvokeParser(Ed, false);
 
