@@ -45,6 +45,7 @@ type
 type
   { TATSortedRange }
 
+  PATSortedRange = ^TATSortedRange;
   TATSortedRange = record
     Pos1, Pos2: TPoint;
     Token1, Token2: integer;
@@ -66,6 +67,7 @@ type
   TATSortedRanges = class(specialize TFPGList<TATSortedRange>)
   public
     function Find(const APos: TPoint): integer;
+    procedure UpdateOnChange(AChange: TATLineChangeKind; ALine, AItemCount: integer);
   end;
 
   TATRangeCond = (cCondInside, cCondAtBound, cCondOutside);
@@ -166,6 +168,7 @@ type
   public
     procedure OnEditorCaretMove(Sender: TObject); override;
     procedure OnEditorChange(Sender: TObject); override;
+    procedure OnEditorChangeEx(Sender: TObject; AChange: TATLineChangeKind; ALine, AItemCount: integer); override;
     procedure OnEditorIdle(Sender: TObject); override;
     procedure OnEditorCalcHilite(Sender: TObject;
       var AParts: TATLineParts;
@@ -295,6 +298,62 @@ begin
   if Result >= 0 then
     if CompProc(Result) > 0 then
       Dec(Result);
+end;
+
+procedure TATSortedRanges.UpdateOnChange(AChange: TATLineChangeKind; ALine, AItemCount: integer);
+var
+  Ptr: PATSortedRange;
+  i: integer;
+begin
+  case AChange of
+    cLineChangeDeletedAll:
+      Clear;
+
+    cLineChangeAdded:
+      begin
+        for i:= Count-1 downto 0 do
+        begin
+          Ptr:= InternalGet(i);
+          if Ptr^.Pos1.Y>=ALine then
+          begin
+            Ptr^.Pos1.Y+= AItemCount;
+            Ptr^.Pos2.Y+= AItemCount;
+          end
+          else
+          if Ptr^.Pos2.Y>=ALine then
+            Ptr^.Pos2.Y+= AItemCount;
+        end;
+      end;
+
+    cLineChangeDeleted:
+      begin
+        for i:= Count-1 downto 0 do
+        begin
+          Ptr:= InternalGet(i);
+          if Ptr^.Pos1.Y>=ALine+AItemCount then
+          begin
+            Ptr^.Pos1.Y-= AItemCount;
+            Ptr^.Pos2.Y-= AItemCount;
+          end
+          else
+          if Ptr^.Pos1.Y>=ALine then
+          begin
+            if Ptr^.Pos2.Y<=ALine+AItemCount then
+              Delete(i)
+            else
+            begin
+              Ptr^.Pos1.Y:= Max(ALine, Ptr^.Pos1.Y-AItemCount);
+              Ptr^.Pos2.Y-= AItemCount;
+            end;
+          end
+          else
+          if Ptr^.Pos2.Y>=ALine then
+          begin
+            Ptr^.Pos2.Y:= Max(ALine, Ptr^.Pos2.Y-AItemCount);
+          end;
+        end;
+      end;
+  end;
 end;
 
 { TATRangeInCodeTree }
@@ -1168,6 +1227,14 @@ begin
   DoCheckEditorList;
   //if CurrentIdleInterval=0, OnEditorIdle will not fire, analyze here
   UpdateData(true, CurrentIdleInterval=0);
+end;
+
+procedure TATAdapterEControl.OnEditorChangeEx(Sender: TObject; AChange: TATLineChangeKind; ALine,
+  AItemCount: integer);
+begin
+  FRangesColored.UpdateOnChange(AChange, ALine, AItemCount);
+  FRangesColoredBounds.UpdateOnChange(AChange, ALine, AItemCount);
+  FRangesSublexer.UpdateOnChange(AChange, ALine, AItemCount);
 end;
 
 procedure TATAdapterEControl.OnEditorIdle(Sender: TObject);
