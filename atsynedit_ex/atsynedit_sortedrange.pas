@@ -42,7 +42,7 @@ type
   TATSortedRanges = class(specialize TFPGList<TATSortedRange>)
   public
     function ItemPtr(AIndex: integer): PATSortedRange; inline;
-    function Find(const APos: TPoint): integer;
+    function Find(const APos: TPoint; AEditorIndex: integer; AOnlyActive: boolean): integer;
     procedure UpdateOnChange(AChange: TATLineChangeKind; ALine, AItemCount: integer);
   end;
 
@@ -93,14 +93,21 @@ end;
 
 { TATSortedRanges }
 
-function TATSortedRanges.Find(const APos: TPoint): integer;
+function TATSortedRanges.Find(const APos: TPoint; AEditorIndex: integer; AOnlyActive: boolean): integer;
 
   function CompProc(ItemIndex: integer): integer; inline;
   var
     Item: PATSortedRange;
+    bOk: boolean;
   begin
     Item:= ItemPtr(ItemIndex);
-    if Item^.IsPosInside(APos) then
+
+    if AOnlyActive then
+      bOk:= Item^.ActiveAlways or Item^.Active[AEditorIndex]
+    else
+      bOk:= true;
+
+    if bOk and Item^.IsPosInside(APos) then
       Result:= 0
     else
       Result:= ComparePoints(Item^.Pos1, APos);
@@ -108,6 +115,8 @@ function TATSortedRanges.Find(const APos: TPoint): integer;
 
 var
   L, H, I, C, NCount: Integer;
+  bOk: boolean;
+  Item: PATSortedRange;
 begin
   Result := -1;
   NCount := Count;
@@ -135,6 +144,15 @@ begin
   if Result >= 0 then
     if CompProc(Result) > 0 then
       Dec(Result);
+
+  if AOnlyActive then
+    if Result>=0 then
+    begin
+      Item:= ItemPtr(Result);
+      bOk:= Item^.ActiveAlways or Item^.Active[AEditorIndex];
+      if not bOk then
+        Result:= -1;
+    end;
 end;
 
 function TATSortedRanges.ItemPtr(AIndex: integer): PATSortedRange;

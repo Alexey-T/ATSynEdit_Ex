@@ -82,8 +82,8 @@ type
     function GetIdleInterval: integer;
     function GetRangeParent(const R: TecTextRange): TecTextRange;
     function IsCaretInRange(AEdit: TATSynEdit; APos1, APos2: TPoint; ACond: TATRangeCond): boolean;
-    function GetTokenColorBG_FromColoredRanges(APos: TPoint;
-      ADefColor: TColor; AEditorIndex: integer): TColor;
+    function GetTokenColorBG_FromColoredRanges(const APos: TPoint; ADefColor: TColor;
+      AEditorIndex: integer): TColor;
     function GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
       ADefColor: TColor; AEditorIndex: integer): TColor;
     function EditorRunningCommand: boolean;
@@ -327,7 +327,7 @@ begin
   end;
 end;
 
-function TATAdapterEControl.GetTokenColorBG_FromColoredRanges(APos: TPoint;
+function TATAdapterEControl.GetTokenColorBG_FromColoredRanges(const APos: TPoint;
   ADefColor: TColor; AEditorIndex: integer): TColor;
 var
   Rng: PATSortedRange;
@@ -335,8 +335,7 @@ var
 begin
   Result:= ADefColor;
 
-  N:= FRangesColored.Find(APos);
-  if N>=0 then
+  for N:= FRangesColored.Count-1 downto 0 do
   begin
     Rng:= FRangesColored.ItemPtr(N);
     if Rng^.IsPosInside(APos) then
@@ -344,7 +343,21 @@ begin
         exit(Rng^.Color);
   end;
 
-  N:= FRangesSublexer.Find(APos);
+  (*
+  //was used before "for N:="
+  //gave bad result on complex lexer and complex nested blocks.
+  //http://synwrite.sourceforge.net/forums/viewtopic.php?f=6&t=2279
+
+  N:= FRangesColored.Find(APos, AEditorIndex, true);
+  if N>=0 then
+  begin
+    Rng:= FRangesColored.ItemPtr(N);
+    if Rng^.IsPosInside(APos) then
+      exit(Rng^.Color);
+  end;
+  *)
+
+  N:= FRangesSublexer.Find(APos, AEditorIndex, false);
   if N>=0 then
   begin
     Rng:= FRangesSublexer.ItemPtr(N);
