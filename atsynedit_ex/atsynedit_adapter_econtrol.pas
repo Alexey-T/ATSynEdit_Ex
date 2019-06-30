@@ -81,7 +81,8 @@ type
     procedure DoParseDone;
     function GetIdleInterval: integer;
     function GetRangeParent(const R: TecTextRange): TecTextRange;
-    function IsCaretInRange(AEdit: TATSynEdit; APos1, APos2: TPoint; ACond: TATRangeCond): boolean;
+    function IsCaretInRange(AEdit: TATSynEdit;
+      const APos1, APos2: TPoint; ACond: TATRangeCond): boolean;
     function GetTokenColorBG_FromColoredRanges(const APos: TPoint; ADefColor: TColor;
       AEditorIndex: integer): TColor;
     function GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
@@ -261,8 +262,9 @@ begin
   AColor:= GetTokenColorBG_FromColoredRanges(Point(AX, AY), AColor, Ed.EditorIndex);
 end;
 
-function TATAdapterEControl.IsCaretInRange(AEdit: TATSynEdit; APos1,
-  APos2: TPoint; ACond: TATRangeCond): boolean;
+function TATAdapterEControl.IsCaretInRange(AEdit: TATSynEdit;
+  const APos1, APos2: TPoint;
+  ACond: TATRangeCond): boolean;
 var
   Caret: TATCaretItem;
   Pnt: TPoint;
@@ -398,11 +400,7 @@ begin
           act:= false;
       end;
     end;
-    if Rng^.Active[AEdit.EditorIndex]<>act then
-    begin
-      Rng^.Active[AEdit.EditorIndex]:= act;
-      //List[i]:= Rng; //not needed for Rng^
-    end;
+    Rng^.Active[AEdit.EditorIndex]:= act;
   end;
 end;
 
