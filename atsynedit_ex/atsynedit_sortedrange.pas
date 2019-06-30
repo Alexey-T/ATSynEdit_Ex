@@ -43,6 +43,7 @@ type
   public
     function ItemPtr(AIndex: integer): PATSortedRange; inline;
     function Find(const APos: TPoint; AEditorIndex: integer; AOnlyActive: boolean): integer;
+    function FindDumb(const APos: TPoint; AEditorIndex: integer; AOnlyActive: boolean): integer;
     procedure UpdateOnChange(AChange: TATLineChangeKind; ALine, AItemCount: integer);
   end;
 
@@ -153,6 +154,21 @@ begin
       if not bOk then
         Result:= -1;
     end;
+end;
+
+function TATSortedRanges.FindDumb(const APos: TPoint; AEditorIndex: integer; AOnlyActive: boolean): integer;
+var
+  Rng: PATSortedRange;
+  i: integer;
+begin
+  Result:= -1;
+  for i:= Count-1 downto 0 do
+  begin
+    Rng:= ItemPtr(i);
+    if (not AOnlyActive) or (Rng^.ActiveAlways or Rng^.Active[AEditorIndex]) then
+      if Rng^.IsPosInside(APos) then
+        exit(i);
+  end;
 end;
 
 function TATSortedRanges.ItemPtr(AIndex: integer): PATSortedRange;

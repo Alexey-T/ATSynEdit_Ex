@@ -337,27 +337,10 @@ var
 begin
   Result:= ADefColor;
 
-  for N:= FRangesColored.Count-1 downto 0 do
-  begin
-    Rng:= FRangesColored.ItemPtr(N);
-    if Rng^.IsPosInside(APos) then
-      if Rng^.ActiveAlways or Rng^.Active[AEditorIndex] then
-        exit(Rng^.Color);
-  end;
-
-  (*
-  //was used before "for N:="
-  //gave bad result on complex lexer and complex nested blocks.
-  //http://synwrite.sourceforge.net/forums/viewtopic.php?f=6&t=2279
-
-  N:= FRangesColored.Find(APos, AEditorIndex, true);
+  //cannot use binary search (Find) here, because of nested ranges
+  N:= FRangesColored.FindDumb(APos, AEditorIndex, true);
   if N>=0 then
-  begin
-    Rng:= FRangesColored.ItemPtr(N);
-    if Rng^.IsPosInside(APos) then
-      exit(Rng^.Color);
-  end;
-  *)
+    exit(FRangesColored.ItemPtr(N)^.Color);
 
   N:= FRangesSublexer.Find(APos, AEditorIndex, false);
   if N>=0 then
