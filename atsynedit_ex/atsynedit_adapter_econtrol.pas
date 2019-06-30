@@ -66,6 +66,7 @@ type
 
   TATSortedRanges = class(specialize TFPGList<TATSortedRange>)
   public
+    function ItemPtr(AIndex: integer): PATSortedRange; inline;
     function Find(const APos: TPoint): integer;
     procedure UpdateOnChange(AChange: TATLineChangeKind; ALine, AItemCount: integer);
   end;
@@ -260,13 +261,13 @@ function TATSortedRanges.Find(const APos: TPoint): integer;
 
   function CompProc(ItemIndex: integer): integer; inline;
   var
-    Item: TATSortedRange;
+    Item: PATSortedRange;
   begin
-    Item:= Get(ItemIndex);
-    if Item.IsPosInside(APos) then
+    Item:= ItemPtr(ItemIndex);
+    if Item^.IsPosInside(APos) then
       Result:= 0
     else
-      Result:= ComparePoints(Item.Pos1, APos);
+      Result:= ComparePoints(Item^.Pos1, APos);
   end;
 
 var
@@ -298,6 +299,11 @@ begin
   if Result >= 0 then
     if CompProc(Result) > 0 then
       Dec(Result);
+end;
+
+function TATSortedRanges.ItemPtr(AIndex: integer): PATSortedRange;
+begin
+  Result:= PATSortedRange(InternalGet(AIndex));
 end;
 
 procedure TATSortedRanges.UpdateOnChange(AChange: TATLineChangeKind; ALine, AItemCount: integer);
@@ -488,19 +494,20 @@ end;
 
 procedure TATAdapterEControl.DebugRangesColored;
 var
-  Rng: TATSortedRange;
+  Rng: PATSortedRange;
 begin
   if FRangesColored.Count>0 then
   begin
-    Rng:= FRangesColored[0];
-    Application.MainForm.Caption:= Format('RngColored: (%d,%d..%d,%d)', [Rng.Pos1.X, Rng.Pos1.Y, Rng.Pos2.X, Rng.Pos2.Y]);
+    Rng:= FRangesColored.ItemPtr(0);
+    Application.MainForm.Caption:= Format('RngColored: (%d,%d..%d,%d)',
+      [Rng^.Pos1.X, Rng^.Pos1.Y, Rng^.Pos2.X, Rng^.Pos2.Y]);
   end;
 end;
 
 function TATAdapterEControl.GetTokenColorBG_FromColoredRanges(APos: TPoint;
   ADefColor: TColor; AEditorIndex: integer): TColor;
 var
-  Rng: TATSortedRange;
+  Rng: PATSortedRange;
   N: integer;
 begin
   Result:= ADefColor;
@@ -508,64 +515,64 @@ begin
   N:= FRangesColored.Find(APos);
   if N>=0 then
   begin
-    Rng:= FRangesColored[N];
-    if Rng.IsPosInside(APos) then
-      if Rng.ActiveAlways or Rng.Active[AEditorIndex] then
-        exit(Rng.Color);
+    Rng:= FRangesColored.ItemPtr(N);
+    if Rng^.IsPosInside(APos) then
+      if Rng^.ActiveAlways or Rng^.Active[AEditorIndex] then
+        exit(Rng^.Color);
   end;
 
   N:= FRangesSublexer.Find(APos);
   if N>=0 then
   begin
-    Rng:= FRangesSublexer[N];
-    if Rng.IsPosInside(APos) then
-      exit(Rng.Color);
+    Rng:= FRangesSublexer.ItemPtr(N);
+    if Rng^.IsPosInside(APos) then
+      exit(Rng^.Color);
   end;
 end;
 
 procedure TATAdapterEControl.UpdateRangesActive_Ex(AEdit: TATSynEdit; List: TATSortedRanges);
 var
-  Rng: TATSortedRange;
+  Rng: PATSortedRange;
   act: boolean;
   i: integer;
 begin
   for i:= 0 to List.Count-1 do
   begin
-    Rng:= List[i];
-    if Rng.ActiveAlways then
+    Rng:= List.ItemPtr(i);
+    if Rng^.ActiveAlways then
       act:= true
     else
     begin
-      if Rng.Rule=nil then Continue;
-      if not (Rng.Rule.DynHighlight in [dhRange, dhRangeNoBound, dhBound]) then Continue;
-      case Rng.Rule.HighlightPos of
+      if Rng^.Rule=nil then Continue;
+      if not (Rng^.Rule.DynHighlight in [dhRange, dhRangeNoBound, dhBound]) then Continue;
+      case Rng^.Rule.HighlightPos of
         cpAny:
           act:= true;
         cpBound:
-          act:= IsCaretInRange(AEdit, Rng.Pos1, Rng.Pos2, cCondAtBound);
+          act:= IsCaretInRange(AEdit, Rng^.Pos1, Rng^.Pos2, cCondAtBound);
         cpBoundTag:
           act:= false;//todo
         cpRange:
-          act:= IsCaretInRange(AEdit, Rng.Pos1, Rng.Pos2, cCondInside);
+          act:= IsCaretInRange(AEdit, Rng^.Pos1, Rng^.Pos2, cCondInside);
         cpBoundTagBegin:
           act:= false;//todo
         cpOutOfRange:
-          act:= IsCaretInRange(AEdit, Rng.Pos1, Rng.Pos2, cCondOutside);
+          act:= IsCaretInRange(AEdit, Rng^.Pos1, Rng^.Pos2, cCondOutside);
         else
           act:= false;
       end;
     end;
-    if Rng.Active[AEdit.EditorIndex]<>act then
+    if Rng^.Active[AEdit.EditorIndex]<>act then
     begin
-      Rng.Active[AEdit.EditorIndex]:= act;
-      List[i]:= Rng;
+      Rng^.Active[AEdit.EditorIndex]:= act;
+      //List[i]:= Rng; //not needed for Rng^
     end;
   end;
 end;
 
 procedure TATAdapterEControl.UpdateRangesActive(AEdit: TATSynEdit);
 var
-  Rng, RngOut: TATSortedRange;
+  Rng, RngOut: PATSortedRange;
   i, j: integer;
 begin
   if not IsDynamicHiliteEnabled then Exit;
@@ -578,20 +585,20 @@ begin
 
   for i:= FRangesColored.Count-1 downto 0 do
   begin
-    Rng:= FRangesColored[i];
-    if not Rng.Active[AEdit.EditorIndex] then Continue;
-    if Rng.Rule=nil then Continue;
-    if not Rng.Rule.DynSelectMin then Continue;
-    if not (Rng.Rule.DynHighlight in [dhBound, dhRange, dhRangeNoBound]) then Continue;
+    Rng:= FRangesColored.ItemPtr(i);
+    if not Rng^.Active[AEdit.EditorIndex] then Continue;
+    if Rng^.Rule=nil then Continue;
+    if not Rng^.Rule.DynSelectMin then Continue;
+    if not (Rng^.Rule.DynHighlight in [dhBound, dhRange, dhRangeNoBound]) then Continue;
     //take prev ranges which contain this range
     for j:= i-1 downto 0 do
     begin
-      RngOut:= FRangesColored[j];
-      if RngOut.Rule=Rng.Rule then
-        if RngOut.Active[AEdit.EditorIndex] then
-          if (ComparePoints(RngOut.Pos1, Rng.Pos1)<=0) and
-             (ComparePoints(RngOut.Pos2, Rng.Pos2)>=0) then
-            RngOut.Active[AEdit.EditorIndex]:= false;
+      RngOut:= FRangesColored.ItemPtr(j);
+      if RngOut^.Rule=Rng^.Rule then
+        if RngOut^.Active[AEdit.EditorIndex] then
+          if (ComparePoints(RngOut^.Pos1, Rng^.Pos1)<=0) and
+             (ComparePoints(RngOut^.Pos2, Rng^.Pos2)>=0) then
+            RngOut^.Active[AEdit.EditorIndex]:= false;
     end;
   end;
 end;
@@ -1556,7 +1563,7 @@ end;
 
 function TATAdapterEControl.GetTokenColor_FromBoundRanges(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
 var
-  Rng: TATSortedRange;
+  Rng: PATSortedRange;
   i: integer;
 begin
   Result:= nil;
@@ -1566,12 +1573,12 @@ begin
   //so using Find() will miss some tokens
   for i:= 0 to FRangesColoredBounds.Count-1 do
   begin
-    Rng:= FRangesColoredBounds[i];
-    if Rng.Active[AEditorIndex] then
-      //if Rng.Rule<>nil then
-        //if Rng.Rule.DynHighlight=dhBound then //all items in FRangesColredBounds have dhBound
-          if (Rng.Token1=ATokenIndex) or (Rng.Token2=ATokenIndex) then
-            exit(Rng.Rule.Style);
+    Rng:= FRangesColoredBounds.ItemPtr(i);
+    if Rng^.Active[AEditorIndex] then
+      //if Rng^.Rule<>nil then
+        //if Rng^.Rule.DynHighlight=dhBound then //all items in FRangesColredBounds have dhBound
+          if (Rng^.Token1=ATokenIndex) or (Rng^.Token2=ATokenIndex) then
+            exit(Rng^.Rule.Style);
   end;
 end;
 
