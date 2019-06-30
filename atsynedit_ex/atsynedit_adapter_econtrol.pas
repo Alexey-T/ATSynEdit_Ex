@@ -1203,7 +1203,7 @@ end;
 procedure TATAdapterEControl.UpdateRangesFoldAndColored;
 var
   R: TecTextRange;
-  Pnt1, Pnt2: TPoint;
+  Pnt1, Pnt2, Pnt1Wide, Pnt2Wide: TPoint;
   Style: TecSyntaxFormat;
   SHint: string;
   tokenStart, tokenEnd: TecSyntToken;
@@ -1256,17 +1256,21 @@ begin
       if Style<>nil then
         if Style.BgColor<>clNone then
         begin
+          Pnt1Wide:= Pnt1;
+          Pnt2Wide:= Pnt2;
           //support lexer opt "Highlight lines of block"
           if R.Rule.Highlight then
           begin
-            Pnt1.X:= 0;
-            Pnt2.X:= Buffer.LineLength(Pnt2.Y) + 1;
+            Pnt1Wide.X:= 0;
+            Pnt2Wide.X:= Buffer.LineLength(Pnt2.Y) + 1;
               //+1 to make range longer, to hilite line to screen end
           end;
 
           ColoredRange.Init(
             Pnt1,
             Pnt2,
+            Pnt1Wide,
+            Pnt2Wide,
             R.StartIdx,
             R.EndIdx,
             Style.BgColor,
@@ -1307,6 +1311,8 @@ begin
     if Style.BgColor<>clNone then
     begin
       Range.Init(
+        R.Range.PointStart,
+        R.Range.PointEnd,
         R.Range.PointStart,
         R.Range.PointEnd,
         -1,

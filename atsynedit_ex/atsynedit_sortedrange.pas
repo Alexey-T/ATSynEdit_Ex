@@ -23,6 +23,7 @@ type
   PATSortedRange = ^TATSortedRange;
   TATSortedRange = record
     Pos1, Pos2: TPoint;
+    Pos1Wide, Pos2Wide: TPoint;
     Token1, Token2: integer;
     Color: TColor;
     Rule: TecTagBlockCondition;
@@ -30,11 +31,13 @@ type
     Active: array[0..Pred(cMaxStringsClients)] of boolean;
     class operator =(const a, b: TATSortedRange): boolean;
     procedure Init(
-      APos1, APos2: TPoint;
+      const APos1, APos2: TPoint;
+      const APos1Wide, APos2Wide: TPoint;
       AToken1, AToken2: integer;
       AColor: TColor; ARule: TecTagBlockCondition;
       AActiveAlways: boolean);
     function IsPosInside(const APos: TPoint): boolean;
+    function IsPosInsideWide(const APos: TPoint): boolean;
   end;
 
   { TATSortedRanges }
@@ -66,14 +69,15 @@ begin
   Result:= false;
 end;
 
-procedure TATSortedRange.Init(APos1, APos2: TPoint; AToken1,
-  AToken2: integer; AColor: TColor; ARule: TecTagBlockCondition;
-  AActiveAlways: boolean);
+procedure TATSortedRange.Init(const APos1, APos2: TPoint; const APos1Wide, APos2Wide: TPoint; AToken1,
+  AToken2: integer; AColor: TColor; ARule: TecTagBlockCondition; AActiveAlways: boolean);
 var
   i: integer;
 begin
   Pos1:= APos1;
   Pos2:= APos2;
+  Pos1Wide:= APos1Wide;
+  Pos2Wide:= APos2Wide;
   Token1:= AToken1;
   Token2:= AToken2;
   Color:= AColor;
@@ -89,6 +93,15 @@ begin
     APos.X, APos.Y,
     Pos1.X, Pos1.Y,
     Pos2.X, Pos2.Y
+    ) = cRelateInside;
+end;
+
+function TATSortedRange.IsPosInsideWide(const APos: TPoint): boolean;
+begin
+  Result:= IsPosInRange(
+    APos.X, APos.Y,
+    Pos1Wide.X, Pos1Wide.Y,
+    Pos2Wide.X, Pos2Wide.Y
     ) = cRelateInside;
 end;
 
@@ -166,7 +179,7 @@ begin
   begin
     Rng:= ItemPtr(i);
     if (not AOnlyActive) or (Rng^.ActiveAlways or Rng^.Active[AEditorIndex]) then
-      if Rng^.IsPosInside(APos) then
+      if Rng^.IsPosInsideWide(APos) then
         exit(i);
   end;
 end;
