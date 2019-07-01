@@ -13,9 +13,13 @@ uses
   Classes, SysUtils, Graphics, Math,
   ATStrings,
   ATStringProc,
+  ATSynEdit,
   ATSynEdit_Carets,
   ATSynEdit_FGL,
   ec_SyntAnal;
+
+type
+  TATRangeCond = (cCondInside, cCondAtBound, cCondOutside);
 
 type
   { TATSortedRange }
@@ -43,11 +47,16 @@ type
   { TATSortedRanges }
 
   TATSortedRanges = class(specialize TFPGList<TATSortedRange>)
+  private
   public
     function ItemPtr(AIndex: integer): PATSortedRange; inline;
     function Find(const APos: TPoint; AEditorIndex: integer; AOnlyActive: boolean): integer;
     function FindDumb(const APos: TPoint; AEditorIndex: integer; AOnlyActive: boolean): integer;
     procedure UpdateOnChange(AChange: TATLineChangeKind; ALine, AItemCount: integer);
+    function CheckCaretInRange(Ed: TATSynEdit; const APos1, APos2: TPoint;
+      ACond: TATRangeCond): boolean;
+    procedure UpdateRangesActive(Ed: TATSynEdit);
+    procedure DeactivateNotMinimalRanges(Ed: TATSynEdit);
   end;
 
 function ComparePoints(const P1, P2: TPoint): integer; inline;
@@ -244,6 +253,105 @@ begin
       end;
   end;
 end;
+
+
+function TATSortedRanges.CheckCaretInRange(Ed: TATSynEdit;
+  const APos1, APos2: TPoint;
+  ACond: TATRangeCond): boolean;
+var
+  Caret: TATCaretItem;
+  Pnt: TPoint;
+  dif1, dif2: integer;
+  i: integer;
+  ok: boolean;
+begin
+  Result:= false;
+
+  for i:= 0 to Ed.Carets.Count-1 do
+  begin
+    Caret:= Ed.Carets[i];
+    Pnt.X:= Caret.PosX;
+    Pnt.Y:= Caret.PosY;
+
+    dif1:= ComparePoints(Pnt, APos1);
+    dif2:= ComparePoints(Pnt, APos2);
+
+    case ACond of
+      cCondInside:
+        ok:= (dif1>=0) and (dif2<0);
+      cCondOutside:
+        ok:= (dif1<0) or (dif2>=0);
+      cCondAtBound:
+        ok:= (dif1=0) or (dif2=0);
+      else
+        ok:= false;
+    end;
+
+    if ok then exit(true);
+  end;
+end;
+
+procedure TATSortedRanges.UpdateRangesActive(Ed: TATSynEdit);
+var
+  Rng: PATSortedRange;
+  act: boolean;
+  i: integer;
+begin
+  for i:= 0 to Count-1 do
+  begin
+    Rng:= ItemPtr(i);
+    if Rng^.ActiveAlways then
+      act:= true
+    else
+    begin
+      if Rng^.Rule=nil then Continue;
+      if not (Rng^.Rule.DynHighlight in [dhRange, dhRangeNoBound, dhBound]) then Continue;
+      case Rng^.Rule.HighlightPos of
+        cpAny:
+          act:= true;
+        cpBound:
+          act:= CheckCaretInRange(Ed, Rng^.Pos1, Rng^.Pos2, cCondAtBound);
+        cpBoundTag:
+          act:= false;//todo
+        cpRange:
+          act:= CheckCaretInRange(Ed, Rng^.Pos1, Rng^.Pos2, cCondInside);
+        cpBoundTagBegin:
+          act:= false;//todo
+        cpOutOfRange:
+          act:= CheckCaretInRange(Ed, Rng^.Pos1, Rng^.Pos2, cCondOutside);
+        else
+          act:= false;
+      end;
+    end;
+    Rng^.Active[Ed.EditorIndex]:= act;
+  end;
+end;
+
+procedure TATSortedRanges.DeactivateNotMinimalRanges(Ed: TATSynEdit);
+var
+  Rng, RngOut: PATSortedRange;
+  i, j: integer;
+begin
+  for i:= Count-1 downto 0 do
+  begin
+    Rng:= ItemPtr(i);
+    if not Rng^.Active[Ed.EditorIndex] then Continue;
+    if Rng^.Rule=nil then Continue;
+    if not Rng^.Rule.DynSelectMin then Continue;
+    if not (Rng^.Rule.DynHighlight in [dhBound, dhRange, dhRangeNoBound]) then Continue;
+    //take prev ranges which contain this range
+    for j:= i-1 downto 0 do
+    begin
+      RngOut:= ItemPtr(j);
+      if RngOut^.Rule=Rng^.Rule then
+        if RngOut^.Active[Ed.EditorIndex] then
+          if (ComparePoints(RngOut^.Pos1, Rng^.Pos1)<=0) and
+             (ComparePoints(RngOut^.Pos2, Rng^.Pos2)>=0) then
+            RngOut^.Active[Ed.EditorIndex]:= false;
+    end;
+  end;
+end;
+
 
 end.
 

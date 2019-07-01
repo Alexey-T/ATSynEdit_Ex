@@ -41,8 +41,6 @@ type
     procedure Assign(Src: TATRangeInCodeTree);
   end;
 
-  TATRangeCond = (cCondInside, cCondAtBound, cCondOutside);
-
 procedure ClearTreeviewWithData(ATree: TTreeView);
 
 type
@@ -81,8 +79,6 @@ type
     procedure DoParseDone;
     function GetIdleInterval: integer;
     function GetRangeParent(const R: TecTextRange): TecTextRange;
-    function IsCaretInRange(AEdit: TATSynEdit;
-      const APos1, APos2: TPoint; ACond: TATRangeCond): boolean;
     function GetTokenColorBG_FromColoredRanges(const APos: TPoint; ADefColor: TColor;
       AEditorIndex: integer): TColor;
     function GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
@@ -92,8 +88,6 @@ type
     procedure UpdateRanges;
     procedure UpdateRangesActive(AEdit: TATSynEdit);
     procedure UpdateRangesActiveAll;
-    procedure UpdateRangesActive_Ex(AEdit: TATSynEdit; List: TATSortedRanges);
-    procedure DeactivateNotMinimalRanges(AEdit: TATSynEdit; List: TATSortedRanges);
     procedure UpdateRangesSublex;
     procedure UpdateData(AUpdateBuffer, AAnalyze: boolean);
     procedure UpdateRangesFoldAndColored;
@@ -263,41 +257,6 @@ begin
   AColor:= GetTokenColorBG_FromColoredRanges(Point(AX, AY), AColor, Ed.EditorIndex);
 end;
 
-function TATAdapterEControl.IsCaretInRange(AEdit: TATSynEdit;
-  const APos1, APos2: TPoint;
-  ACond: TATRangeCond): boolean;
-var
-  Caret: TATCaretItem;
-  Pnt: TPoint;
-  dif1, dif2: integer;
-  i: integer;
-  ok: boolean;
-begin
-  Result:= false;
-
-  for i:= 0 to AEdit.Carets.Count-1 do
-  begin
-    Caret:= AEdit.Carets[i];
-    Pnt:= Point(Caret.PosX, Caret.PosY);
-
-    dif1:= ComparePoints(Pnt, APos1);
-    dif2:= ComparePoints(Pnt, APos2);
-
-    case ACond of
-      cCondInside:
-        ok:= (dif1>=0) and (dif2<0);
-      cCondOutside:
-        ok:= (dif1<0) or (dif2>=0);
-      cCondAtBound:
-        ok:= (dif1=0) or (dif2=0);
-      else
-        ok:= false;
-    end;
-
-    if ok then exit(true);
-  end;
-end;
-
 function TATAdapterEControl.GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
   ADefColor: TColor; AEditorIndex: integer): TColor;
 var
@@ -352,76 +311,15 @@ begin
   end;
 end;
 
-procedure TATAdapterEControl.UpdateRangesActive_Ex(AEdit: TATSynEdit; List: TATSortedRanges);
-var
-  Rng: PATSortedRange;
-  act: boolean;
-  i: integer;
-begin
-  for i:= 0 to List.Count-1 do
-  begin
-    Rng:= List.ItemPtr(i);
-    if Rng^.ActiveAlways then
-      act:= true
-    else
-    begin
-      if Rng^.Rule=nil then Continue;
-      if not (Rng^.Rule.DynHighlight in [dhRange, dhRangeNoBound, dhBound]) then Continue;
-      case Rng^.Rule.HighlightPos of
-        cpAny:
-          act:= true;
-        cpBound:
-          act:= IsCaretInRange(AEdit, Rng^.Pos1, Rng^.Pos2, cCondAtBound);
-        cpBoundTag:
-          act:= false;//todo
-        cpRange:
-          act:= IsCaretInRange(AEdit, Rng^.Pos1, Rng^.Pos2, cCondInside);
-        cpBoundTagBegin:
-          act:= false;//todo
-        cpOutOfRange:
-          act:= IsCaretInRange(AEdit, Rng^.Pos1, Rng^.Pos2, cCondOutside);
-        else
-          act:= false;
-      end;
-    end;
-    Rng^.Active[AEdit.EditorIndex]:= act;
-  end;
-end;
-
-procedure TATAdapterEControl.DeactivateNotMinimalRanges(AEdit: TATSynEdit; List: TATSortedRanges);
-var
-  Rng, RngOut: PATSortedRange;
-  i, j: integer;
-begin
-  for i:= List.Count-1 downto 0 do
-  begin
-    Rng:= List.ItemPtr(i);
-    if not Rng^.Active[AEdit.EditorIndex] then Continue;
-    if Rng^.Rule=nil then Continue;
-    if not Rng^.Rule.DynSelectMin then Continue;
-    if not (Rng^.Rule.DynHighlight in [dhBound, dhRange, dhRangeNoBound]) then Continue;
-    //take prev ranges which contain this range
-    for j:= i-1 downto 0 do
-    begin
-      RngOut:= List.ItemPtr(j);
-      if RngOut^.Rule=Rng^.Rule then
-        if RngOut^.Active[AEdit.EditorIndex] then
-          if (ComparePoints(RngOut^.Pos1, Rng^.Pos1)<=0) and
-             (ComparePoints(RngOut^.Pos2, Rng^.Pos2)>=0) then
-            RngOut^.Active[AEdit.EditorIndex]:= false;
-    end;
-  end;
-end;
-
 procedure TATAdapterEControl.UpdateRangesActive(AEdit: TATSynEdit);
 begin
   if not IsDynamicHiliteEnabled then Exit;
 
-  UpdateRangesActive_Ex(AEdit, FRangesColored);
-  UpdateRangesActive_Ex(AEdit, FRangesColoredBounds);
+  FRangesColored.UpdateRangesActive(AEdit);
+  FRangesColoredBounds.UpdateRangesActive(AEdit);
 
-  DeactivateNotMinimalRanges(AEdit, FRangesColored);
-  DeactivateNotMinimalRanges(AEdit, FRangesColoredBounds);
+  FRangesColored.DeactivateNotMinimalRanges(AEdit);
+  FRangesColoredBounds.DeactivateNotMinimalRanges(AEdit);
 end;
 
 
