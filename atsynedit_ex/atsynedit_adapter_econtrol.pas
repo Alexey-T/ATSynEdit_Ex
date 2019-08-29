@@ -20,6 +20,7 @@ uses
   ATStringProc,
   ATStringProc_TextBuffer,
   ATStrings,
+  ec_syntax_format,
   ec_SyntAnal;
 
 var
