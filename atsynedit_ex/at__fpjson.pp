@@ -723,6 +723,7 @@ Type
 
   {$ifdef fpc}
   TJSONParserHandler = Procedure(AStream : TStream; Const AUseUTF8 : Boolean; Out Data : TJSONData);
+  TJSONStringParserHandler = Procedure(Const aJSON : TJSONStringType; Const AUseUTF8 : Boolean; Out Data : TJSONData);
   {$endif}
 
 Function SetJSONInstanceType(AType : TJSONInstanceType; AClass : TJSONDataClass) : TJSONDataClass;
@@ -754,7 +755,9 @@ Function CreateJSONObject(const Data : Array of {$ifdef pas2js}jsvalue{$else}Con
 Function GetJSON(Const JSON : TJSONStringType; Const UseUTF8 : Boolean = True) : TJSONData;
 Function GetJSON(Const JSON : TStream; Const UseUTF8 : Boolean = True) : TJSONData;
 Function SetJSONParserHandler(AHandler : TJSONParserHandler) : TJSONParserHandler;
+Function SetJSONStringParserHandler(AHandler : TJSONStringParserHandler) : TJSONStringParserHandler;
 Function GetJSONParserHandler : TJSONParserHandler;
+Function GetJSONStringParserHandler: TJSONStringParserHandler;
 {$endif}
 
 implementation
@@ -835,40 +838,40 @@ end;
 function StringToJSONString(const S: TJSONStringType; Strict : Boolean = False): TJSONStringType;
 
 Var
-  I : Integer;
-  C : WideChar;
-  SW : UnicodeString;
+  I,J,L : Integer;
+  C : Char;
 
 begin
+  I:=1;
+  J:=1;
   Result:='';
-  SW:=UTF8Decode(S);
-  for I:=1 to Length(SW) do
-  begin
-    C:=SW[I];
-    if Ord(C)>127 then
-      Result:=Result+'\u'+HexStr(Ord(C),4)
-    else
-    case C of
-      '\' : Result:=Result+'\\';
-      '/' : if Strict then
-              Result:=Result+'\/'
-            else
-              Result:=Result+'/';
-      '"' : Result:=Result+'\"';
-      #8  : Result:=Result+'\b';
-      #9  : Result:=Result+'\t';
-      #10 : Result:=Result+'\n';
-      #12 : Result:=Result+'\f';
-      #13 : Result:=Result+'\r';
+  L:=Length(S);
+  While I<=L do
+    begin
+    C:=S[I];
+    if (C in ['"','/','\',#0..#31]) then
+      begin
+      Result:=Result+Copy(S,J,I-J);
+      Case C of
+        '\' : Result:=Result+'\\';
+        '/' : if Strict then
+                Result:=Result+'\/'
+              else
+                Result:=Result+'/';
+        '"' : Result:=Result+'\"';
+        #8  : Result:=Result+'\b';
+        #9  : Result:=Result+'\t';
+        #10 : Result:=Result+'\n';
+        #12 : Result:=Result+'\f';
+        #13 : Result:=Result+'\r';
       else
-        begin
-          if Ord(C)<32 then
-            Result:=Result+'\u'+HexStr(Ord(C),4)
-          else
-            Result:=Result+Char(C);
-        end;
+        Result:=Result+'\u'+HexStr(Ord(C),4);
+      end;
+      J:=I+1;
+      end;
+    Inc(I);
     end;
-  end;
+  Result:=Result+Copy(S,J,I-1);
 end;
 
 function JSONStringToString(const S: TJSONStringType): TJSONStringType;
@@ -1003,31 +1006,59 @@ begin
 end;
 
 {$ifdef fpc}
+Var
+  JPH : TJSONParserHandler;
+  JPSH : TJSONStringParserHandler;
+
 function GetJSON(const JSON: TJSONStringType; const UseUTF8: Boolean): TJSONData;
 
 Var
   SS : TStringStream;
 begin
-  SS:=TStringStream.Create(JSON);
-  try
-    Result:=GetJSON(SS,UseUTF8);
-  finally
-    SS.Free;
-  end;
+  if Assigned(JPSH) then
+    JPSH(JSON,UseUTF8,Result)
+  else
+    begin
+    {$IF FPC_FULLVERSION>30300}
+    if UseUTF8 then
+      SS:=TStringStream.Create(JSON,TEncoding.UTF8)
+    else
+    {$ENDIF}
+      SS:=TStringStream.Create(JSON);
+    try
+      Result:=GetJSON(SS,UseUTF8);
+    finally
+      SS.Free;
+    end;
+    end;
 end;
 {$endif}
 
 {$ifdef fpc}
-Var
-  JPH : TJSONParserHandler;
-
 function GetJSON(const JSON: TStream; const UseUTF8: Boolean): TJSONData;
+
+Var
+  S : TJSONStringType;
 
 begin
   Result:=Nil;
-  If (JPH=Nil) then
-    TJSONData.DoError(SErrNoParserHandler);
-  JPH(JSON,UseUTF8,Result);
+  If (JPH<>Nil) then
+    JPH(JSON,UseUTF8,Result)
+  else if JPSH=Nil then
+    TJSONData.DoError(SErrNoParserHandler)
+  else
+    begin
+    Setlength(S,JSON.Size);
+    if Length(S)>0 then
+      JSON.ReadBuffer(S[1],Length(S));
+    end;
+end;
+
+
+Function SetJSONStringParserHandler(AHandler : TJSONStringParserHandler) : TJSONStringParserHandler;
+begin
+  Result:=JPSH;
+  JPSH:=AHandler;
 end;
 
 function SetJSONParserHandler(AHandler: TJSONParserHandler): TJSONParserHandler;
@@ -1039,6 +1070,11 @@ end;
 function GetJSONParserHandler: TJSONParserHandler;
 begin
   Result:=JPH;
+end;
+
+function GetJSONStringParserHandler: TJSONStringParserHandler;
+begin
+  Result:=JPSH;
 end;
 {$endif}
 
@@ -2496,7 +2532,9 @@ begin
       vtChar       : Result:=CreateJSON(VChar);
       vtExtended   : Result:=CreateJSON(VExtended^);
       vtString     : Result:=CreateJSON(vString^);
-      vtAnsiString : Result:=CreateJSON(AnsiString(vAnsiString));
+      vtAnsiString : Result:=CreateJSON(UTF8Decode(StrPas(VPChar)));
+      vtUnicodeString: Result:=CreateJSON(UnicodeString(VUnicodeString));
+      vtWideString: Result:=CreateJSON(WideString(VWideString));
       vtPChar      : Result:=CreateJSON(StrPas(VPChar));
       vtPointer    : If (VPointer<>Nil) then
                        TJSONData.DoError(SErrPointerNotNil,[SourceType])
@@ -3153,7 +3191,7 @@ constructor TJSONObject.Create(const Elements: array of {$ifdef pas2js}jsvalue{$
 
 Var
   I : integer;
-  AName : String;
+  AName : TJSONUnicodeStringType;
   J : TJSONData;
 
 begin
@@ -3171,10 +3209,10 @@ begin
     {$else}
     With Elements[i] do
       Case VType of
-        vtChar       : AName:=VChar;
-        vtString     : AName:=vString^;
-        vtAnsiString : AName:=(AnsiString(vAnsiString));
-        vtPChar      : AName:=StrPas(VPChar);
+        vtChar       : AName:=TJSONUnicodeStringType(VChar);
+        vtString     : AName:=TJSONUnicodeStringType(vString^);
+        vtAnsiString : AName:=UTF8Decode(StrPas(VPChar));
+        vtPChar      : AName:=TJSONUnicodeStringType(StrPas(VPChar));
       else
         DoError(SErrNameMustBeString,[I+1]);
       end;
@@ -3183,7 +3221,11 @@ begin
       DoError(SErrNameMustBeString,[I+1]);
     Inc(I);
     J:=VarRecToJSON(Elements[i],'Object');
+    {$IFDEF FPC_HAS_CPSTRING}
+    Add(UTF8Encode(AName),J);
+    {$ELSE}
     Add(AName,J);
+    {$ENDIF}
     Inc(I);
     end;
 end;
