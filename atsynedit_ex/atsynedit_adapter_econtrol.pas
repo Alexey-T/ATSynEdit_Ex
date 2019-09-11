@@ -112,6 +112,7 @@ type
     procedure DoAnalyzeFromLine(ALine: integer; AWait: boolean);
     function Stop: boolean;
     procedure StopTreeUpdate;
+    function IsParsingBusy: boolean;
 
     //tokens
     procedure GetTokenWithIndex(AIndex: integer; out APntFrom, APntTo: TPoint; out
@@ -580,6 +581,11 @@ begin
   FStopTreeUpdate:= true;
 end;
 
+function TATAdapterEControl.IsParsingBusy: boolean;
+begin
+  Result:= Assigned(AnClient) and AnClient.TimerIdleIsBusy;
+end;
+
 function TATAdapterEControl.Stop: boolean;
 begin
   Result:= true;
@@ -935,6 +941,8 @@ end;
 
 procedure TATAdapterEControl.SetLexer(AAnalizer: TecSyntAnalyzer);
 begin
+  if IsParsingBusy then exit;
+
   DoClearRanges;
   UpdateEditors(false, true);
 
