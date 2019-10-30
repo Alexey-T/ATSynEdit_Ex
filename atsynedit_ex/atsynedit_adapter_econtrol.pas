@@ -711,6 +711,7 @@ var
   NameRule, NameLexer: string;
   NodeData: pointer;
   RangeNew: TATRangeInCodeTree;
+  Sep: TATStringSeparator;
   i: integer;
 begin
   FStopTreeUpdate:= false;
@@ -757,9 +758,10 @@ begin
         NodeParent:= ATree.Items.FindNodeWithData(RangeParent);
 
       if NodeTextGroup<>'' then
+      begin
+        Sep.Init(NodeTextGroup, '\');
         repeat
-          SItem:= SGetItem(NodeTextGroup, '\');
-          if (SItem='') and (NodeTextGroup='') then Break;
+          if not Sep.GetItemStr(SItem) then Break;
 
           if SItem='' then
             NodeGroup:= nil
@@ -775,6 +777,7 @@ begin
           end;
           NodeParent:= NodeGroup;
         until false;
+      end;
 
       NodeParent:= ATree.Items.AddChildObject(NodeParent, NodeText, NodeData);
       NodeParent.ImageIndex:= R.Rule.TreeItemImage;
