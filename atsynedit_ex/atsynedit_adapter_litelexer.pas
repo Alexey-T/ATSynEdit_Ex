@@ -41,7 +41,7 @@ type
 
   TATLiteLexer = class(TATAdapterHilite)
   private
-    FRules: TList;
+    FRules: TFPList;
     FOnGetStyleHash: TATLiteLexer_GetStyleHash;
     FOnApplyStyle: TATLiteLexer_ApplyStyle;
       //calc tokens not from ACharIndex, but from n chars lefter,
@@ -74,7 +74,7 @@ type
 
   TATLiteLexers = class(TComponent)
   private
-    FList: TList;
+    FList: TFPList;
     FOnGetStyleHash: TATLiteLexer_GetStyleHash;
     FOnApplyStyle: TATLiteLexer_ApplyStyle;
     function GetLexer(AIndex: integer): TATLiteLexer;
@@ -98,7 +98,7 @@ implementation
 constructor TATLiteLexers.Create(AOwner: TComponent);
 begin
   inherited;
-  FList:= TList.Create;
+  FList:= TFPList.Create;
 end;
 
 destructor TATLiteLexers.Destroy;
@@ -206,7 +206,7 @@ end;
 constructor TATLiteLexer.Create(AOnwer: TComponent);
 begin
   inherited;
-  FRules:= TList.Create;
+  FRules:= TFPList.Create;
 end;
 
 destructor TATLiteLexer.Destroy;

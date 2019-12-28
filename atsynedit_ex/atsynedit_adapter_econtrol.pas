@@ -49,7 +49,7 @@ type
 
   TATAdapterEControl = class(TATAdapterHilite)
   private
-    EdList: TList;
+    EdList: TFPList;
     Buffer: TATStringBuffer;
     TimerDuringAnalyze: TTimer;
     CurrentIdleInterval: integer;
@@ -516,7 +516,7 @@ constructor TATAdapterEControl.Create(AOwner: TComponent);
 begin
   inherited;
 
-  EdList:= TList.Create;
+  EdList:= TFPList.Create;
   AnClient:= nil;
   Buffer:= TATStringBuffer.Create;
   FRangesColored:= TATSortedRanges.Create;
