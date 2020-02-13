@@ -992,19 +992,21 @@ procedure TATAdapterEControl.UpdateData(AUpdateBuffer, AAnalyze: boolean);
 var
   Ed: TATSynEdit;
   Lens: array of integer;
+  Str: TATStrings;
   i: integer;
 begin
   if EdList.Count=0 then Exit;
   if not Assigned(AnClient) then Exit;
 
   Ed:= TATSynEdit(EdList[0]);
+  Str:= Ed.Strings;
 
   if AUpdateBuffer then
   begin
-    SetLength(Lens{%H-}, Ed.Strings.Count);
+    SetLength(Lens{%H-}, Str.Count);
     for i:= 0 to Length(Lens)-1 do
-      Lens[i]:= Ed.Strings.LinesLen[i];
-    Buffer.Setup(Ed.Strings.TextString_Unicode(cMaxLenToTokenize), Lens);
+      Lens[i]:= Str.LinesLen[i];
+    Buffer.Setup(Str.TextString_Unicode(cMaxLenToTokenize), Lens);
   end;
 
   if AAnalyze then
