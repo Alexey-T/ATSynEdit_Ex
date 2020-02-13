@@ -993,7 +993,7 @@ var
   Ed: TATSynEdit;
   Lens: array of integer;
   Str: TATStrings;
-  i: integer;
+  NLen, i: integer;
 begin
   if EdList.Count=0 then Exit;
   if not Assigned(AnClient) then Exit;
@@ -1005,7 +1005,15 @@ begin
   begin
     SetLength(Lens{%H-}, Str.Count);
     for i:= 0 to Length(Lens)-1 do
-      Lens[i]:= Str.LinesLen[i];
+    begin
+      NLen:= Str.LinesLenRaw[i];
+      //check is needed to correctly skip huge line with Unicode chars
+      //(line will be filled with spaces in TextString_Unicode)
+      if NLen>cMaxLenToTokenize then
+        Lens[i]:= NLen
+      else
+        Lens[i]:= Str.LinesLen[i];
+    end;
     Buffer.Setup(Str.TextString_Unicode(cMaxLenToTokenize), Lens);
   end;
 
