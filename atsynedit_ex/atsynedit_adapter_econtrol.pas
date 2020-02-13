@@ -1009,12 +1009,12 @@ begin
       NLen:= Str.LinesLenRaw[i];
       //check is needed to correctly skip huge line with Unicode chars
       //(line will be filled with spaces in TextString_Unicode)
-      if NLen>cMaxLenToTokenize then
+      if NLen>Ed.OptMaxLineLenToTokenize then
         Lens[i]:= NLen
       else
         Lens[i]:= Str.LinesLen[i];
     end;
-    Buffer.Setup(Str.TextString_Unicode(cMaxLenToTokenize), Lens);
+    Buffer.Setup(Str.TextString_Unicode(Ed.OptMaxLineLenToTokenize), Lens);
   end;
 
   if AAnalyze then
