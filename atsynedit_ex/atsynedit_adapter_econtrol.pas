@@ -188,26 +188,29 @@ begin
 end;
 
 
-procedure ApplyPartStyleFromEcontrolStyle(var part: TATLinePart; st: TecSyntaxFormat);
+procedure ApplyPartStyleFromEcontrolStyle(var part: TATLinePart; st: TecSyntaxFormat); inline;
 begin
-  if Assigned(st.Font) then
-  if st.FormatType in [ftCustomFont, ftFontAttr, ftColor] then
-  begin
-    if st.Font.Color<>clNone then
-      part.ColorFont:= st.Font.Color;
-  end;
   if st.FormatType in [ftCustomFont, ftFontAttr, ftColor, ftBackGround] then
   begin
     if st.BgColor<>clNone then
       part.ColorBG:= st.BgColor;
   end;
+
   if Assigned(st.Font) then
-  if st.FormatType in [ftCustomFont, ftFontAttr] then
   begin
-    part.FontBold:= fsBold in st.Font.Style;
-    part.FontItalic:= fsItalic in st.Font.Style;
-    part.FontStrikeOut:= fsStrikeOut in st.Font.Style;
+    if st.FormatType in [ftCustomFont, ftFontAttr, ftColor] then
+    begin
+      if st.Font.Color<>clNone then
+        part.ColorFont:= st.Font.Color;
+    end;
+    if st.FormatType in [ftCustomFont, ftFontAttr] then
+    begin
+      part.FontBold:= fsBold in st.Font.Style;
+      part.FontItalic:= fsItalic in st.Font.Style;
+      part.FontStrikeOut:= fsStrikeOut in st.Font.Style;
+    end;
   end;
+
   part.ColorBorder:= st.BorderColorBottom;
   part.BorderUp:= cBorderEc[st.BorderTypeTop];
   part.BorderDown:= cBorderEc[st.BorderTypeBottom];
