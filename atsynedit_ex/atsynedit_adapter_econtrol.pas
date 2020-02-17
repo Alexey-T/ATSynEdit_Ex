@@ -69,7 +69,7 @@ type
     procedure DebugRangesColored;
     procedure DoCheckEditorList; inline;
     procedure DoFoldAdd(AX, AY, AY2: integer; AStaple: boolean; const AHint: string);
-    procedure DoCalcParts(Ed: TATSynEdit; var AParts: TATLineParts; ALine, AX, ALen: integer;
+    procedure DoCalcParts(var AParts: TATLineParts; ALine, AX, ALen: integer;
       AColorFont, AColorBG: TColor; var AColorAfter: TColor; AEditorIndex: integer); inline;
     procedure DoClearRanges;
     function DoFindToken(APos: TPoint): integer; inline;
@@ -246,7 +246,7 @@ begin
   Ed:= TATSynEdit(Sender);
 
   AColorAfterEol:= clNone;
-  DoCalcParts(Ed, AParts, ALineIndex, ACharIndex-1, ALineLen,
+  DoCalcParts(AParts, ALineIndex, ACharIndex-1, ALineLen,
     Ed.Colors.TextFont,
     clNone,
     AColorAfterEol,
@@ -328,10 +328,9 @@ begin
 end;
 
 
-procedure TATAdapterEControl.DoCalcParts(Ed: TATSynEdit; var AParts: TATLineParts; ALine, AX,
+procedure TATAdapterEControl.DoCalcParts(var AParts: TATLineParts; ALine, AX,
   ALen: integer; AColorFont, AColorBG: TColor; var AColorAfter: TColor; AEditorIndex: integer);
 var
-  nColorText: TColor;
   partindex: integer;
   //
   procedure AddMissingPart(AOffset, ALen: integer); inline;
@@ -355,7 +354,7 @@ var
       part^.ColorFont:= clNone
     else
     *)
-      part^.ColorFont:= nColorText;
+      part^.ColorFont:= AColorFont;
 
     part^.ColorBG:= GetTokenColorBG_FromColoredRanges(
       Point(AX+AOffset, ALine),
@@ -375,7 +374,6 @@ var
   i: integer;
 begin
   partindex:= 0;
-  nColorText:= Ed.Colors.TextFont;
 
   startindex:= DoFindToken(Point(0, ALine));
   if startindex<0 then
