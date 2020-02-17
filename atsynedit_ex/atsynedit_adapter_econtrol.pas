@@ -372,8 +372,6 @@ var
   i: integer;
 begin
   partindex:= 0;
-  FillChar(part{%H-}, SizeOf(part), 0);
-
   nColorText:= Ed.Colors.TextFont;
 
   startindex:= DoFindToken(Point(0, ALine));
