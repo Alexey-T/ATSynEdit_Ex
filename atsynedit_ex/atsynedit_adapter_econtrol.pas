@@ -1254,7 +1254,15 @@ end;
 
 function TATAdapterEControl.DoFindToken(APos: TPoint): integer; inline;
 begin
-  Result:= AnClient.PriorTokenAt(AnClient.Buffer.CaretToStr(APos));
+  if APos.X=0 then
+  begin
+    if APos.Y<=High(AnClient.TokenFinder) then
+      Result:= AnClient.TokenFinder[APos.Y]
+    else
+      Result:= -1;
+  end
+  else
+    Result:= AnClient.PriorTokenAt(AnClient.Buffer.CaretToStr(APos));
 end;
 
 function TATAdapterEControl.GetLexer: TecSyntAnalyzer;
