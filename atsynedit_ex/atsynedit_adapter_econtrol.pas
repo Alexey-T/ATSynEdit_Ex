@@ -375,7 +375,13 @@ var
 begin
   partindex:= 0;
 
-  startindex:= DoFindToken(Point(0, ALine));
+  //startindex:= DoFindToken(Point(0, ALine));
+  if ALine<=High(AnClient.TokenFinder) then
+    startindex:= AnClient.TokenFinder[ALine]
+  else
+    exit;
+
+  //sometimes TokenFinder has bad state: (0,-1,-1,-1,-1.....N,M...)
   if startindex<0 then
     startindex:= 0;
 
