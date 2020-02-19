@@ -381,9 +381,9 @@ begin
   else
     exit;
 
-  //sometimes TokenFinder has bad state: (0,-1,-1,-1,-1.....N,M...)
   if startindex<0 then
-    startindex:= 0;
+    exit;
+    //startindex:= 0;
 
   //debug
   //Application.MainForm.Caption:= Format('adapter startindex %d', [startindex]);
