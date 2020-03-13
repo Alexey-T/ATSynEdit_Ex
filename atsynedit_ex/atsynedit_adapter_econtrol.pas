@@ -387,6 +387,7 @@ begin
 
   //debug
   //Application.MainForm.Caption:= Format('adapter startindex %d', [startindex]);
+  FillChar(part{%H-}, SizeOf(part), 0);
 
   for i:= startindex to AnClient.TagCount-1 do
   begin
