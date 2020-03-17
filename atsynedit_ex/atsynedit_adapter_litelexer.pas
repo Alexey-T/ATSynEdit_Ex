@@ -342,10 +342,12 @@ begin
 
   EdLine:= Ed.Strings.Lines[ALineIndex];
   NParts:= 0;
-  NPos:= 1;
+  NPos:= 0;
   bLastFound:= false;
 
   repeat
+    Inc(NPos);
+    if NPos<ACharIndex then Continue; //must have this for wrapped line parts
     if NPos>Length(EdLine) then Break;
     if NPos>ACharIndex+ALineLen then Break;
     if NParts>=High(TATLineParts) then Break;
@@ -382,8 +384,6 @@ begin
         AParts[NParts-1].ColorBG:= clNone; //Random($fffff);
         AParts[NParts-1].ColorFont:= Ed.Colors.TextFont;
       end;
-
-      Inc(NPos);
     end
     else
     begin
@@ -411,7 +411,7 @@ begin
         end;
       end;
 
-      Inc(NPos, NLen);
+      Inc(NPos, NLen-1);
     end;
 
     bLastFound:= bRuleFound;
