@@ -81,6 +81,7 @@ type
     procedure UpdateIndexer;
     procedure DeactivateNotMinimalRanges(Ed: TATSynEdit);
     destructor Destroy; override;
+    procedure Clear;
   end;
 
 implementation
@@ -456,6 +457,13 @@ destructor TATSortedRanges.Destroy;
 begin
   FreeAndNil(FIndexer);
   inherited Destroy;
+end;
+
+procedure TATSortedRanges.Clear;
+begin
+  if Assigned(FIndexer) then
+    FIndexer.Clear;
+  inherited Clear;
 end;
 
 
