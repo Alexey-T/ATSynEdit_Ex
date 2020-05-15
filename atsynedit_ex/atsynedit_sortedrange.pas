@@ -68,7 +68,7 @@ type
 
   TATSortedRanges = class(specialize TFPGList<TATSortedRange>)
   private
-    FIndexer: TATIntegersWithPointers;
+    FBoundTokensIndexer: TATIntegersWithPointers;
   public
     function ItemPtr(AIndex: integer): PATSortedRange; inline;
     function Find(const APos: TPoint; AEditorIndex: integer; AOnlyActive: boolean): integer;
@@ -265,9 +265,9 @@ var
   Rng: PATSortedRange;
 begin
   Result:= nil;
-  if FIndexer=nil then
+  if FBoundTokensIndexer=nil then
     raise Exception.Create('Indexer is not inited');
-  Rng:= FIndexer.FindByInteger(ATokenIndex);
+  Rng:= FBoundTokensIndexer.FindByInteger(ATokenIndex);
   if Assigned(Rng) then
     if Rng^.Active[AEditorIndex] then
       Result:= Rng^.Rule.Style;
@@ -413,19 +413,19 @@ var
   Rng: PATSortedRange;
   i: integer;
 begin
-  if FIndexer=nil then
-    FIndexer:= TATIntegersWithPointers.Create;
-  FIndexer.Clear;
+  if FBoundTokensIndexer=nil then
+    FBoundTokensIndexer:= TATIntegersWithPointers.Create;
+  FBoundTokensIndexer.Clear;
   for i:= 0 to Count-1 do
   begin
     Rng:= ItemPtr(i);
     Pair.Value:= Rng^.Token1;
     Pair.Ptr:= Rng;
-    FIndexer.Add(Pair);
+    FBoundTokensIndexer.Add(Pair);
     Pair.Value:= Rng^.Token2;
-    FIndexer.Add(Pair);
+    FBoundTokensIndexer.Add(Pair);
   end;
-  FIndexer.SortByInteger;
+  FBoundTokensIndexer.SortByInteger;
 end;
 
 procedure TATSortedRanges.DeactivateNotMinimalRanges(Ed: TATSynEdit);
@@ -455,14 +455,14 @@ end;
 
 destructor TATSortedRanges.Destroy;
 begin
-  FreeAndNil(FIndexer);
+  FreeAndNil(FBoundTokensIndexer);
   inherited Destroy;
 end;
 
 procedure TATSortedRanges.Clear;
 begin
-  if Assigned(FIndexer) then
-    FIndexer.Clear;
+  if Assigned(FBoundTokensIndexer) then
+    FBoundTokensIndexer.Clear;
   inherited Clear;
 end;
 
