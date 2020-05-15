@@ -62,17 +62,17 @@ type
   { TATIntegerWithPointer }
 
   TATIntegerWithPointer = record
-    Val: integer;
+    Value: integer;
     Ptr: pointer;
     class operator =(const a, b: TATIntegerWithPointer): boolean;
   end;
 
-  { TATListOfIntegerWithPointer }
+  { TATIntegersWithPointers }
 
-  TATListOfIntegerWithPointer = class(specialize TFPGList<TATIntegerWithPointer>)
+  TATIntegersWithPointers = class(specialize TFPGList<TATIntegerWithPointer>)
   public
-    function Find(AVal: integer): pointer;
-    procedure MySort;
+    function FindByInteger(AValue: integer): pointer;
+    procedure SortByInteger;
   end;
 
 function ComparePoints(const P1, P2: TPoint): integer; inline;
@@ -94,9 +94,9 @@ begin
   Result:= false;
 end;
 
-{ TATListOfIntegerWithPointer }
+{ TATIntegersWithPointers }
 
-function TATListOfIntegerWithPointer.Find(AVal: integer): pointer;
+function TATIntegersWithPointers.FindByInteger(AValue: integer): pointer;
 var
   a, b, m, dif, NCount: integer;
 begin
@@ -110,7 +110,7 @@ begin
   while a<=b do
   begin
     m:= (a+b) div 2;
-    dif:= _GetItemPtr(m)^.Val - AVal;
+    dif:= _GetItemPtr(m)^.Value - AValue;
     if dif<0 then
       a:= m+1
     else
@@ -121,12 +121,12 @@ begin
   end;
 end;
 
-function Compare_IntegerWithPointer(const Item1, Item2: TATIntegerWithPointer): integer;
+function Compare_IntegerWithPointer(const a, b: TATIntegerWithPointer): integer;
 begin
-  Result:= Item1.Val - Item2.Val;
+  Result:= a.Value - b.Value;
 end;
 
-procedure TATListOfIntegerWithPointer.MySort;
+procedure TATIntegersWithPointers.SortByInteger;
 begin
   Sort(@Compare_IntegerWithPointer);
 end;
