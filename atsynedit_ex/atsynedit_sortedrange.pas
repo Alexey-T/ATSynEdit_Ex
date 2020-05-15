@@ -59,6 +59,21 @@ type
     procedure DeactivateNotMinimalRanges(Ed: TATSynEdit);
   end;
 
+  { TATIntegerWithPointer }
+
+  TATIntegerWithPointer = record
+    Val: integer;
+    Ptr: pointer;
+    class operator =(const a, b: TATIntegerWithPointer): boolean;
+  end;
+
+  { TATListOfIntegerWithPointer }
+
+  TATListOfIntegerWithPointer = class(specialize TFPGList<TATIntegerWithPointer>)
+  public
+    function Find(AVal: integer): pointer;
+  end;
+
 function ComparePoints(const P1, P2: TPoint): integer; inline;
 
 implementation
@@ -69,6 +84,40 @@ begin
   if (P1.Y>P2.Y) then exit(1);
   if (P1.Y<P2.Y) then exit(-1);
   if (P1.X>P2.X) then exit(1) else exit(-1);
+end;
+
+{ TATIntegerWithPointer }
+
+class operator TATIntegerWithPointer.=(const a, b: TATIntegerWithPointer): boolean;
+begin
+  Result:= false;
+end;
+
+{ TATListOfIntegerWithPointer }
+
+function TATListOfIntegerWithPointer.Find(AVal: integer): pointer;
+var
+  a, b, m, dif, NCount: integer;
+begin
+  Result:= nil;
+  NCount:= Count;
+  if NCount=0 then
+    Exit;
+
+  a:= 0;
+  b:= NCount-1;
+  while a<=b do
+  begin
+    m:= (a+b) div 2;
+    dif:= _GetItemPtr(m)^.Val - AVal;
+    if dif<0 then
+      a:= m+1
+    else
+    if dif=0 then
+      Exit(_GetItemPtr(m)^.Ptr)
+    else
+      b:= m-1;
+  end;
 end;
 
 { TATSortedRange }
