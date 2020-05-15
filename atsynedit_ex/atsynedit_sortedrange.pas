@@ -266,7 +266,7 @@ var
 begin
   Result:= nil;
   if FBoundTokensIndexer=nil then
-    raise Exception.Create('Indexer is not inited');
+    exit;
   Rng:= FBoundTokensIndexer.FindByInteger(ATokenIndex);
   if Assigned(Rng) then
     if Rng^.Active[AEditorIndex] then
@@ -455,8 +455,10 @@ end;
 
 destructor TATSortedRanges.Destroy;
 begin
-  FreeAndNil(FBoundTokensIndexer);
-  inherited Destroy;
+  Clear;
+  if Assigned(FBoundTokensIndexer) then
+    FreeAndNil(FBoundTokensIndexer);
+  inherited;
 end;
 
 procedure TATSortedRanges.Clear;
