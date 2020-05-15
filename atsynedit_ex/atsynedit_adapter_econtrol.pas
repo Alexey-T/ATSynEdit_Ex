@@ -350,7 +350,7 @@ var
 
     //check that part's last char is space (ie it's space part),
     //and set for it clNone
-    if Strings.LineSub(ALine, AOffset+ALen+AX-1, 1)=' ' then
+    if Strings.LineCharAt(ALine, AOffset+ALen+AX-1)=' ' then
       part^.ColorFont:= clNone
     else
     *)
