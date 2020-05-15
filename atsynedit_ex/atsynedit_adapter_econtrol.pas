@@ -481,6 +481,7 @@ begin
   FRangesColored.Clear;
   FRangesColoredBounds.Clear;
   FRangesSublexer.Clear;
+  FBoundTokens.Clear;
 
   for j:= 0 to EdList.Count-1 do
   begin
@@ -1242,9 +1243,9 @@ var
   s: string;
 begin
   s:= '';
-  for i:= 0 to Min(20, FBoundTokens.Count-1) do
-    s+= inttostr(FBoundTokens[i].Val)+#10;
-  if FBoundTokens.count>0 then
+  for i:= 0 to Min(30, FBoundTokens.Count-1) do
+    s+= IntToStr(FBoundTokens[i].Val)+#10;
+  if FBoundTokens.Count>0 then
     ShowMessage(s);
 end;
 
@@ -1342,7 +1343,6 @@ begin
     if AnClient.IsFinished then
     begin
       TimerDuringAnalyze.Enabled:= false;
-      UpdateRanges;
       DoParseDone;
     end;
   finally
