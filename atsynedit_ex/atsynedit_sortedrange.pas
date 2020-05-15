@@ -16,7 +16,8 @@ uses
   ATSynEdit,
   ATSynEdit_Carets,
   ATSynEdit_FGL,
-  ec_SyntAnal;
+  ec_SyntAnal,
+  ec_syntax_format;
 
 type
   TATRangeCond = (cCondInside, cCondAtBound, cCondOutside);
@@ -72,6 +73,7 @@ type
     function ItemPtr(AIndex: integer): PATSortedRange; inline;
     function Find(const APos: TPoint; AEditorIndex: integer; AOnlyActive: boolean): integer;
     function FindDumb(const APos: TPoint; AEditorIndex: integer; AOnlyActive: boolean): integer;
+    function FindStyleByTokenIndex(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
     procedure UpdateOnChange(AChange: TATLineChangeKind; ALine, AItemCount: integer);
     function CheckCaretInRange(Ed: TATSynEdit; const APos1, APos2: TPoint;
       ACond: TATRangeCond): boolean;
@@ -255,6 +257,19 @@ begin
       if Rng^.IsPosInsideWide(APos) then
         exit(i);
   end;
+end;
+
+function TATSortedRanges.FindStyleByTokenIndex(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
+var
+  Rng: PATSortedRange;
+begin
+  Result:= nil;
+  if FIndexer=nil then
+    raise Exception.Create('Indexer is not inited');
+  Rng:= FIndexer.FindByInteger(ATokenIndex);
+  if Assigned(Rng) then
+    if Rng^.Active[AEditorIndex] then
+      Result:= Rng^.Rule.Style;
 end;
 
 function TATSortedRanges.ItemPtr(AIndex: integer): PATSortedRange;

@@ -1213,6 +1213,9 @@ begin
     end;
   end;
 
+  //this list is not sorted so create internal indexer
+  FRangesColoredBounds.UpdateIndexer;
+
   //keep folded blks that were folded
   DoFoldFromLinesHidden;
 end;
@@ -1332,24 +1335,13 @@ end;
 
 
 function TATAdapterEControl.GetTokenColor_FromBoundRanges(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
-var
-  Rng: PATSortedRange;
-  i: integer;
 begin
   Result:= nil;
   if not IsDynamicHiliteEnabled then exit;
 
-  //Cannot use binary search here, because FRangesColoredBounds has overlapping ranges,
-  //so using Find() will miss some tokens
-  for i:= 0 to FRangesColoredBounds.Count-1 do
-  begin
-    Rng:= FRangesColoredBounds.ItemPtr(i);
-    if Rng^.Active[AEditorIndex] then
-      //if Rng^.Rule<>nil then
-        //if Rng^.Rule.DynHighlight=dhBound then //all items in FRangesColredBounds have dhBound
-          if (Rng^.Token1=ATokenIndex) or (Rng^.Token2=ATokenIndex) then
-            exit(Rng^.Rule.Style);
-  end;
+  //Cannot use FRangesColoredBounds.Find, because it has overlapping ranges,
+  //so Find will miss some tokens
+  Result:= FRangesColoredBounds.FindStyleByTokenIndex(ATokenIndex, AEditorIndex);
 end;
 
 function TATAdapterEControl.GetLexerSuportsDynamicHilite: boolean;
