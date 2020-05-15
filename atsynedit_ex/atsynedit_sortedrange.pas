@@ -72,6 +72,7 @@ type
   TATListOfIntegerWithPointer = class(specialize TFPGList<TATIntegerWithPointer>)
   public
     function Find(AVal: integer): pointer;
+    procedure MySort;
   end;
 
 function ComparePoints(const P1, P2: TPoint): integer; inline;
@@ -118,6 +119,16 @@ begin
     else
       b:= m-1;
   end;
+end;
+
+function Compare_IntegerWithPointer(const Item1, Item2: TATIntegerWithPointer): integer;
+begin
+  Result:= Item1.Val - Item2.Val;
+end;
+
+procedure TATListOfIntegerWithPointer.MySort;
+begin
+  Sort(@Compare_IntegerWithPointer);
 end;
 
 { TATSortedRange }

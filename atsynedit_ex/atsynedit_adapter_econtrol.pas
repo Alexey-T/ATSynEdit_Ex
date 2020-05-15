@@ -56,6 +56,7 @@ type
     FRangesColored: TATSortedRanges;
     FRangesColoredBounds: TATSortedRanges;
     FRangesSublexer: TATSortedRanges;
+    FBoundTokens: TATListOfIntegerWithPointer;
     FEnabledLineSeparators: boolean;
     FEnabledSublexerTreeNodes: boolean;
     FBusyTreeUpdate: boolean;
@@ -66,6 +67,7 @@ type
     FOnLexerChange: TNotifyEvent;
     FOnParseBegin: TNotifyEvent;
     FOnParseDone: TNotifyEvent;
+    procedure DebugBoundTokens;
     procedure DebugRangesColored;
     procedure DoCheckEditorList; inline;
     procedure DoFoldAdd(AX, AY, AY2: integer; AStaple: boolean; const AHint: string);
@@ -524,6 +526,7 @@ begin
   FRangesColored:= TATSortedRanges.Create;
   FRangesColoredBounds:= TATSortedRanges.Create;
   FRangesSublexer:= TATSortedRanges.Create;
+  FBoundTokens:= TATListOfIntegerWithPointer.Create;
   FEnabledLineSeparators:= false;
   FEnabledSublexerTreeNodes:= false;
 
@@ -540,6 +543,7 @@ begin
   if Assigned(AnClient) then
     FreeAndNil(AnClient);
 
+  FreeAndNil(FBoundTokens);
   FreeAndNil(FRangesSublexer);
   FreeAndNil(FRangesColoredBounds);
   FreeAndNil(FRangesColored);
@@ -1133,6 +1137,7 @@ var
   SHint: string;
   tokenStart, tokenEnd: TecSyntToken;
   ColoredRange: TATSortedRange;
+  Pair: TATIntegerWithPointer;
   i: integer;
 begin
   if not Assigned(AnClient) then Exit;
@@ -1204,15 +1209,43 @@ begin
             );
 
           if R.Rule.DynHighlight=dhBound then
-            FRangesColoredBounds.Add(ColoredRange)
+          begin
+            FRangesColoredBounds.Add(ColoredRange);
+
+            //add the same to FBoundTokens
+            Pair.Val:= R.StartIdx;
+            Pair.Ptr:= R;
+            FBoundTokens.Add(Pair);
+
+            if R.EndIdx<>R.StartIdx then
+            begin
+              Pair.Val:= R.EndIdx;
+              FBoundTokens.Add(Pair);
+            end;
+          end
           else
             FRangesColored.Add(ColoredRange);
         end;
     end;
   end;
 
+  FBoundTokens.MySort;
+  //DebugBoundTokens;
+
   //keep folded blks that were folded
   DoFoldFromLinesHidden;
+end;
+
+procedure TATAdapterEControl.DebugBoundTokens;
+var
+  i: integer;
+  s: string;
+begin
+  s:= '';
+  for i:= 0 to Min(20, FBoundTokens.Count-1) do
+    s+= inttostr(FBoundTokens[i].Val)+#10;
+  if FBoundTokens.count>0 then
+    ShowMessage(s);
 end;
 
 procedure TATAdapterEControl.UpdateRangesSublex;
