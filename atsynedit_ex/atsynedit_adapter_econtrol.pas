@@ -127,7 +127,7 @@ type
     property TreeBusy: boolean read FBusyTreeUpdate;
     procedure TreeFill(ATree: TTreeView);
     procedure TreeGetPositionOfRange_EC(const R: TecTextRange; out APosBegin, APosEnd: TPoint);
-    function TreeGetRangeOfPosition(APos: TPoint): TecTextRange;
+    function __TreeGetRangeOfPosition(APos: TPoint): TecTextRange; //unused function
 
     //sublexers
     function SublexerRangeCount: integer;
@@ -831,7 +831,8 @@ begin
     APosEnd:=  AnClient.Tags[R.EndIdx].Range.PointEnd;
 end;
 
-function TATAdapterEControl.TreeGetRangeOfPosition(APos: TPoint): TecTextRange;
+//unused function
+function TATAdapterEControl.__TreeGetRangeOfPosition(APos: TPoint): TecTextRange;
 var
   R: TecTextRange;
   NTokenOrig: integer;
