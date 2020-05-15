@@ -22,6 +22,25 @@ type
   TATRangeCond = (cCondInside, cCondAtBound, cCondOutside);
 
 type
+  { TATIntegerWithPointer }
+
+  TATIntegerWithPointer = record
+    Value: integer;
+    Ptr: pointer;
+    class operator =(const a, b: TATIntegerWithPointer): boolean;
+  end;
+
+  { TATIntegersWithPointers }
+
+  TATIntegersWithPointers = class(specialize TFPGList<TATIntegerWithPointer>)
+  public
+    function FindByInteger(AValue: integer): pointer;
+    procedure SortByInteger;
+  end;
+
+function ComparePoints(const P1, P2: TPoint): integer; inline;
+
+type
   { TATSortedRange }
 
   PATSortedRange = ^TATSortedRange;
@@ -48,6 +67,7 @@ type
 
   TATSortedRanges = class(specialize TFPGList<TATSortedRange>)
   private
+    FIndexer: TATIntegersWithPointers;
   public
     function ItemPtr(AIndex: integer): PATSortedRange; inline;
     function Find(const APos: TPoint; AEditorIndex: integer; AOnlyActive: boolean): integer;
@@ -56,26 +76,10 @@ type
     function CheckCaretInRange(Ed: TATSynEdit; const APos1, APos2: TPoint;
       ACond: TATRangeCond): boolean;
     procedure UpdateRangesActive(Ed: TATSynEdit);
+    procedure UpdateIndexer;
     procedure DeactivateNotMinimalRanges(Ed: TATSynEdit);
+    destructor Destroy; override;
   end;
-
-  { TATIntegerWithPointer }
-
-  TATIntegerWithPointer = record
-    Value: integer;
-    Ptr: pointer;
-    class operator =(const a, b: TATIntegerWithPointer): boolean;
-  end;
-
-  { TATIntegersWithPointers }
-
-  TATIntegersWithPointers = class(specialize TFPGList<TATIntegerWithPointer>)
-  public
-    function FindByInteger(AValue: integer): pointer;
-    procedure SortByInteger;
-  end;
-
-function ComparePoints(const P1, P2: TPoint): integer; inline;
 
 implementation
 
@@ -387,6 +391,27 @@ begin
   end;
 end;
 
+procedure TATSortedRanges.UpdateIndexer;
+var
+  Pair: TATIntegerWithPointer;
+  Rng: PATSortedRange;
+  i: integer;
+begin
+  if FIndexer=nil then
+    FIndexer:= TATIntegersWithPointers.Create;
+  FIndexer.Clear;
+  for i:= 0 to Count-1 do
+  begin
+    Rng:= ItemPtr(i);
+    Pair.Value:= Rng^.Token1;
+    Pair.Ptr:= Rng;
+    FIndexer.Add(Pair);
+    Pair.Value:= Rng^.Token2;
+    FIndexer.Add(Pair);
+  end;
+  FIndexer.SortByInteger;
+end;
+
 procedure TATSortedRanges.DeactivateNotMinimalRanges(Ed: TATSynEdit);
 var
   Rng, RngOut: PATSortedRange;
@@ -410,6 +435,12 @@ begin
             RngOut^.Active[Ed.EditorIndex]:= false;
     end;
   end;
+end;
+
+destructor TATSortedRanges.Destroy;
+begin
+  FreeAndNil(FIndexer);
+  inherited Destroy;
 end;
 
 
