@@ -377,8 +377,8 @@ begin
   partindex:= 0;
 
   //startindex:= DoFindToken(Point(0, ALine));
-  if ALine<=High(AnClient.LineIndexer) then
-    startindex:= AnClient.LineIndexer[ALine]
+  if ALine<=High(AnClient.TokenIndexer) then
+    startindex:= AnClient.TokenIndexer[ALine]
   else
     exit;
 
@@ -1273,8 +1273,8 @@ function TATAdapterEControl.DoFindToken(APos: TPoint): integer; inline;
 begin
   if APos.X=0 then
   begin
-    if APos.Y<=High(AnClient.LineIndexer) then
-      Result:= AnClient.LineIndexer[APos.Y]
+    if APos.Y<=High(AnClient.TokenIndexer) then
+      Result:= AnClient.TokenIndexer[APos.Y]
     else
       Result:= -1;
   end
