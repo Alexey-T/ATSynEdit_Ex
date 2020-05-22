@@ -376,20 +376,20 @@ var
 begin
   partindex:= 0;
 
-  //startindex:= DoFindToken(Point(0, ALine));
   if ALine<=High(AnClient.TokenIndexer) then
     startindex:= AnClient.TokenIndexer[ALine]
   else
-    exit;
+    startindex:= -1;
 
+  {
+  //don't exit, need more work for AColorAfter
   if startindex<0 then
     exit;
-    //startindex:= 0;
+    }
 
-  //debug
-  //Application.MainForm.Caption:= Format('adapter startindex %d', [startindex]);
   FillChar(part{%H-}, SizeOf(part), 0);
 
+  if startindex>=0 then
   for i:= startindex to AnClient.TagCount-1 do
   begin
     token:= AnClient.Tags[i];
