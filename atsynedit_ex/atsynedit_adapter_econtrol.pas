@@ -1128,20 +1128,21 @@ end;
 
 procedure TATAdapterEControl.UpdateRangesFoldAndColored;
 var
+  Ed: TATSynEdit;
   R: TecTextRange;
   Pnt1, Pnt2, Pnt1Wide, Pnt2Wide: TPoint;
   Style: TecSyntaxFormat;
   SHint: string;
   tokenStart, tokenEnd: TecSyntToken;
   ColoredRange: TATSortedRange;
-  Pair: TATIntegerWithPointer;
   i: integer;
 begin
   if not Assigned(AnClient) then Exit;
 
   //check folding enabled
-  if EdList.Count>0 then
-    if not TATSynEdit(EdList[0]).OptFoldEnabled then exit;
+  if EdList.Count=0 then exit;
+  Ed:= TATSynEdit(EdList[0]);
+  if not Ed.OptFoldEnabled then exit;
 
   for i:= 0 to AnClient.RangeCount-1 do
   begin
@@ -1215,6 +1216,9 @@ begin
 
   //this list is not sorted so create internal indexer
   FRangesColoredBounds.UpdateBoundIndexer;
+
+  FRangesColored.UpdateLineIndexer(Ed.Strings.Count);
+  //FRangesColored.DebugLineIndexer;
 
   //keep folded blks that were folded
   DoFoldFromLinesHidden;

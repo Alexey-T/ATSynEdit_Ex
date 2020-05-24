@@ -11,6 +11,7 @@ interface
 
 uses
   Classes, SysUtils, Graphics, Math,
+  Dialogs, //debug code
   ATStrings,
   ATStringProc,
   ATSynEdit,
@@ -84,6 +85,7 @@ type
     procedure DeactivateNotMinimalRanges(Ed: TATSynEdit);
     destructor Destroy; override;
     procedure Clear;
+    procedure DebugLineIndexer;
   end;
 
 implementation
@@ -432,20 +434,18 @@ end;
 
 procedure TATSortedRanges.UpdateLineIndexer(ALineCount: integer);
 var
-  NMaxLine, NCount, NItemLen: integer;
-  i, iRange, iLine: integer;
+  NCount, NItemLen: integer;
+  iRange, iLine: integer;
   Ptr: PATSortedRange;
 begin
-  for i:= High(FLineIndexer) downto 0 do
-    SetLength(FLineIndexer[i], 0);
-  SetLength(FLineIndexer, 0);
+  for iLine:= High(FLineIndexer) downto 0 do
+    SetLength(FLineIndexer[iLine], 0);
+
+  SetLength(FLineIndexer, ALineCount);
+  if ALineCount=0 then exit;
 
   NCount:= Count;
   if NCount=0 then exit;
-
-  SetLength(FLineIndexer, ALineCount+1);
-  for i:= 0 to High(FLineIndexer) do
-    SetLength(FLineIndexer[i], 0);
 
   for iRange:= 0 to NCount-1 do
   begin
@@ -457,6 +457,22 @@ begin
       FLineIndexer[iLine][NItemLen]:= iRange;
     end;
   end;
+end;
+
+procedure TATSortedRanges.DebugLineIndexer;
+var
+  S, S2: string;
+  i, iLine: integer;
+begin
+  S:= '';
+  for iLine:= 0 to Min(High(FLineIndexer), 30) do
+  begin
+    S2:= IntToStr(iLine)+': ';
+    for i:= 0 to High(FLineIndexer[iLine]) do
+      S2+= IntToStr(FLineIndexer[iLine][i])+' ';
+    S+= S2+#10;
+  end;
+  ShowMessage('LineIndexer'#10+S);
 end;
 
 procedure TATSortedRanges.DeactivateNotMinimalRanges(Ed: TATSynEdit);
