@@ -69,6 +69,7 @@ type
   TATSortedRanges = class(specialize TFPGList<TATSortedRange>)
   private
     FBoundTokensIndexer: TATIntegersWithPointers;
+    FLineIndexer: array of array of integer;
   public
     function ItemPtr(AIndex: integer): PATSortedRange; inline;
     function Find(const APos: TPoint; AEditorIndex: integer; AOnlyActive: boolean): integer;
@@ -78,7 +79,8 @@ type
     function CheckCaretInRange(Ed: TATSynEdit; const APos1, APos2: TPoint;
       ACond: TATRangeCond): boolean;
     procedure UpdateRangesActive(Ed: TATSynEdit);
-    procedure UpdateIndexer;
+    procedure UpdateBoundIndexer;
+    procedure UpdateLineIndexer(ALineCount: integer);
     procedure DeactivateNotMinimalRanges(Ed: TATSynEdit);
     destructor Destroy; override;
     procedure Clear;
@@ -407,7 +409,7 @@ begin
   end;
 end;
 
-procedure TATSortedRanges.UpdateIndexer;
+procedure TATSortedRanges.UpdateBoundIndexer;
 var
   Pair: TATIntegerWithPointer;
   Rng: PATSortedRange;
@@ -426,6 +428,35 @@ begin
     FBoundTokensIndexer.Add(Pair);
   end;
   FBoundTokensIndexer.SortByInteger;
+end;
+
+procedure TATSortedRanges.UpdateLineIndexer(ALineCount: integer);
+var
+  NMaxLine, NCount, NItemLen: integer;
+  i, iRange, iLine: integer;
+  Ptr: PATSortedRange;
+begin
+  for i:= High(FLineIndexer) downto 0 do
+    SetLength(FLineIndexer[i], 0);
+  SetLength(FLineIndexer, 0);
+
+  NCount:= Count;
+  if NCount=0 then exit;
+
+  SetLength(FLineIndexer, ALineCount+1);
+  for i:= 0 to High(FLineIndexer) do
+    SetLength(FLineIndexer[i], 0);
+
+  for iRange:= 0 to NCount-1 do
+  begin
+    Ptr:= ItemPtr(iRange);
+    for iLine:= Ptr^.Pos1.Y to Ptr^.Pos2.Y do
+    begin
+      NItemLen:= Length(FLineIndexer[iLine]);
+      SetLength(FLineIndexer[iLine], NItemLen+1);
+      FLineIndexer[iLine][NItemLen]:= iRange;
+    end;
+  end;
 end;
 
 procedure TATSortedRanges.DeactivateNotMinimalRanges(Ed: TATSynEdit);

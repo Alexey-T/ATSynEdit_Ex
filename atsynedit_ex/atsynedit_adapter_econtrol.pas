@@ -1214,7 +1214,7 @@ begin
   end;
 
   //this list is not sorted so create internal indexer
-  FRangesColoredBounds.UpdateIndexer;
+  FRangesColoredBounds.UpdateBoundIndexer;
 
   //keep folded blks that were folded
   DoFoldFromLinesHidden;
