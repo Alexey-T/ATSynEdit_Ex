@@ -304,11 +304,11 @@ begin
   Result:= ADefColor;
 
   //cannot use binary search (Find) here, because of nested ranges
-  N:= FRangesColored.FindDumb(APos, AEditorIndex, true);
+  N:= FRangesColored.FindByLineIndexer(APos, AEditorIndex, true);
   if N>=0 then
     exit(FRangesColored.ItemPtr(N)^.Color);
 
-  N:= FRangesSublexer.Find(APos, AEditorIndex, false);
+  N:= FRangesSublexer.FindByLineIndexer(APos, AEditorIndex, false);
   if N>=0 then
   begin
     Rng:= FRangesSublexer.ItemPtr(N);
@@ -1238,6 +1238,7 @@ end;
 
 procedure TATAdapterEControl.UpdateRangesSublex;
 var
+  Ed: TATSynEdit;
   R: TecSubLexerRange;
   Style: TecSyntaxFormat;
   Range: TATSortedRange;
@@ -1270,6 +1271,9 @@ begin
       FRangesSublexer.Add(Range);
     end;
   end;
+
+  Ed:= TATSynEdit(EdList[0]);
+  FRangesSublexer.UpdateLineIndexer(Ed.Strings.Count);
 end;
 
 
