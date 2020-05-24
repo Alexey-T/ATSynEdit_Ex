@@ -85,6 +85,8 @@ type
     procedure DeactivateNotMinimalRanges(Ed: TATSynEdit);
     destructor Destroy; override;
     procedure Clear;
+    procedure ClearBoundIndexer;
+    procedure ClearLineIndexer;
     procedure DebugLineIndexer;
   end;
 
@@ -516,11 +518,25 @@ end;
 
 procedure TATSortedRanges.Clear;
 begin
-  if Assigned(FBoundTokensIndexer) then
-    FBoundTokensIndexer.Clear;
+  ClearBoundIndexer;
+  ClearLineIndexer;
   inherited Clear;
 end;
 
+procedure TATSortedRanges.ClearBoundIndexer;
+begin
+  if Assigned(FBoundTokensIndexer) then
+    FBoundTokensIndexer.Clear;
+end;
+
+procedure TATSortedRanges.ClearLineIndexer;
+var
+  iLine: integer;
+begin
+  for iLine:= High(FLineIndexer) downto 0 do
+    SetLength(FLineIndexer[iLine], 0);
+  SetLength(FLineIndexer, 0);
+end;
 
 end.
 
