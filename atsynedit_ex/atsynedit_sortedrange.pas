@@ -468,16 +468,16 @@ end;
 
 function TATSortedRanges.DebugLineIndexer: string;
 var
-  S2: string;
+  S: string;
   i, iLine: integer;
 begin
   Result:= '';
   for iLine:= 0 to Min(High(FLineIndexer), 30) do
   begin
-    S2:= IntToStr(iLine)+': ';
+    S:= IntToStr(iLine)+': ';
     for i:= 0 to High(FLineIndexer[iLine]) do
-      S2+= IntToStr(FLineIndexer[iLine][i])+' ';
-    Result+= S2+#10;
+      S+= IntToStr(FLineIndexer[iLine][i])+' ';
+    Result+= S+#10;
   end;
 end;
 
