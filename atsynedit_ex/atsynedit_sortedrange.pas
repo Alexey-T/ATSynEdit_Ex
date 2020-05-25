@@ -11,7 +11,6 @@ interface
 
 uses
   Classes, SysUtils, Graphics, Math,
-  Dialogs, //debug code
   ATStrings,
   ATStringProc,
   ATSynEdit,
@@ -87,7 +86,7 @@ type
     procedure Clear;
     procedure ClearBoundIndexer;
     procedure ClearLineIndexer;
-    procedure DebugLineIndexer;
+    function DebugLineIndexer: string;
   end;
 
 implementation
@@ -467,20 +466,19 @@ begin
   end;
 end;
 
-procedure TATSortedRanges.DebugLineIndexer;
+function TATSortedRanges.DebugLineIndexer: string;
 var
-  S, S2: string;
+  S2: string;
   i, iLine: integer;
 begin
-  S:= '';
+  Result:= '';
   for iLine:= 0 to Min(High(FLineIndexer), 30) do
   begin
     S2:= IntToStr(iLine)+': ';
     for i:= 0 to High(FLineIndexer[iLine]) do
       S2+= IntToStr(FLineIndexer[iLine][i])+' ';
-    S+= S2+#10;
+    Result+= S2+#10;
   end;
-  ShowMessage('LineIndexer'#10+S);
 end;
 
 procedure TATSortedRanges.DeactivateNotMinimalRanges(Ed: TATSynEdit);
