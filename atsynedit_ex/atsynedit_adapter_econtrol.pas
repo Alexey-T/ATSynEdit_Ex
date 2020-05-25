@@ -1090,11 +1090,10 @@ end;
 
 procedure TATAdapterEControl.DoFoldAdd(AX, AY, AY2: integer; AStaple: boolean; const AHint: string);
 var
-  j: integer;
+  i: integer;
 begin
-  if EdList.Count>0 then
-    for j:= 0 to EdList.Count-1 do
-      TATSynEdit(EdList[j]).Fold.Add(AX, AY, AY2, AStaple, AHint);
+  for i:= 0 to EdList.Count-1 do
+    TATSynEdit(EdList[i]).Fold.Add(AX, AY, AY2, AStaple, AHint);
 end;
 
 procedure TATAdapterEControl.UpdateEditors(ARepaint, AClearCache: boolean);
