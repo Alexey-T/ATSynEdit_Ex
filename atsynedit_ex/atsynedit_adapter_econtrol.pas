@@ -69,6 +69,7 @@ type
     procedure DebugIntegersWithPointers(L: TATIntegersWithPointers);
     procedure DebugRangesColored;
     procedure DoCheckEditorList; inline;
+    procedure DoFoldClearIndexers;
     procedure DoFoldAdd(AX, AY, AY2: integer; AStaple: boolean; const AHint: string);
     procedure DoCalcParts(var AParts: TATLineParts; ALine, AX, ALen: integer;
       AColorFont, AColorBG: TColor; var AColorAfter: TColor; AEditorIndex: integer); inline;
@@ -1088,6 +1089,18 @@ begin
   end;
 end;
 
+procedure TATAdapterEControl.DoFoldClearIndexers;
+var
+  Ed: TATSynEdit;
+  i: integer;
+begin
+  for i:= 0 to EdList.Count-1 do
+  begin
+    Ed:= TATSynEdit(EdList[i]);
+    Ed.Fold.ClearLineIndexer(Ed.Strings.Count);
+  end;
+end;
+
 procedure TATAdapterEControl.DoFoldAdd(AX, AY, AY2: integer; AStaple: boolean; const AHint: string);
 var
   i: integer;
@@ -1142,6 +1155,9 @@ begin
   if EdList.Count=0 then exit;
   Ed:= TATSynEdit(EdList[0]);
   if not Ed.OptFoldEnabled then exit;
+
+  //init Ed.Fold.LineIndexer's
+  DoFoldClearIndexers;
 
   for i:= 0 to AnClient.RangeCount-1 do
   begin
@@ -1212,6 +1228,8 @@ begin
         end;
     end;
   end;
+
+  //ShowMessage(Ed.Fold.DebugLineIndexer); //debug
 
   //this list is not sorted so create internal indexer
   FRangesColoredBounds.UpdateBoundIndexer;
