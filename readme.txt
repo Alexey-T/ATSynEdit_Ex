@@ -1,4 +1,5 @@
-Package, additional to ATSynEdit. It has the following parts splitted from ATSynEdit, to avoid build errors:
+Package for Lazarus, which gives additional features to ATSynEdit component,
+they are used in CudaText editor.
 
 - Adapter for EControl (CudaText/SynWrite) lexers
 - Adapter for CudaText "lite" lexers
