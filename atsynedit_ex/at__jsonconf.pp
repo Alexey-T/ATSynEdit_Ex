@@ -172,16 +172,20 @@ Var
 begin
   if Modified then
     begin
-    F:=TFileStream.Create(FileName,fmCreate);
-    Try
-      if Formatted then
-        S:=FJSON.FormatJSON(Formatoptions,FormatIndentSize)
-      else
-        S:=FJSON.AsJSON;
-      if S>'' then
-        F.WriteBuffer(S[1],Length(S));  
-    Finally
-      F.Free;
+    try
+      F:=TFileStream.Create(FileName,fmCreate);
+      Try
+        if Formatted then
+          S:=FJSON.FormatJSON(Formatoptions,FormatIndentSize)
+        else
+          S:=FJSON.AsJSON;
+        if S>'' then
+          F.WriteBuffer(S[1],Length(S));
+      Finally
+        F.Free;
+      end;
+    except
+      //AT: added try-except to avoid crash when app tries to write to Program Files dir
     end;
     FModified := False;
     end;
