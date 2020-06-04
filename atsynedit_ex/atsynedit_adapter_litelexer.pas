@@ -85,6 +85,8 @@ type
     procedure LoadFromDir(const ADir: string);
     function LexerCount: integer;
     property Lexers[AIndex: integer]: TATLiteLexer read GetLexer;
+    function Add(const ALexerName, AFileTypes, ACommentLine, ACommentBlockBegin,
+      ACommentBlockEnd: string): boolean;
     function FindLexerByFilename(AFilename: string): TATLiteLexer;
     function FindLexerByName(const AName: string): TATLiteLexer;
     property OnGetStyleHash: TATLiteLexer_GetStyleHash read FOnGetStyleHash write FOnGetStyleHash;
@@ -120,6 +122,24 @@ end;
 function TATLiteLexers.LexerCount: integer;
 begin
   Result:= FList.Count;
+end;
+
+function TATLiteLexers.Add(const ALexerName, AFileTypes,
+  ACommentLine, ACommentBlockBegin, ACommentBlockEnd: string): boolean;
+var
+  Lexer: TATLiteLexer;
+begin
+  Result:= FindLexerByName(ALexerName)=nil;
+  if Result then
+  begin
+    Lexer:= TATLiteLexer.Create(nil);
+    Lexer.LexerName:= ALexerName;
+    Lexer.FileTypes:= AFileTypes;
+    Lexer.CommentLine:= ACommentLine;
+    Lexer.CommentBlockBegin:= ACommentBlockBegin;
+    lexer.CommentBlockEnd:= ACommentBlockEnd;
+    FList.Add(Lexer);
+  end;
 end;
 
 function TATLiteLexers.GetLexer(AIndex: integer): TATLiteLexer;
