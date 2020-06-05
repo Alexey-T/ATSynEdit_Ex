@@ -154,7 +154,7 @@ type
   end;
 
 procedure ApplyPartStyleFromEcontrolStyle(var part: TATLinePart; st: TecSyntaxFormat);
-procedure CodetreeSelectItemForPosition(ATree: TTreeView; APos: TPoint);
+procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer);
 
 
 implementation
@@ -891,7 +891,7 @@ begin
   end;
 end;
 
-procedure CodetreeSelectItemForPosition(ATree: TTreeView; APos: TPoint);
+procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer);
 var
   Node, NodeNear, NodeResult: TTreeNode;
   Range: TATRangeInCodeTree;
@@ -914,11 +914,11 @@ begin
         Pos2:= Range.PosEnd;
 
         if NodeNear=nil then
-          if (Pos1.Y>=0) and IsPosSorted(Pos1.X, Pos1.Y, APos.X, APos.Y, true) then
+          if (Pos1.Y>=0) and IsPosSorted(Pos1.X, Pos1.Y, APosX, APosY, true) then
             NodeNear:= Node;
 
         if IsPosInRange(
-          APos.X, APos.Y,
+          APosX, APosY,
           Pos1.X, Pos1.Y,
           Pos2.X, Pos2.Y,
           true) = cRelateInside then
