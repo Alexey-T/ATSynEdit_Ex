@@ -913,10 +913,15 @@ begin
         Pos1:= Range.PosBegin;
         Pos2:= Range.PosEnd;
 
+
+        //if we won't find node which includes APos, we'll take nearest node above APos
         if NodeNear=nil then
           if (Pos1.Y>=0) and IsPosSorted(Pos1.X, Pos1.Y, APosX, APosY, true) then
-            NodeNear:= Node;
+            //skip one-line nodes
+            if Pos1.Y<>Pos2.Y then
+              NodeNear:= Node;
 
+        //found node which includes APos
         if IsPosInRange(
           APosX, APosY,
           Pos1.X, Pos1.Y,
