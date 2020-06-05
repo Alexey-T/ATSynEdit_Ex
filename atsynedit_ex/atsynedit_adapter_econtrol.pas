@@ -901,8 +901,8 @@ begin
   NodeResult:= nil;
   NodeNear:= nil;
 
-  //ranges are sorted, so we find _last_ range which
-  //includes APos
+  //ranges are sorted only by start position, but are nested, cannot use binary search
+  //we find _last_ range which includes APos
   for i:= ATree.Items.Count-1 downto 0 do
   begin
     Node:= ATree.Items[i];
