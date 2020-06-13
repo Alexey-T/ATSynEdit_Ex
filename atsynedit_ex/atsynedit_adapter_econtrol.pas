@@ -113,6 +113,7 @@ type
     procedure InvokeParser(AEdit: TATSynEdit; AForceAnalizeAll: boolean);
     procedure DoAnalyzeFromLine(ALine: integer; AWait: boolean);
     function Stop: boolean;
+    function Editor: TATSynEdit;
     procedure StopTreeUpdate;
     function IsParsingBusy: boolean;
 
@@ -613,6 +614,13 @@ begin
     Result:= AnClient.Stop;
 end;
 
+function TATAdapterEControl.Editor: TATSynEdit;
+begin
+  if EdList.Count=0 then
+    Result:= nil
+  else
+    Result:= TATSynEdit(EdList[0]);
+end;
 
 
 function TATAdapterEControl.GetTokenString(const token: TecSyntToken): string;
