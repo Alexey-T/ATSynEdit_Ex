@@ -45,6 +45,9 @@ type
 procedure ClearTreeviewWithData(ATree: TTreeView);
 
 type
+  TATEditorEvent = procedure(Sender: TATSynEdit) of object;
+
+type
   { TATAdapterEControl }
 
   TATAdapterEControl = class(TATAdapterHilite)
@@ -63,7 +66,7 @@ type
     FStopTreeUpdate: boolean;
     FTimeParseBegin: QWORD;
     FTimeParseElapsed: integer;
-    FOnLexerChange: TNotifyEvent;
+    FOnLexerChange: TATEditorEvent;
     FOnParseBegin: TNotifyEvent;
     FOnParseDone: TNotifyEvent;
     procedure DebugIntegersWithPointers(L: TATIntegersWithPointers);
@@ -149,7 +152,7 @@ type
     procedure OnEditorCalcPosColor(Sender: TObject;
       AX, AY: integer; var AColor: TColor); override;
   published
-    property OnLexerChange: TNotifyEvent read FOnLexerChange write FOnLexerChange;
+    property OnLexerChange: TATEditorEvent read FOnLexerChange write FOnLexerChange;
     property OnParseBegin: TNotifyEvent read FOnParseBegin write FOnParseBegin;
     property OnParseDone: TNotifyEvent read FOnParseDone write FOnParseDone;
   end;
