@@ -978,7 +978,7 @@ begin
   end;
 
   if Assigned(FOnLexerChange) then
-    FOnLexerChange(Self);
+    FOnLexerChange(Editor);
 
   DynamicHiliteSupportedInCurrentSyntax:= GetLexerSuportsDynamicHilite;
 end;
