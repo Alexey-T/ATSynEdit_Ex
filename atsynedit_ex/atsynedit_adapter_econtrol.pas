@@ -1426,13 +1426,10 @@ begin
 end;
 
 procedure TATAdapterEControl.DoAnalyzeFromLine(ALine: integer; AWait: boolean);
-var
-  NPos: integer;
 begin
   if not Assigned(AnClient) then exit;
   DoParseBegin;
-  NPos:= Buffer.CaretToStr(Point(0, ALine));
-  AnClient.ChangedAtPos(NPos);
+  AnClient.TextChangedOnLine(ALine);
   AnClient.AppendToPos(Buffer.TextLength);
   AnClient.IdleAppend;
 
