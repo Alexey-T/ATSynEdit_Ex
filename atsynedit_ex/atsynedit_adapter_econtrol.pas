@@ -1073,7 +1073,7 @@ begin
 
   if AForceAnalizeAll then
   begin
-    AnClient.TextChanged(0);
+    AnClient.TextChangedOnLine(0);
     AnClient.Analyze;
     AnClient.IdleAppend;
   end
@@ -1331,24 +1331,17 @@ begin
 end;
 
 procedure TATAdapterEControl.DoChangeLog(Sender: TObject; ALine: integer);
-var
-  Pos: integer;
 begin
   if not Assigned(AnClient) then Exit;
 
-  //clear?
+  //-1: clear
   if ALine=-1 then
   begin
-    AnClient.TextChanged(-1);
+    AnClient.TextChangedOnLine(-1);
     Exit
   end;
 
-  if ALine>=Buffer.Count then
-    Pos:= Buffer.TextLength
-  else
-    Pos:= Buffer.CaretToStr(Point(0, ALine));
-
-  AnClient.TextChanged(Pos);
+  AnClient.TextChangedOnLine(ALine);
 end;
 
 procedure TATAdapterEControl.TimerDuringAnalyzeTimer(Sender: TObject);
