@@ -126,6 +126,7 @@ type
       out ATokenString, ATokenStyle: string; out ATokenKind: TATFinderTokenKind);
     procedure GetTokenAtPos(APos: TPoint; out APntFrom, APntTo: TPoint;
       out ATokenString, ATokenStyle: string; out ATokenKind: TATFinderTokenKind);
+    function GetTokenKindAtPos(APos: TPoint): TATFinderTokenKind;
     function GetTokenString(const token: TecSyntToken): string;
     procedure GetTokenProps(const token: TecSyntToken; out APntFrom, APntTo: TPoint;
       out ATokenString, ATokenStyle: string; out ATokenKind: TATFinderTokenKind);
@@ -693,6 +694,25 @@ begin
     GetTokenProps(AnClient.Tags[n], APntFrom, APntTo, ATokenString, ATokenStyle, ATokenKind);
 end;
 
+
+function TATAdapterEControl.GetTokenKindAtPos(APos: TPoint): TATFinderTokenKind;
+var
+  Style: TecSyntaxFormat;
+  n: integer;
+begin
+  Result:= cTokenKindOther;
+
+  if AnClient=nil then exit;
+  if Buffer=nil then exit;
+
+  n:= DoFindToken(APos);
+  if n>=0 then
+  begin
+    Style:= AnClient.Tags[n].Style;
+    if Assigned(Style) then
+      Result:= TATFinderTokenKind(Style.TokenKind);
+  end;
+end;
 
 function TATAdapterEControl.GetRangeParent(const R: TecTextRange): TecTextRange;
 //cannot use R.Parent!
