@@ -17,7 +17,6 @@ uses
   ATSynEdit_Carets,
   ATSynEdit_Ranges,
   ATSynEdit_SortedRange,
-  ATSynEdit_Finder,
   ATStringProc,
   ATStringProc_TextBuffer,
   ATStrings,
@@ -123,13 +122,13 @@ type
 
     //tokens
     procedure GetTokenWithIndex(AIndex: integer; out APntFrom, APntTo: TPoint;
-      out ATokenString, ATokenStyle: string; out ATokenKind: TATFinderTokenKind);
+      out ATokenString, ATokenStyle: string; out ATokenKind: TATTokenKind);
     procedure GetTokenAtPos(APos: TPoint; out APntFrom, APntTo: TPoint;
-      out ATokenString, ATokenStyle: string; out ATokenKind: TATFinderTokenKind);
-    function GetTokenKindAtPos(APos: TPoint): TATFinderTokenKind;
+      out ATokenString, ATokenStyle: string; out ATokenKind: TATTokenKind);
+    function GetTokenKindAtPos(APos: TPoint): TATTokenKind;
     function GetTokenString(const token: TecSyntToken): string;
     procedure GetTokenProps(const token: TecSyntToken; out APntFrom, APntTo: TPoint;
-      out ATokenString, ATokenStyle: string; out ATokenKind: TATFinderTokenKind);
+      out ATokenString, ATokenStyle: string; out ATokenKind: TATTokenKind);
 
     //support for syntax-tree
     property TreeBusy: boolean read FBusyTreeUpdate;
@@ -638,7 +637,7 @@ end;
 
 procedure TATAdapterEControl.GetTokenProps(const token: TecSyntToken;
   out APntFrom, APntTo: TPoint; out ATokenString, ATokenStyle: string;
-  out ATokenKind: TATFinderTokenKind);
+  out ATokenKind: TATTokenKind);
 begin
   APntFrom:= token.Range.PointStart;
   APntTo:= token.Range.PointEnd;
@@ -646,25 +645,25 @@ begin
   if Assigned(token.Style) then
   begin
     ATokenStyle:= token.Style.DisplayName;
-    ATokenKind:= TATFinderTokenKind(token.Style.TokenKind);
+    ATokenKind:= TATTokenKind(token.Style.TokenKind);
   end
   else
   begin
     ATokenStyle:= '';
-    ATokenKind:= cTokenKindOther;
+    ATokenKind:= atkOther;
   end;
 end;
 
 procedure TATAdapterEControl.GetTokenWithIndex(AIndex: integer;
   out APntFrom, APntTo: TPoint;
   out ATokenString, ATokenStyle: string;
-  out ATokenKind: TATFinderTokenKind);
+  out ATokenKind: TATTokenKind);
 begin
   APntFrom:= Point(-1, -1);
   APntTo:= Point(-1, -1);
   ATokenString:= '';
   ATokenStyle:= '';
-  ATokenKind:= cTokenKindOther;
+  ATokenKind:= atkOther;
 
   if AnClient=nil then exit;
   if Buffer=nil then exit;
@@ -676,7 +675,7 @@ end;
 procedure TATAdapterEControl.GetTokenAtPos(APos: TPoint;
   out APntFrom, APntTo: TPoint;
   out ATokenString, ATokenStyle: string;
-  out ATokenKind: TATFinderTokenKind);
+  out ATokenKind: TATTokenKind);
 var
   n: integer;
 begin
@@ -684,7 +683,7 @@ begin
   APntTo:= Point(-1, -1);
   ATokenString:= '';
   ATokenStyle:= '';
-  ATokenKind:= cTokenKindOther;
+  ATokenKind:= atkOther;
 
   if AnClient=nil then exit;
   if Buffer=nil then exit;
@@ -695,12 +694,12 @@ begin
 end;
 
 
-function TATAdapterEControl.GetTokenKindAtPos(APos: TPoint): TATFinderTokenKind;
+function TATAdapterEControl.GetTokenKindAtPos(APos: TPoint): TATTokenKind;
 var
   Style: TecSyntaxFormat;
   n: integer;
 begin
-  Result:= cTokenKindOther;
+  Result:= atkOther;
 
   if AnClient=nil then exit;
   if Buffer=nil then exit;
@@ -710,7 +709,7 @@ begin
   begin
     Style:= AnClient.Tags[n].Style;
     if Assigned(Style) then
-      Result:= TATFinderTokenKind(Style.TokenKind);
+      Result:= TATTokenKind(Style.TokenKind);
   end;
 end;
 
