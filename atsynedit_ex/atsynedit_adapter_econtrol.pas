@@ -126,8 +126,8 @@ type
     procedure GetTokenAtPos(APos: TPoint; out APntFrom, APntTo: TPoint;
       out ATokenString, ATokenStyle: string; out ATokenKind: TATTokenKind);
     function GetTokenKindAtPos(APos: TPoint): TATTokenKind;
-    function GetTokenString(const token: TecSyntToken): string;
-    procedure GetTokenProps(const token: TecSyntToken; out APntFrom, APntTo: TPoint;
+    function GetTokenString(const token: PecSyntToken): string;
+    procedure GetTokenProps(const token: PecSyntToken; out APntFrom, APntTo: TPoint;
       out ATokenString, ATokenStyle: string; out ATokenKind: TATTokenKind);
 
     //support for syntax-tree
@@ -272,7 +272,7 @@ end;
 function TATAdapterEControl.GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
   ADefColor: TColor; AEditorIndex: integer): TColor;
 var
-  Token: TecSyntToken;
+  Token: PecSyntToken;
   n: integer;
 begin
   Result:= ADefColor;
@@ -282,10 +282,10 @@ begin
   Token:= AnClient.Tags[n];
   if IsPosInRange(
     APos.X, APos.Y,
-    Token.Range.PointStart.X, Token.Range.PointStart.Y,
-    Token.Range.PointEnd.X, Token.Range.PointEnd.Y) = cRelateInside then
-    if Token.Style<>nil then
-      Result:= Token.Style.BgColor;
+    Token^.Range.PointStart.X, Token^.Range.PointStart.Y,
+    Token^.Range.PointEnd.X, Token^.Range.PointEnd.Y) = cRelateInside then
+    if Token^.Style<>nil then
+      Result:= Token^.Style.BgColor;
 end;
 
 
@@ -374,7 +374,7 @@ var
 var
   tokenStart, tokenEnd, TestPoint: TPoint;
   startindex, mustOffset: integer;
-  token: TecSyntToken;
+  token: PecSyntToken;
   tokenStyle, tokenStyle2: TecSyntaxFormat;
   part: TATLinePart;
   nColor: TColor;
@@ -399,8 +399,8 @@ begin
   for i:= startindex to AnClient.TagCount-1 do
   begin
     token:= AnClient.Tags[i];
-    tokenStart:= token.Range.PointStart;
-    tokenEnd:= token.Range.PointEnd;
+    tokenStart:= token^.Range.PointStart;
+    tokenEnd:= token^.Range.PointEnd;
 
     Dec(tokenStart.x, AX);
     Dec(tokenEnd.x, AX);
@@ -422,9 +422,9 @@ begin
       part.Len:= tokenEnd.X-part.Offset;
 
     part.ColorFont:= AColorFont;
-    part.ColorBG:= GetTokenColorBG_FromColoredRanges(token.Range.PointStart, AColorBG, AEditorIndex);
+    part.ColorBG:= GetTokenColorBG_FromColoredRanges(token^.Range.PointStart, AColorBG, AEditorIndex);
 
-    tokenStyle:= token.Style;
+    tokenStyle:= token^.Style;
     tokenStyle2:= GetTokenColor_FromBoundRanges(i, AEditorIndex);
     if tokenStyle2<>nil then
       tokenStyle:= tokenStyle2;
@@ -627,25 +627,25 @@ begin
 end;
 
 
-function TATAdapterEControl.GetTokenString(const token: TecSyntToken): string;
+function TATAdapterEControl.GetTokenString(const token: PecSyntToken): string;
 begin
   if Assigned(Buffer) then
-    Result:= Utf8Encode(Buffer.SubString(token.Range.StartPos+1, token.Range.EndPos-token.Range.StartPos))
+    Result:= Utf8Encode(Buffer.SubString(token^.Range.StartPos+1, token^.Range.EndPos-token^.Range.StartPos))
   else
     Result:= '';
 end;
 
-procedure TATAdapterEControl.GetTokenProps(const token: TecSyntToken;
+procedure TATAdapterEControl.GetTokenProps(const token: PecSyntToken;
   out APntFrom, APntTo: TPoint; out ATokenString, ATokenStyle: string;
   out ATokenKind: TATTokenKind);
 begin
-  APntFrom:= token.Range.PointStart;
-  APntTo:= token.Range.PointEnd;
+  APntFrom:= token^.Range.PointStart;
+  APntTo:= token^.Range.PointEnd;
   ATokenString:= GetTokenString(token);
-  if Assigned(token.Style) then
+  if Assigned(token^.Style) then
   begin
-    ATokenStyle:= token.Style.DisplayName;
-    ATokenKind:= TATTokenKind(token.Style.TokenKind);
+    ATokenStyle:= token^.Style.DisplayName;
+    ATokenKind:= TATTokenKind(token^.Style.TokenKind);
   end
   else
   begin
@@ -707,7 +707,7 @@ begin
   n:= DoFindToken(APos);
   if n>=0 then
   begin
-    Style:= AnClient.Tags[n].Style;
+    Style:= AnClient.Tags[n]^.Style;
     if Assigned(Style) then
       Result:= TATTokenKind(Style.TokenKind);
   end;
@@ -842,12 +842,12 @@ begin
       RangeNew:= TATRangeInCodeTree.Create;
 
       if R.StartIdx>=0 then
-        RangeNew.PosBegin:= AnClient.Tags[R.StartIdx].Range.PointStart
+        RangeNew.PosBegin:= AnClient.Tags[R.StartIdx]^.Range.PointStart
       else
         RangeNew.PosBegin:= Point(-1, -1);
 
       if R.EndIdx>=0 then
-        RangeNew.PosEnd:= AnClient.Tags[R.EndIdx].Range.PointEnd
+        RangeNew.PosEnd:= AnClient.Tags[R.EndIdx]^.Range.PointEnd
       else
         RangeNew.PosEnd:= Point(-1, -1);
 
@@ -870,10 +870,10 @@ begin
   if AnClient=nil then exit;
 
   if R.StartIdx>=0 then
-    APosBegin:= AnClient.Tags[R.StartIdx].Range.PointStart;
+    APosBegin:= AnClient.Tags[R.StartIdx]^.Range.PointStart;
 
   if R.EndIdx>=0 then
-    APosEnd:=  AnClient.Tags[R.EndIdx].Range.PointEnd;
+    APosEnd:=  AnClient.Tags[R.EndIdx]^.Range.PointEnd;
 end;
 
 //unused function
@@ -1192,7 +1192,7 @@ var
   Pnt1, Pnt2, Pnt1Wide, Pnt2Wide: TPoint;
   Style: TecSyntaxFormat;
   SHint: string;
-  tokenStart, tokenEnd: TecSyntToken;
+  tokenStart, tokenEnd: PecSyntToken;
   ColoredRange: TATSortedRange;
   i: integer;
 begin
@@ -1226,8 +1226,8 @@ begin
 
     tokenStart:= AnClient.Tags[R.StartIdx];
     tokenEnd:= AnClient.Tags[R.EndIdx];
-    Pnt1:= tokenStart.Range.PointStart;
-    Pnt2:= tokenEnd.Range.PointEnd;
+    Pnt1:= tokenStart^.Range.PointStart;
+    Pnt2:= tokenEnd^.Range.PointEnd;
     if Pnt1.Y<0 then Continue;
     if Pnt2.Y<0 then Continue;
 
