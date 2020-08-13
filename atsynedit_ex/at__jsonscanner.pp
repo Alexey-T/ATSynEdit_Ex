@@ -146,7 +146,7 @@ Var
 
 begin
   S:='';
-  SetLength(S,Source.Size);
+  SetLength(S,Source.Size-Source.Position);
   if Length(S)>0 then
     Source.ReadBuffer(S[1],Length(S));
   Create(S,AOptions)
@@ -190,7 +190,16 @@ end;
 
 function TJSONScanner.FetchToken: TJSONToken;
 
+(*
+  procedure dumpcurrent;
 
+  begin
+  Writeln('Start of line : ',FCurLine);
+  Writeln('Cur pos : ',FCurPos);
+  Writeln('Start of token : ',FTokenstr);
+  Writeln('End of line : ',FTokenstr);
+  end;
+*)
   function FetchLine: Boolean;
 
 
@@ -203,7 +212,8 @@ function TJSONScanner.FetchToken: TJSONToken;
       While Not (FCurPos^ in [#0,#10,#13]) do
         Inc(FCurPos);
       FEOL:=FCurPos;
-      if (FCurPos^<>#0) then
+      If (FCurPos^<>#0) then
+//      While (FCurPos^<>#0) and (FCurPos^ in [#10,#13]) do
         begin
         if (FCurPos^=#13) and (FCurPos[1]=#10) then
           Inc(FCurPos); // Skip CR-LF
@@ -211,7 +221,7 @@ function TJSONScanner.FetchToken: TJSONToken;
         Inc(FCurRow); // Increase line index
         end;
 //      Len:=FEOL-FTokenStr;
-//      FTokenStr:=PAnsiChar(FCurLine);
+//      FTokenStr:=FCurPos;
       end
     else             
       begin
@@ -227,6 +237,7 @@ var
   OldLength, SectionLength,  tstart,tcol, u1,u2: Integer;
   C , c2: char;
   S : String[4];
+  Line : String;
   IsStar,EOC: Boolean;
 
   Procedure MaybeAppendUnicode;
@@ -251,21 +262,14 @@ var
 
 begin
   if (FTokenStr = nil) or (FTokenStr=FEOL) then
+    begin
     if not FetchLine then
       begin
       Result := tkEOF;
       FCurToken := Result;
       exit;
       end;
-  // Empty line
-  if (FTokenStr=FEOL) then
-    begin
-    Result := tkWhiteSpace;
-    FCurToken := Result;
-    exit;
     end;
-
-
   FCurTokenString := '';
   case FTokenStr^ of
     #0:         // Empty line
@@ -277,14 +281,17 @@ begin
       begin
       Result := tkWhitespace;
       repeat
-        Inc(FTokenStr);
-        if (FTokenStr[0] = #0) or (FTokenStr=FEOL) then
-          if not FetchLine then
+        if FTokenStr = FEOL then
           begin
+          if not FetchLine then
+            begin
             FCurToken := Result;
             exit;
-          end;
-      until not (FTokenStr[0] in [#9, ' ',#10, #13]);
+            end
+          end
+        else
+          Inc(FTokenStr);
+      until not (FTokenStr[0] in [#9, ' ']);
       end;
     '"','''':
       begin
@@ -461,11 +468,12 @@ begin
       Inc(FTokenStr);
       Case FTokenStr^ of
         '/' : begin
-              SectionLength := Length(FCurLine)- (FTokenStr - PChar(FCurLine));
-              Inc(FTokenStr);
               FCurTokenString:='';
-              SetString(FCurTokenString, FTokenStr, SectionLength);
-              Fetchline;
+              Inc(FTokenStr);
+              TokenStart:=FTokenStr;
+              SectionLength := PChar(FEOL)-TokenStart;
+              SetString(FCurTokenString, TokenStart, SectionLength);
+              FetchLine;
               end;
         '*' :
           begin
@@ -473,12 +481,12 @@ begin
           Inc(FTokenStr);
           TokenStart:=FTokenStr;
           Repeat
-            if (FTokenStr^=#0) then
+            While (FTokenStr=FEOL) do
               begin
               SectionLength := (FTokenStr - TokenStart);
-              S:='';
-              SetString(S, TokenStart, SectionLength);
-              FCurtokenString:=FCurtokenString+S;
+              Line:='';
+              SetString(Line, TokenStart, SectionLength);
+              FCurtokenString:=FCurtokenString+Line+sLineBreak;
               if not fetchLine then
                 Error(SUnterminatedComment, [CurRow,CurCOlumn,FTokenStr[0]]);
               TokenStart:=FTokenStr;
@@ -490,9 +498,9 @@ begin
           if EOC then
             begin
             SectionLength := (FTokenStr - TokenStart-1);
-            S:='';
-            SetString(S, TokenStart, SectionLength);
-            FCurtokenString:=FCurtokenString+S;
+            Line:='';
+            SetString(Line, TokenStart, SectionLength);
+            FCurtokenString:=FCurtokenString+Line;
             Inc(FTokenStr);
             end;
           end;
