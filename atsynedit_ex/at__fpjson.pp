@@ -876,9 +876,55 @@ end;
 
 function JSONStringToString(const S: TJSONStringType): TJSONStringType;
 
+{$IFDEF PAS2JS}
 Var
+  J : JSValue;
+  OK : Boolean;
+begin
+  OK:=False;
+  try
+    J:=TJSJSON.parse('"'+S+'"');
+    if isString(J) then
+      begin
+      Result:=String(J);
+      OK:=True;
+      end;
+  except
+    OK:=False;
+  end;
+  if not OK then
+    Raise EConvertError.Create('Invalid JSON String:'+S);
+end;
+{$ELSE}
+
+    function BufferHexToInt(P : PAnsiChar): integer;
+    var
+      N, i: integer;
+      ch: char;
+    begin
+      Result:= 0;
+      for i:= 1 to 4 do
+      begin
+        ch:= p^;
+        case ch of
+          '0'..'9':
+            N:= Ord(ch)-Ord('0');
+          'a'..'f':
+            N:= Ord(ch)-(Ord('a')-10);
+          'A'..'F':
+            N:= Ord(ch)-(Ord('A')-10);
+          else
+            exit(-1);
+        end;
+        Inc(P);
+        Result:= Result*16+N;
+      end;
+    end;
+
+Var
+
   I,J,L,U1,U2 : Integer;
-  App,W : String;
+  App : String;
 
   Procedure MaybeAppendUnicode;
 
@@ -918,9 +964,10 @@ begin
           'f' : App:=#12;
           'r' : App:=#13;
           'u' : begin
-                W:=Copy(S,I+1,4);
+                U2:=BufferHexToInt(PAnsiChar(@S[I+1]));
+                if U2=-1 then
+                   Raise EJSON.Create('Invalid unicode hex code: '+Copy(S,I+1,4));
                 Inc(I,4);
-                u2:=StrToInt('$'+W);
                 if (U1<>0) then
                   begin
                   App:={$IFDEF FPC_HAS_CPSTRING}UTF8Encode({$ENDIF}WideChar(U1)+WideChar(U2){$IFDEF FPC_HAS_CPSTRING}){$ENDIF};
@@ -945,6 +992,7 @@ begin
   MaybeAppendUnicode;
   Result:=Result+Copy(S,J,I-J+1);
 end;
+{$ENDIF}
 
 function JSONTypeName(JSONType: TJSONType): String;
 begin
