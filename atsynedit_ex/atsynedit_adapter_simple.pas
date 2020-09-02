@@ -12,6 +12,7 @@ uses
   Classes, SysUtils, Graphics,
   ATSynEdit,
   ATSynEdit_Adapters,
+  ATSynEdit_LineParts,
   ATSynEdit_CanvasProc;
 
 type

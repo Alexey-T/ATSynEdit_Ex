@@ -12,6 +12,7 @@ uses
   Classes, SysUtils, Graphics, ExtCtrls, ComCtrls,
   Forms, Dialogs,
   ATSynEdit,
+  ATSynEdit_LineParts,
   ATSynEdit_CanvasProc,
   ATSynEdit_Adapters,
   ATSynEdit_Carets,
