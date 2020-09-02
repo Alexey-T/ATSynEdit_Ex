@@ -367,7 +367,6 @@ begin
 
   repeat
     Inc(NPos);
-    if NPos<ACharIndex then Continue; //must have this for wrapped line parts
     if NPos>Length(EdLine) then Break;
     if NPos>ACharIndex+ALineLen then Break;
     if NParts>=High(TATLineParts) then Break;
@@ -394,7 +393,7 @@ begin
         if (NParts=0) or bLastFound then
         begin
           Inc(NParts);
-          AParts[NParts-1].Offset:= NPos-ACharIndex;
+          AParts[NParts-1].Offset:= NPos-1;
           AParts[NParts-1].Len:= 1;
         end
         else
@@ -410,25 +409,15 @@ begin
       //found rule, add NLen chars to part
       if NPos+NLen>=ACharIndex then
       begin
-        FixedOffset:= NPos-ACharIndex;
+        FixedOffset:= NPos-1;
         FixedLen:= NLen;
 
-        //don't make negative offset, it works, but with issue on Win
-        if FixedOffset<0 then
-        begin
-          Inc(FixedLen, FixedOffset);
-          FixedOffset:= 0;
-        end;
-
-        if FixedLen>0 then //must ignore parts with Len=0
-        begin
-          Inc(NParts);
-          AParts[NParts-1].Offset:= FixedOffset;
-          AParts[NParts-1].Len:= FixedLen;
-          AParts[NParts-1].ColorBG:= clNone; //Random($fffff);
-          if Assigned(FOnApplyStyle) then
-            FOnApplyStyle(Self, Rule.StyleHash, AParts[NParts-1]);
-        end;
+        Inc(NParts);
+        AParts[NParts-1].Offset:= FixedOffset;
+        AParts[NParts-1].Len:= FixedLen;
+        AParts[NParts-1].ColorBG:= clNone; //Random($fffff);
+        if Assigned(FOnApplyStyle) then
+          FOnApplyStyle(Self, Rule.StyleHash, AParts[NParts-1]);
       end;
 
       Inc(NPos, NLen-1);
@@ -436,6 +425,9 @@ begin
 
     bLastFound:= bRuleFound;
   until false;
+
+  if ACharIndex>1 then
+    DoPartsCutFromOffset(AParts, ACharIndex-1);
 end;
 
 end.
