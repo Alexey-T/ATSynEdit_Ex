@@ -19,6 +19,7 @@ uses
   ATSynEdit_Ranges,
   ATSynEdit_SortedRange,
   ATStringProc,
+  ATStringProc_Separator,
   ATStringProc_TextBuffer,
   ATStrings,
   ec_syntax_format,
