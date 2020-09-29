@@ -79,7 +79,7 @@ type
     procedure DoCalcParts(var AParts: TATLineParts; ALine, AX, ALen: integer;
       AColorFont, AColorBG: TColor; var AColorAfter: TColor; AEditorIndex: integer); inline;
     procedure DoClearRanges;
-    function DoFindToken(APos: TPoint): integer; inline;
+    function DoFindToken(APos: TPoint; AExactPos: boolean = false): integer; inline;
     function GetTokenColor_FromBoundRanges(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
     procedure DoFoldFromLinesHidden;
     procedure DoChangeLog(Sender: TObject; ALine: integer);
@@ -713,7 +713,7 @@ begin
   if AnClient=nil then exit;
   if Buffer=nil then exit;
 
-  n:= DoFindToken(APos);
+  n:= DoFindToken(APos, true{AExactPos});
   if n>=0 then
   begin
     Style:= AnClient.Tags[n]^.Style;
@@ -1350,7 +1350,7 @@ begin
 end;
 
 
-function TATAdapterEControl.DoFindToken(APos: TPoint): integer; inline;
+function TATAdapterEControl.DoFindToken(APos: TPoint; AExactPos: boolean = false): integer; inline;
 begin
   if APos.X=0 then
   begin
@@ -1359,6 +1359,9 @@ begin
     else
       Result:= -1;
   end
+  else
+  if AExactPos then
+    Result:= AnClient.FindTokenAt(AnClient.Buffer.CaretToStr(APos))
   else
     Result:= AnClient.PriorTokenAt(AnClient.Buffer.CaretToStr(APos));
 end;
