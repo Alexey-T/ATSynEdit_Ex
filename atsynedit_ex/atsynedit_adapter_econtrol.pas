@@ -1220,6 +1220,7 @@ begin
     if Application.Terminated then exit;
 
     R:= AnClient.Ranges[i];
+    if R.Rule=nil then Continue;
     if R.Rule.BlockType<>btRangeStart then Continue;
 
     /////issue: rules in C# with 'parent' set give wrong ranges;
