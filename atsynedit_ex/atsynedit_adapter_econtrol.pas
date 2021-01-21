@@ -724,12 +724,17 @@ end;
 
 function TATAdapterEControl.GetRangeParent(const R: TecTextRange): TecTextRange;
 //cannot use R.Parent!
+//
+//TODO TOFIX: this place is called DURING TreeFill, so
+//code tree is filled during lexer parsing.... not OK
+// https://github.com/Alexey-T/CudaText/issues/3074
 var
   RTest: TecTextRange;
-  i: integer;
+  NLast, i: integer;
 begin
   Result:= nil;
-  for i:= R.Index-1 downto 0 do
+  NLast := AnClient.RangeCount - 1;
+  for i:= Min(NLast, R.Index-1) downto 0 do
   begin
     RTest:= AnClient.Ranges[i];
     if (RTest.StartIdx<=R.StartIdx) and
