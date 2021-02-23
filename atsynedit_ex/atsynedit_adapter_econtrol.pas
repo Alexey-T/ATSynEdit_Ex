@@ -273,9 +273,23 @@ procedure TATAdapterEControl.OnEditorCalcPosColor(Sender: TObject; AX,
   AY: integer; var AColor: TColor);
 var
   Ed: TATSynEdit;
+  NColor: TColor;
 begin
   Ed:= Sender as TATSynEdit;
-  AColor:= GetTokenColorBG_FromColoredRanges(Point(AX, AY), AColor, Ed.EditorIndex);
+
+  NColor:= GetTokenColorBG_FromColoredRanges(Point(AX, AY), clNone, Ed.EditorIndex);
+  if NColor<>clNone then
+  begin
+    AColor:= NColor;
+    exit;
+  end;
+
+  NColor:= GetTokenColorBG_FromMultiLineTokens(Point(AX, AY), clNone, Ed.EditorIndex);
+  if NColor<>clNone then
+  begin
+    AColor:= NColor;
+    exit;
+  end;
 end;
 
 function TATAdapterEControl.GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
