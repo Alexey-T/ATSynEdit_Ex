@@ -79,7 +79,7 @@ type
     procedure DoCalcParts(var AParts: TATLineParts; ALine, AX, ALen: integer;
       AColorFont, AColorBG: TColor; var AColorAfter: TColor; AEditorIndex: integer); inline;
     procedure DoClearRanges;
-    function DoFindToken(APos: TPoint; AExactPos: boolean = false): integer; inline;
+    function DoFindToken(APos: TPoint; AExactPos: boolean = false): integer;
     function GetTokenColor_FromBoundRanges(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
     procedure DoFoldFromLinesHidden;
     procedure DoChangeLog(Sender: TObject; ALine: integer);
@@ -1373,8 +1373,10 @@ begin
 end;
 
 
-function TATAdapterEControl.DoFindToken(APos: TPoint; AExactPos: boolean = false): integer; inline;
+function TATAdapterEControl.DoFindToken(APos: TPoint; AExactPos: boolean = false): integer;
 begin
+  if AnClient=nil then //real use case
+    exit(-1);
   if APos.X=0 then
   begin
     if APos.Y<=High(AnClient.TokenIndexer) then
