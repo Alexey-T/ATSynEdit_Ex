@@ -277,6 +277,7 @@ var
 begin
   Ed:= Sender as TATSynEdit;
 
+  //this is for lexer "ranges" with BG color
   NColor:= GetTokenColorBG_FromColoredRanges(Point(AX, AY), clNone, Ed.EditorIndex);
   if NColor<>clNone then
   begin
@@ -284,6 +285,8 @@ begin
     exit;
   end;
 
+  //this is for multi-line tokens with BG color
+  //example: code-blocks in reST lexer
   NColor:= GetTokenColorBG_FromMultiLineTokens(Point(AX, AY), clNone, Ed.EditorIndex);
   if NColor<>clNone then
   begin
