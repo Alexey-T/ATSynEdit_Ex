@@ -34,8 +34,8 @@ type
   end;
 
 type
-  TATLiteLexer_GetStyleHash = function (Sender: TObject; const AStyleName: string): integer of object;
-  TATLiteLexer_ApplyStyle = procedure (Sender: TObject; AStyleHash: integer; var APart: TATLinePart) of object;
+  TATLiteLexer_GetStyleHash = function (const AStyleName: string): integer;
+  TATLiteLexer_ApplyStyle = procedure (AStyleHash: integer; var APart: TATLinePart);
 
 type
   { TATLiteLexer }
@@ -307,7 +307,7 @@ begin
 
       rule:= TATLiteLexerRule.Create(s_name, s_style, s_regex, CaseSens);
       if Assigned(FOnGetStyleHash) then
-        rule.StyleHash:= FOnGetStyleHash(Self, rule.Style);
+        rule.StyleHash:= FOnGetStyleHash(rule.Style);
 
       FRules.Add(rule);
     end;
@@ -418,7 +418,7 @@ begin
         AParts[NParts-1].Len:= FixedLen;
         AParts[NParts-1].ColorBG:= clNone; //Random($fffff);
         if Assigned(FOnApplyStyle) then
-          FOnApplyStyle(Self, Rule.StyleHash, AParts[NParts-1]);
+          FOnApplyStyle(Rule.StyleHash, AParts[NParts-1]);
       end;
 
       Inc(NPos, NLen-1);
