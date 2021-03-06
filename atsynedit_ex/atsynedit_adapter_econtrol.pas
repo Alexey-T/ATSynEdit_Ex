@@ -1138,7 +1138,6 @@ begin
   begin
     AnClient.TextChangedOnLine(0);
     AnClient.ParseAll(true, true);
-    //AnClient.ParseViaTimer; //WTF
   end
   else
   begin
@@ -1150,7 +1149,6 @@ begin
     NLine:= Min(NLine, Buffer.Count-1);
     NPos:= Buffer.CaretToStr(Point(0, NLine));
     AnClient.ParseToPos(NPos);
-    //AnClient.ParseViaTimer; //WTF
   end;
 
   if AnClient.IsFinished then
@@ -1495,8 +1493,7 @@ begin
   if not Assigned(AnClient) then exit;
   ParseBegin;
   AnClient.TextChangedOnLine(ALine);
-  AnClient.ParseToPos(Buffer.TextLength, not AWait);
-  //AnClient.ParseViaTimer; //WTF
+  AnClient.ParseAll(true, not AWait);
 
   if AnClient.IsFinished then
   begin
