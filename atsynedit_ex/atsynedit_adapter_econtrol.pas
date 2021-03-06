@@ -83,8 +83,8 @@ type
     function GetTokenColor_FromBoundRanges(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
     procedure DoFoldFromLinesHidden;
     procedure DoChangeLog(Sender: TObject; ALine: integer);
-    procedure DoParseBegin;
-    procedure DoParseDone;
+    procedure ParseBegin;
+    procedure ParseDone;
     function GetIdleInterval: integer;
     function GetRangeParent(const R: TecTextRange): TecTextRange;
     function GetTokenColorBG_FromColoredRanges(const APos: TPoint; ADefColor: TColor;
@@ -115,8 +115,8 @@ type
     property LexerParsingElapsed: integer read FTimeParseElapsed;
     function LexerAtPos(Pnt: TPoint): TecSyntAnalyzer;
     property EnabledSublexerTreeNodes: boolean read FEnabledSublexerTreeNodes write FEnabledSublexerTreeNodes default false;
-    procedure InvokeParser(AEdit: TATSynEdit; AForceAnalizeAll: boolean);
-    procedure DoAnalyzeFromLine(ALine: integer; AWait: boolean);
+    procedure ParseInvoke(AEdit: TATSynEdit; AForceAnalizeAll: boolean);
+    procedure ParseFromLine(ALine: integer; AWait: boolean);
     function Stop: boolean;
     function Editor: TATSynEdit;
     procedure StopTreeUpdate;
@@ -1035,7 +1035,7 @@ begin
   if Assigned(AnClient) then
     FreeAndNil(AnClient);
 
-  DoParseBegin;
+  ParseBegin;
 
   if Assigned(AAnalizer) then
   begin
@@ -1094,7 +1094,7 @@ begin
 
   if AAnalyze then
   begin
-    InvokeParser(Ed, false);
+    ParseInvoke(Ed, false);
   end;
 end;
 
@@ -1125,14 +1125,14 @@ begin
         exit(true);
 end;
 
-procedure TATAdapterEControl.InvokeParser(AEdit: TATSynEdit; AForceAnalizeAll: boolean);
+procedure TATAdapterEControl.ParseInvoke(AEdit: TATSynEdit; AForceAnalizeAll: boolean);
 var
   NLine, NPos: integer;
 begin
   if AnClient=nil then exit;
   if Buffer.TextLength=0 then exit;
 
-  DoParseBegin;
+  ParseBegin;
 
   if AForceAnalizeAll then
   begin
@@ -1155,7 +1155,7 @@ begin
 
   if AnClient.IsFinished then
   begin
-    DoParseDone;
+    ParseDone;
   end
   else
   begin
@@ -1424,7 +1424,7 @@ begin
     if AnClient.IsFinished then
     begin
       TimerDuringAnalyze.Enabled:= false;
-      DoParseDone;
+      ParseDone;
     end;
   finally
     FBusyTimer:= false;
@@ -1468,7 +1468,7 @@ begin
   Result:= DynamicHiliteActiveNow(Ed.Strings.Count);
 end;
 
-procedure TATAdapterEControl.DoParseBegin;
+procedure TATAdapterEControl.ParseBegin;
 begin
   if Assigned(FOnParseBegin) then
     FOnParseBegin(Self);
@@ -1476,7 +1476,7 @@ begin
   FTimeParseBegin:= GetTickCount64;
 end;
 
-procedure TATAdapterEControl.DoParseDone;
+procedure TATAdapterEControl.ParseDone;
 begin
   //UpdateRanges call needed for small files, which are parsed to end by one IdleAppend call,
   //and timer didn't tick
@@ -1490,17 +1490,17 @@ begin
   UpdateEditors(true, true);
 end;
 
-procedure TATAdapterEControl.DoAnalyzeFromLine(ALine: integer; AWait: boolean);
+procedure TATAdapterEControl.ParseFromLine(ALine: integer; AWait: boolean);
 begin
   if not Assigned(AnClient) then exit;
-  DoParseBegin;
+  ParseBegin;
   AnClient.TextChangedOnLine(ALine);
-  AnClient.ParseToPos(Buffer.TextLength);
+  AnClient.ParseToPos(Buffer.TextLength, not AWait);
   //AnClient.ParseViaTimer; //WTF
 
   if AnClient.IsFinished then
   begin
-    DoParseDone;
+    ParseDone;
   end
   else
   begin
