@@ -74,11 +74,11 @@ type
     procedure DebugIntegersWithPointers(L: TATIntegersWithPointers);
     procedure DebugRangesColored;
     procedure DoCheckEditorList; inline;
-    procedure DoFoldClearIndexers;
+    procedure ClearFoldIndexers;
     procedure DoFoldAdd(AX, AY, AY2: integer; AStaple: boolean; const AHint: string);
     procedure DoCalcParts(var AParts: TATLineParts; ALine, AX, ALen: integer;
       AColorFont, AColorBG: TColor; var AColorAfter: TColor; AEditorIndex: integer); inline;
-    procedure DoClearRanges;
+    procedure ClearRanges;
     function DoFindToken(APos: TPoint; AExactPos: boolean = false): integer;
     function GetTokenColor_FromBoundRanges(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
     procedure DoFoldFromLinesHidden;
@@ -504,7 +504,7 @@ begin
   AColorAfter:= nColor;
 end;
 
-procedure TATAdapterEControl.DoClearRanges;
+procedure TATAdapterEControl.ClearRanges;
 var
   j: integer;
   Ed: TATSynEdit;
@@ -1029,7 +1029,7 @@ procedure TATAdapterEControl.SetLexer(AAnalizer: TecSyntAnalyzer);
 begin
   if IsParsingBusy then exit;
 
-  DoClearRanges;
+  ClearRanges;
   UpdateEditors(false, true);
 
   if Assigned(AnClient) then
@@ -1100,7 +1100,7 @@ end;
 
 procedure TATAdapterEControl.UpdateRanges;
 begin
-  DoClearRanges;
+  ClearRanges;
   UpdateRangesFoldAndColored;
   UpdateRangesSublex; //sublexer ranges last
   UpdateRangesActiveAll;
@@ -1163,7 +1163,7 @@ begin
   end;
 end;
 
-procedure TATAdapterEControl.DoFoldClearIndexers;
+procedure TATAdapterEControl.ClearFoldIndexers;
 var
   Ed: TATSynEdit;
   i: integer;
@@ -1231,7 +1231,7 @@ begin
   if not Ed.OptFoldEnabled then exit;
 
   //init Ed.Fold.LineIndexer's
-  DoFoldClearIndexers;
+  ClearFoldIndexers;
 
   for i:= 0 to AnClient.RangeCount-1 do
   begin
