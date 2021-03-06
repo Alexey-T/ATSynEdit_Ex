@@ -1137,8 +1137,8 @@ begin
   if AForceAnalizeAll then
   begin
     AnClient.TextChangedOnLine(0);
-    AnClient.Analyze;
-    AnClient.IdleAppend;
+    AnClient.ParseAll;
+    //AnClient.ParseViaTimer; //WTF
   end
   else
   begin
@@ -1149,8 +1149,8 @@ begin
       NLine:= AEdit.GetVisibleLines;
     NLine:= Min(NLine, Buffer.Count-1);
     NPos:= Buffer.CaretToStr(Point(0, NLine));
-    AnClient.AppendToPos(NPos);
-    AnClient.IdleAppend;
+    AnClient.ParseToPos(NPos);
+    //AnClient.ParseViaTimer; //WTF
   end;
 
   if AnClient.IsFinished then
@@ -1159,10 +1159,6 @@ begin
   end
   else
   begin
-    //UpdateEditors(false, true);
-      //some portion is parsed already
-      //ARepaint=false, otherwise we get 2 unneeded repaints per each edit
-
     TimerDuringAnalyze.Enabled:= true;
   end;
 end;
@@ -1499,8 +1495,8 @@ begin
   if not Assigned(AnClient) then exit;
   DoParseBegin;
   AnClient.TextChangedOnLine(ALine);
-  AnClient.AppendToPos(Buffer.TextLength);
-  AnClient.IdleAppend;
+  AnClient.ParseToPos(Buffer.TextLength);
+  //AnClient.ParseViaTimer; //WTF
 
   if AnClient.IsFinished then
   begin
