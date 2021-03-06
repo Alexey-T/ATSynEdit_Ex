@@ -1137,7 +1137,7 @@ begin
   if AForceAnalizeAll then
   begin
     AnClient.TextChangedOnLine(0);
-    AnClient.ParseAll;
+    AnClient.ParseAll(true, true);
     //AnClient.ParseViaTimer; //WTF
   end
   else
