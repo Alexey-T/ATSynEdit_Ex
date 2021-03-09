@@ -759,6 +759,20 @@ begin
   end;
 end;
 
+//Alexey
+procedure SkipStreamBOM(S: TStream);
+Var
+  OldPos : integer;
+  Header : array[0..3] of byte;
+begin
+  OldPos := S.Position;
+  FillChar(Header, SizeOf(Header), 0);
+  if S.Read(Header, 3) = 3 then
+    if (Header[0]=$EF) and (Header[1]=$BB) and (Header[2]=$BF) then
+      exit;
+  S.Position := OldPos;
+end;
+
 procedure TJSONConfig.LoadFromStream(S: TStream);
 
 Var
@@ -766,6 +780,7 @@ Var
   J : TJSONData;
 
 begin
+  SkipStreamBOM(S); //Alexey
   P:=TJSONParser.Create(S,FJSONOptions);
   try
     J:=P.Parse;
