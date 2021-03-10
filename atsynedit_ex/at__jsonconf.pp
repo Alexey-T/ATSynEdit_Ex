@@ -31,7 +31,7 @@ uses
   SysUtils, Classes, at__fpjson, at__jsonscanner, at__jsonparser;
 
 Const
-  DefaultJSONOptions = [joUTF8,joComments,joIgnoreTrailingComma];
+  DefaultJSONOptions = [joUTF8,joComments,joIgnoreTrailingComma,joBOMCheck];
 
 type
   EJSONConfigError = class(Exception);
@@ -759,20 +759,6 @@ begin
   end;
 end;
 
-//Alexey
-procedure SkipStreamBOM(S: TStream);
-Var
-  OldPos : integer;
-  Header : array[0..3] of byte;
-begin
-  OldPos := S.Position;
-  FillChar(Header, SizeOf(Header), 0);
-  if S.Read(Header, 3) = 3 then
-    if (Header[0]=$EF) and (Header[1]=$BB) and (Header[2]=$BF) then
-      exit;
-  S.Position := OldPos;
-end;
-
 procedure TJSONConfig.LoadFromStream(S: TStream);
 
 Var
@@ -780,7 +766,6 @@ Var
   J : TJSONData;
 
 begin
-  SkipStreamBOM(S); //Alexey
   P:=TJSONParser.Create(S,FJSONOptions);
   try
     J:=P.Parse;
