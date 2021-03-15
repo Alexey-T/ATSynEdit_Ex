@@ -1039,7 +1039,7 @@ begin
 
   if Assigned(AAnalizer) then
   begin
-    AnClient:= TecClientSyntAnalyzer.Create(AAnalizer, Buffer, nil);
+    AnClient:= TecClientSyntAnalyzer.Create(AAnalizer, Buffer, nil, true);
     UpdateData(true, true);
   end;
 
