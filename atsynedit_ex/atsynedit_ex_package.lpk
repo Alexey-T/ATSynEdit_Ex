@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
-  <Package Version="4">
+  <Package Version="5">
     <Name Value="atsynedit_ex_package"/>
     <Type Value="RunTimeOnly"/>
     <Author Value="Alexey Torgashin"/>
@@ -9,12 +9,6 @@
       <SearchPaths>
         <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
-      <CodeGeneration>
-        <Checks>
-          <RangeChecks Value="True"/>
-          <OverflowChecks Value="True"/>
-        </Checks>
-      </CodeGeneration>
       <Linking>
         <Debugging>
           <DebugInfoType Value="dsDwarf2Set"/>
@@ -56,6 +50,7 @@ Requires packages: ATSynEdit, EControl."/>
         <UnitName Value="ATSynEdit_SortedRange"/>
       </Item6>
     </Files>
+    <CompatibilityMode Value="True"/>
     <RequiredPkgs Count="3">
       <Item1>
         <PackageName Value="econtrol_package"/>
