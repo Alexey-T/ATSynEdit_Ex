@@ -93,6 +93,7 @@ type
       ADefColor: TColor; AEditorIndex: integer): TColor;
     function EditorRunningCommand: boolean;
     procedure TimerDuringAnalyzeTimer(Sender: TObject);
+    procedure UpdatePublicDataNeedTo;
     procedure UpdateRanges;
     procedure UpdateRangesActive(AEdit: TATSynEdit);
     procedure UpdateRangesActiveAll;
@@ -968,10 +969,14 @@ end;
 
 procedure TATAdapterEControl.OnEditorScroll(Sender: TObject);
 begin
-  if AnClient=nil then exit;
-  if Buffer=nil then exit;
+  UpdatePublicDataNeedTo;
+end;
 
-  AnClient.PublicDataNeedTo:= Editor.LineBottom+1;
+procedure TATAdapterEControl.UpdatePublicDataNeedTo;
+begin
+  if AnClient=nil then exit;
+  if EdList.Count>0 then
+    AnClient.PublicDataNeedTo:= TATSynEdit(EdList[0]).LineBottom+1;
 end;
 
 procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer);
@@ -1100,6 +1105,8 @@ begin
       Lens[i]:= Str.LinesLen[i];
     Buffer.Setup(Str.TextString_Unicode(Ed.OptMaxLineLenToTokenize), Lens);
   end;
+
+  UpdatePublicDataNeedTo;
 
   if AAnalyze then
   begin
