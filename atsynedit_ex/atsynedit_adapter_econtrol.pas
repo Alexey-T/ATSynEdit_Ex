@@ -307,7 +307,7 @@ begin
   n:= DoFindToken(APos);
   if n<0 then exit;
 
-  Token:= AnClient.Tags[n];
+  Token:= AnClient.PublicData.Tokens._GetItemPtr(n);
   if IsPosInRange(
     APos.X, APos.Y,
     Token^.Range.PointStart.X, Token^.Range.PointStart.Y,
@@ -410,8 +410,8 @@ var
 begin
   partindex:= 0;
 
-  if ALine<=High(AnClient.TokenIndexer) then
-    startindex:= AnClient.TokenIndexer[ALine]
+  if ALine<=High(AnClient.PublicData.TokenIndexer) then
+    startindex:= AnClient.PublicData.TokenIndexer[ALine]
   else
     startindex:= -1;
 
@@ -424,9 +424,9 @@ begin
   FillChar(part{%H-}, SizeOf(part), 0);
 
   if startindex>=0 then
-  for i:= startindex to AnClient.TagCount-1 do
+  for i:= startindex to AnClient.PublicData.Tokens.Count-1 do
   begin
-    token:= AnClient.Tags[i];
+    token:= AnClient.PublicData.Tokens._GetItemPtr(i);
     tokenStart:= token^.Range.PointStart;
     tokenEnd:= token^.Range.PointEnd;
 
@@ -696,8 +696,8 @@ begin
   if AnClient=nil then exit;
   if Buffer=nil then exit;
 
-  if (AIndex>=0) and (AIndex<AnClient.TagCount) then
-    GetTokenProps(AnClient.Tags[AIndex], APntFrom, APntTo, ATokenString, ATokenStyle, ATokenKind);
+  if (AIndex>=0) and (AIndex<AnClient.PublicData.Tokens.Count) then
+    GetTokenProps(AnClient.PublicData.Tokens._GetItemPtr(AIndex), APntFrom, APntTo, ATokenString, ATokenStyle, ATokenKind);
 end;
 
 procedure TATAdapterEControl.GetTokenAtPos(APos: TPoint;
@@ -718,7 +718,7 @@ begin
 
   n:= DoFindToken(APos);
   if n>=0 then
-    GetTokenProps(AnClient.Tags[n], APntFrom, APntTo, ATokenString, ATokenStyle, ATokenKind);
+    GetTokenProps(AnClient.PublicData.Tokens._GetItemPtr(n), APntFrom, APntTo, ATokenString, ATokenStyle, ATokenKind);
 end;
 
 
@@ -735,7 +735,7 @@ begin
   n:= DoFindToken(APos, true{AExactPos});
   if n>=0 then
   begin
-    Style:= AnClient.Tags[n]^.Style;
+    Style:= AnClient.PublicData.Tokens._GetItemPtr(n)^.Style;
     if Assigned(Style) then
       Result:= TATTokenKind(Style.TokenKind);
   end;
@@ -875,12 +875,12 @@ begin
       RangeNew:= TATRangeInCodeTree.Create;
 
       if R.StartIdx>=0 then
-        RangeNew.PosBegin:= AnClient.Tags[R.StartIdx]^.Range.PointStart
+        RangeNew.PosBegin:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx)^.Range.PointStart
       else
         RangeNew.PosBegin:= Point(-1, -1);
 
       if R.EndIdx>=0 then
-        RangeNew.PosEnd:= AnClient.Tags[R.EndIdx]^.Range.PointEnd
+        RangeNew.PosEnd:= AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx)^.Range.PointEnd
       else
         RangeNew.PosEnd:= Point(-1, -1);
 
@@ -903,10 +903,10 @@ begin
   if AnClient=nil then exit;
 
   if R.StartIdx>=0 then
-    APosBegin:= AnClient.Tags[R.StartIdx]^.Range.PointStart;
+    APosBegin:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx)^.Range.PointStart;
 
   if R.EndIdx>=0 then
-    APosEnd:=  AnClient.Tags[R.EndIdx]^.Range.PointEnd;
+    APosEnd:=  AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx)^.Range.PointEnd;
 end;
 
 //unused function
@@ -1269,8 +1269,8 @@ begin
     if R.StartIdx<0 then Continue;
     if R.EndIdx<0 then Continue;
 
-    tokenStart:= AnClient.Tags[R.StartIdx];
-    tokenEnd:= AnClient.Tags[R.EndIdx];
+    tokenStart:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx);
+    tokenEnd:= AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx);
     Pnt1:= tokenStart^.Range.PointStart;
     Pnt2:= tokenEnd^.Range.PointEnd;
     if Pnt1.Y<0 then Continue;
@@ -1392,16 +1392,16 @@ begin
     exit(-1);
   if APos.X=0 then
   begin
-    if APos.Y<=High(AnClient.TokenIndexer) then
-      Result:= AnClient.TokenIndexer[APos.Y]
+    if APos.Y<=High(AnClient.PublicData.TokenIndexer) then
+      Result:= AnClient.PublicData.TokenIndexer[APos.Y]
     else
       Result:= -1;
   end
   else
   if AExactPos then
-    Result:= AnClient.FindTokenAt(AnClient.Buffer.CaretToStr(APos))
+    Result:= AnClient.PublicData.Tokens.FindAt(AnClient.Buffer.CaretToStr(APos))
   else
-    Result:= AnClient.PriorTokenAt(AnClient.Buffer.CaretToStr(APos));
+    Result:= AnClient.PublicData.Tokens.PriorAt(AnClient.Buffer.CaretToStr(APos));
 end;
 
 function TATAdapterEControl.GetLexer: TecSyntAnalyzer;
