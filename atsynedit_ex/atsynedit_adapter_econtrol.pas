@@ -823,7 +823,7 @@ begin
         if NameRule<>NameLexer then Continue;
       end;
 
-      NodeText:= Trim(Utf8Encode(AnClient.GetRangeName(R)));
+      NodeText:= Trim(Utf8Encode(AnClient.GetRangeName(R, AnClient.PublicData.Tokens)));
       NodeTextGroup:= Trim(Utf8Encode(AnClient.GetRangeGroup(R)));
       NodeData:= R;
       NodeParent:= nil;
