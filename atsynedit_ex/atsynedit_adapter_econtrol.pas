@@ -610,7 +610,9 @@ function TATAdapterEControl.LexerAtPos(Pnt: TPoint): TecSyntAnalyzer;
 begin
   Result:= nil;
   if AnClient<>nil then
-    Result:= AnClient.AnalyzerAtPos(Buffer.CaretToStr(Pnt));
+    Result:= AnClient.AnalyzerAtPos(
+               Buffer.CaretToStr(Pnt),
+               AnClient.PublicData.SublexRanges);
 end;
 
 procedure TATAdapterEControl.StopTreeUpdate;
