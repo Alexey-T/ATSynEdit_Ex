@@ -752,10 +752,10 @@ var
   NLast, i: integer;
 begin
   Result:= nil;
-  NLast := AnClient.RangeCount - 1;
+  NLast := AnClient.PublicData.FoldRanges.Count - 1;
   for i:= Min(NLast, R.Index-1) downto 0 do
   begin
-    RTest:= AnClient.Ranges[i];
+    RTest:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
     if (RTest.StartIdx<=R.StartIdx) and
        (RTest.EndIdx>=R.EndIdx) and
        (RTest.Level<R.Level) then
@@ -803,12 +803,12 @@ begin
     if AnClient=nil then exit;
     NameLexer:= AnClient.Owner.LexerName;
 
-    for i:= 0 to AnClient.RangeCount-1 do
+    for i:= 0 to AnClient.PublicData.FoldRanges.Count-1 do
     begin
       if FStopTreeUpdate then exit;
       if Application.Terminated then exit;
 
-      R:= AnClient.Ranges[i];
+      R:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
       if R.Rule=nil then Continue;
       if not R.Rule.DisplayInTree then Continue;
 
@@ -923,9 +923,9 @@ begin
   if NTokenOrig<0 then exit;
 
   //find last range, which contains our token
-  for i:= AnClient.RangeCount-1 downto 0 do
+  for i:= AnClient.PublicData.FoldRanges.Count-1 downto 0 do
   begin
-    R:= AnClient.Ranges[i];
+    R:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
     if not R.Rule.DisplayInTree then Continue;
 
     if (R.StartIdx<=NTokenOrig) and
@@ -937,7 +937,7 @@ end;
 function TATAdapterEControl.SublexerRangeCount: integer;
 begin
   if Assigned(AnClient) then
-    Result:= AnClient.SubLexerRangeCount
+    Result:= AnClient.PublicData.SublexRanges.Count
   else
     Result:= 0;
 end;
@@ -958,7 +958,7 @@ begin
   Result:= (AIndex>=0) and (AIndex<SublexerRangeCount);
   if Result then
   begin
-    Range:= AnClient.SubLexerRanges[AIndex];
+    Range:= AnClient.PublicData.SublexRanges[AIndex];
     if Range.Range.StartPos<0 then exit;
     AStart:= Range.Range.PointStart;
     AEnd:= Range.Range.PointEnd;
@@ -1250,11 +1250,11 @@ begin
   //init Ed.Fold.LineIndexer's
   ClearFoldIndexers;
 
-  for i:= 0 to AnClient.RangeCount-1 do
+  for i:= 0 to AnClient.PublicData.FoldRanges.Count-1 do
   begin
     if Application.Terminated then exit;
 
-    R:= AnClient.Ranges[i];
+    R:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
     if R.Rule=nil then Continue;
     if R.Rule.BlockType<>btRangeStart then Continue;
 
@@ -1353,11 +1353,11 @@ var
   Range: TATSortedRange;
   i: integer;
 begin
-  for i:= 0 to AnClient.SubLexerRangeCount-1 do
+  for i:= 0 to AnClient.PublicData.SublexRanges.Count-1 do
   begin
     if Application.Terminated then exit;
 
-    R:= AnClient.SubLexerRanges[i];
+    R:= AnClient.PublicData.SublexRanges[i];
     if R.Rule=nil then Continue;
     if R.Range.StartPos<0 then Continue;
     if R.Range.EndPos<0 then Continue;
