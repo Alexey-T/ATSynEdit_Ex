@@ -144,6 +144,7 @@ type
       ALexerName: string): boolean;
 
   public
+    procedure OnEditorScroll(Sender: TObject); override;
     procedure OnEditorCaretMove(Sender: TObject); override;
     procedure OnEditorChange(Sender: TObject); override;
     procedure OnEditorChangeEx(Sender: TObject; AChange: TATLineChangeKind; ALine, AItemCount: integer); override;
@@ -963,6 +964,14 @@ begin
     if Assigned(Range.Rule) and Assigned(Range.Rule.SyntAnalyzer) then
       ALexerName:= Range.Rule.SyntAnalyzer.LexerName;
   end;
+end;
+
+procedure TATAdapterEControl.OnEditorScroll(Sender: TObject);
+begin
+  if AnClient=nil then exit;
+  if Buffer=nil then exit;
+
+  AnClient.PublicDataNeedTo:= Editor.LineBottom+1;
 end;
 
 procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer);
