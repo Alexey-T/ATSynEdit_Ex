@@ -973,10 +973,13 @@ begin
 end;
 
 procedure TATAdapterEControl.UpdatePublicDataNeedTo;
+var
+  Ed: TATSynEdit;
 begin
   if AnClient=nil then exit;
-  if EdList.Count>0 then
-    AnClient.PublicDataNeedTo:= TATSynEdit(EdList[0]).LineBottom+1;
+  if EdList.Count=0 then exit;
+  Ed:= TATSynEdit(EdList[0]);
+  AnClient.PublicDataNeedTo:= Ed.LineBottom+1;
 end;
 
 procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer);
