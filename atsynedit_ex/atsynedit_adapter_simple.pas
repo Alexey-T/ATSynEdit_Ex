@@ -28,7 +28,8 @@ type
   public
     procedure OnEditorCalcHilite(Sender: TObject;
       var AParts: TATLineParts; ALineIndex, ACharIndex, ALineLen: integer;
-      var AColorAfterEol: TColor); override;
+      var AColorAfterEol: TColor;
+      AMainText: boolean); override;
     property OnGetLineColor: TATAdapterOnGetLineColor read FOnGetLineColor write FOnGetLineColor;
   end;
 
@@ -38,7 +39,7 @@ implementation
 
 procedure TATAdapterSimple.OnEditorCalcHilite(Sender: TObject;
   var AParts: TATLineParts; ALineIndex, ACharIndex, ALineLen: integer;
-  var AColorAfterEol: TColor);
+  var AColorAfterEol: TColor; AMainText: boolean);
 var
   Ed: TATSynEdit;
   NColor, NColorBg: TColor;

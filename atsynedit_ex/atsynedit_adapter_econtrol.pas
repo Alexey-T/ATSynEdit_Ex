@@ -99,7 +99,7 @@ type
     procedure UpdateRangesSublex;
     procedure UpdateData(AUpdateBuffer, AAnalyze: boolean);
     procedure UpdateRangesFoldAndColored;
-    procedure UpdateEditors(ARepaint, AClearCache: boolean);
+    procedure UpdateEditors(ARepaint: boolean);
     function GetLexer: TecSyntAnalyzer;
     procedure SetLexer(AAnalizer: TecSyntAnalyzer);
     function GetLexerSuportsDynamicHilite: boolean;
@@ -151,7 +151,8 @@ type
     procedure OnEditorCalcHilite(Sender: TObject;
       var AParts: TATLineParts;
       ALineIndex, ACharIndex, ALineLen: integer;
-      var AColorAfterEol: TColor); override;
+      var AColorAfterEol: TColor;
+      AMainText: boolean); override;
     procedure OnEditorCalcPosColor(Sender: TObject;
       AX, AY: integer; var AColor: TColor); override;
   published
@@ -253,7 +254,7 @@ end;
 
 procedure TATAdapterEControl.OnEditorCalcHilite(Sender: TObject;
   var AParts: TATLineParts; ALineIndex, ACharIndex, ALineLen: integer;
-  var AColorAfterEol: TColor);
+  var AColorAfterEol: TColor; AMainText: boolean);
 var
   Ed: TATSynEdit;
 begin
@@ -1030,7 +1031,7 @@ begin
   if IsParsingBusy then exit;
 
   ClearRanges;
-  UpdateEditors(false, true);
+  UpdateEditors(false);
 
   if Assigned(AnClient) then
     FreeAndNil(AnClient);
@@ -1068,7 +1069,7 @@ procedure TATAdapterEControl.OnEditorIdle(Sender: TObject);
 begin
   DoCheckEditorList;
   UpdateData(false, true);
-  UpdateEditors(true, true);
+  UpdateEditors(true);
 end;
 
 procedure TATAdapterEControl.UpdateData(AUpdateBuffer, AAnalyze: boolean);
@@ -1181,7 +1182,7 @@ begin
     TATSynEdit(EdList[i]).Fold.Add(AX, AY, AY2, AStaple, AHint);
 end;
 
-procedure TATAdapterEControl.UpdateEditors(ARepaint, AClearCache: boolean);
+procedure TATAdapterEControl.UpdateEditors(ARepaint: boolean);
 var
   Ed: TATSynEdit;
   i: integer;
@@ -1193,8 +1194,6 @@ begin
     CurrentIdleInterval:= GetIdleInterval;
     Ed.OptIdleInterval:= CurrentIdleInterval;
 
-    if AClearCache then
-      Ed.InvalidateHilitingCache;
     if ARepaint then
       Ed.Update;
   end;
@@ -1485,7 +1484,7 @@ begin
   if Assigned(FOnParseDone) then
     FOnParseDone(Self);
 
-  UpdateEditors(true, true);
+  UpdateEditors(true);
 end;
 
 procedure TATAdapterEControl.ParseFromLine(ALine: integer; AWait: boolean);

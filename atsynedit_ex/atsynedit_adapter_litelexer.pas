@@ -28,7 +28,7 @@ type
     Name: string;
     Style: string;
     StyleHash: integer;
-    RegexObj: TecRegExpr;
+    RegexObj: array[boolean] of TecRegExpr;
     constructor Create(const AName, AStyle, ARegex: string; ACaseSens: boolean); virtual;
     destructor Destroy; override;
   end;
@@ -65,7 +65,8 @@ type
     property Rules[AIndex: integer]: TATLiteLexerRule read GetRule;
     function Dump: string;
     procedure OnEditorCalcHilite(Sender: TObject; var AParts: TATLineParts;
-      ALineIndex, ACharIndex, ALineLen: integer; var AColorAfterEol: TColor); override;
+      ALineIndex, ACharIndex, ALineLen: integer; var AColorAfterEol: TColor;
+      AMainText: boolean); override;
     property OnGetStyleHash: TATLiteLexer_GetStyleHash read FOnGetStyleHash write FOnGetStyleHash;
     property OnApplyStyle: TATLiteLexer_ApplyStyle read FOnApplyStyle write FOnApplyStyle;
   end;
@@ -204,21 +205,29 @@ end;
 { TATLiteLexerRule }
 
 constructor TATLiteLexerRule.Create(const AName, AStyle, ARegex: string; ACaseSens: boolean);
+  //
+  procedure InitRegex(var AObj: TecRegExpr);
+  begin
+    AObj:= TecRegExpr.Create;
+    AObj.Expression:= UTF8Decode(ARegex);
+    AObj.ModifierI:= not ACaseSens;
+    AObj.ModifierS:= false; //don't catch all text by .*
+    AObj.ModifierM:= true; //allow to work with ^$
+    AObj.ModifierX:= false; //don't ingore spaces
+  end;
+  //
 begin
   inherited Create;
   Name:= AName;
   Style:= AStyle;
-  RegexObj:= TecRegExpr.Create;
-  RegexObj.Expression:= UTF8Decode(ARegex);
-  RegexObj.ModifierI:= not ACaseSens;
-  RegexObj.ModifierS:= false; //don't catch all text by .*
-  RegexObj.ModifierM:= true; //allow to work with ^$
-  RegexObj.ModifierX:= false; //don't ingore spaces
+  InitRegex(RegexObj[false]);
+  InitRegex(RegexObj[true]);
 end;
 
 destructor TATLiteLexerRule.Destroy;
 begin
-  FreeAndNil(RegexObj);
+  FreeAndNil(RegexObj[false]);
+  FreeAndNil(RegexObj[true]);
   inherited Destroy;
 end;
 
@@ -331,7 +340,7 @@ begin
   for i:= 0 to RuleCount-1 do
     with Rules[i] do
       Result:= Result+#10+Format('(name: "%s", re: "%s", st: "%s", st_n: %d)',
-        [Name, RegexObj.Expression, Style, StyleHash]);
+        [Name, RegexObj[false].Expression, Style, StyleHash]);
 end;
 
 
@@ -348,7 +357,7 @@ end;
 
 procedure TATLiteLexer.OnEditorCalcHilite(Sender: TObject;
   var AParts: TATLineParts; ALineIndex, ACharIndex, ALineLen: integer;
-  var AColorAfterEol: TColor);
+  var AColorAfterEol: TColor; AMainText: boolean);
 var
   Ed: TATSynEdit;
   EdLine: UnicodeString;
@@ -378,7 +387,7 @@ begin
       for IndexRule:= 0 to RuleCount-1 do
       begin
         Rule:= Rules[IndexRule];
-        NLen:= Rule.RegexObj.MatchLength(EdLine, NPos);
+        NLen:= Rule.RegexObj[AMainText].MatchLength(EdLine, NPos);
         if NLen>0 then
         begin
           bRuleFound:= true;
