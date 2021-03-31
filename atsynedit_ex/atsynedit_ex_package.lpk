@@ -23,7 +23,7 @@
 
 Requires packages: ATSynEdit, EControl."/>
     <License Value="MPL 2.0 or LGPL"/>
-    <Version Major="1" Minor="3"/>
+    <Version Major="1" Minor="4"/>
     <Files Count="6">
       <Item1>
         <Filename Value="atsynedit_adapter_econtrol.pas"/>
