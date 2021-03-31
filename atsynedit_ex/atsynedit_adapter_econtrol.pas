@@ -599,7 +599,7 @@ begin
     if EdList.IndexOf(AEditor)<0 then
     begin
       EdList.Add(AEditor);
-      TATSynEdit(AEditor).Strings.OnLog:= @DoChangeLog;
+      TATSynEdit(AEditor).OnChangeLog:= @DoChangeLog;
       TATSynEdit(AEditor).AdapterForHilite:= Self;
     end;
   end;
