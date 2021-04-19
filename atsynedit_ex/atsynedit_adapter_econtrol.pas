@@ -601,7 +601,7 @@ begin
     if EdList.IndexOf(AEditor)<0 then
     begin
       EdList.Add(AEditor);
-      TATSynEdit(AEditor).Strings.OnLog:= @DoChangeLog;
+      TATSynEdit(AEditor).OnChangeLog:= @DoChangeLog;
       TATSynEdit(AEditor).AdapterForHilite:= Self;
     end;
   end;
@@ -1414,16 +1414,9 @@ begin
 end;
 
 procedure TATAdapterEControl.DoChangeLog(Sender: TObject; ALine: integer);
+//ALine=-1 means 'clear', it's supported by AnClient
 begin
   if not Assigned(AnClient) then Exit;
-
-  //-1: clear
-  if ALine=-1 then
-  begin
-    AnClient.TextChangedOnLine(-1);
-    Exit
-  end;
-
   AnClient.TextChangedOnLine(ALine);
 end;
 
