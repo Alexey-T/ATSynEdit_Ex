@@ -258,7 +258,7 @@ procedure TATAdapterEControl.OnEditorCalcHilite(Sender: TObject;
 var
   Ed: TATSynEdit;
 begin
-  if not Assigned(AnClient) then Exit;
+  if AnClient=nil then Exit;
   DoCheckEditorList;
   Ed:= TATSynEdit(Sender);
 
@@ -1096,7 +1096,7 @@ var
   i: integer;
 begin
   if EdList.Count=0 then Exit;
-  if not Assigned(AnClient) then Exit;
+  if AnClient=nil then Exit;
 
   Ed:= TATSynEdit(EdList[0]);
   Str:= Ed.Strings;
@@ -1217,7 +1217,7 @@ var
   ColoredRange: TATSortedRange;
   i: integer;
 begin
-  if not Assigned(AnClient) then Exit;
+  if AnClient=nil then Exit;
 
   //check folding enabled
   if EdList.Count=0 then exit;
@@ -1392,7 +1392,7 @@ end;
 procedure TATAdapterEControl.DoChangeLog(Sender: TObject; ALine: integer);
 //ALine=-1 means 'clear', it's supported by AnClient
 begin
-  if not Assigned(AnClient) then Exit;
+  if AnClient=nil then Exit;
   AnClient.TextChangedOnLine(ALine);
 end;
 
@@ -1413,7 +1413,7 @@ var
   i: integer;
 begin
   Result:= false;
-  if not Assigned(AnClient) then exit;
+  if AnClient=nil then exit;
   An:= AnClient.Owner;
   for i:= 0 to An.BlockRules.Count-1 do
   begin
