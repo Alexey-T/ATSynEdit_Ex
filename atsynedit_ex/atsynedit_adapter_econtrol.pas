@@ -57,7 +57,6 @@ type
   private
     EdList: TFPList;
     Buffer: TATStringBuffer;
-    TimerDuringAnalyze: TTimer;
     CurrentIdleInterval: integer;
     FRangesColored: TATSortedRanges;
     FRangesColoredBounds: TATSortedRanges;
@@ -65,7 +64,6 @@ type
     FEnabledLineSeparators: boolean;
     FEnabledSublexerTreeNodes: boolean;
     FBusyTreeUpdate: boolean;
-    FBusyTimer: boolean;
     FStopTreeUpdate: boolean;
     FTimeParseBegin: QWORD;
     FTimeParseElapsed: integer;
@@ -93,7 +91,6 @@ type
     function GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
       ADefColor: TColor; AEditorIndex: integer): TColor;
     function EditorRunningCommand: boolean;
-    procedure TimerDuringAnalyzeTimer(Sender: TObject);
     procedure UpdatePublicDataNeedTo;
     procedure UpdateRanges;
     procedure UpdateRangesActive(AEdit: TATSynEdit);
@@ -563,11 +560,6 @@ begin
   FRangesSublexer:= TATSortedRanges.Create;
   FEnabledLineSeparators:= false;
   FEnabledSublexerTreeNodes:= false;
-
-  TimerDuringAnalyze:= TTimer.Create(Self);
-  TimerDuringAnalyze.Enabled:= false;
-  TimerDuringAnalyze.Interval:= cAdapterTimerDuringAnalyzeInterval;
-  TimerDuringAnalyze.OnTimer:= @TimerDuringAnalyzeTimer;
 end;
 
 destructor TATAdapterEControl.Destroy;
@@ -631,18 +623,12 @@ end;
 function TATAdapterEControl.Stop: boolean;
 begin
   Result:= true;
-  TimerDuringAnalyze.Enabled:= false;
 
   if not Application.Terminated then
   begin
     if FBusyTreeUpdate then
     begin
       Sleep(100);
-      //Application.ProcessMessages;
-    end;
-    if FBusyTimer then
-    begin
-      Sleep(TimerDuringAnalyze.Interval+50);
       //Application.ProcessMessages;
     end;
   end;
@@ -1184,13 +1170,7 @@ begin
   end;
 
   if AnClient.IsFinished then
-  begin
     ParseDone;
-  end
-  else
-  begin
-    TimerDuringAnalyze.Enabled:= true;
-  end;
 end;
 
 procedure TATAdapterEControl.ClearFoldIndexers;
@@ -1430,29 +1410,6 @@ begin
   AnClient.TextChangedOnLine(ALine);
 end;
 
-procedure TATAdapterEControl.TimerDuringAnalyzeTimer(Sender: TObject);
-begin
-  if Application.Terminated then
-  begin
-    TimerDuringAnalyze.Enabled:= false;
-    exit
-  end;
-
-  if not Assigned(AnClient) then Exit;
-
-  FBusyTimer:= true;
-  try
-    if AnClient.IsFinished then
-    begin
-      TimerDuringAnalyze.Enabled:= false;
-      ParseDone;
-    end;
-  finally
-    FBusyTimer:= false;
-  end;
-end;
-
-
 function TATAdapterEControl.GetTokenColor_FromBoundRanges(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
 begin
   Result:= nil;
@@ -1524,12 +1481,10 @@ begin
   end
   else
   begin
-    TimerDuringAnalyze.Enabled:= true;
-
     if AWait then
       while not AnClient.IsFinished do
       begin
-        Sleep(TimerDuringAnalyze.Interval+20);
+        Sleep(100);
         Application.ProcessMessages;
       end;
   end;
