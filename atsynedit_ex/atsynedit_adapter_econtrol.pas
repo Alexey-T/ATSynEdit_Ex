@@ -1126,10 +1126,11 @@ begin
   try
     UpdateRangesFoldAndColored;
     UpdateRangesSublex; //sublexer ranges last
-    UpdateRangesActiveAll;
   finally
     AnClient.CriSecForData.Leave;
   end;
+
+  UpdateRangesActiveAll;
 end;
 
 procedure TATAdapterEControl.UpdateRangesActiveAll;
