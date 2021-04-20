@@ -1456,16 +1456,15 @@ end;
 
 procedure TATAdapterEControl.ParseFromLine(ALine: integer; AWait: boolean);
 begin
-  if not Assigned(AnClient) then exit;
+  if AnClient=nil then exit;
   ParseBegin;
   AnClient.TextChangedOnLine(ALine);
 
   if AWait then
-    while not AnClient.IsFinished do
-    begin
+    repeat
       Sleep(100);
       Application.ProcessMessages;
-    end;
+    until AnClient.IsFinished;
 end;
 
 function TATAdapterEControl.GetIdleInterval: integer;
