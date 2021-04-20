@@ -1120,9 +1120,16 @@ end;
 procedure TATAdapterEControl.UpdateRanges;
 begin
   ClearRanges;
-  UpdateRangesFoldAndColored;
-  UpdateRangesSublex; //sublexer ranges last
-  UpdateRangesActiveAll;
+
+  if AnClient=nil then exit;
+  AnClient.CriSecForData.Enter;
+  try
+    UpdateRangesFoldAndColored;
+    UpdateRangesSublex; //sublexer ranges last
+    UpdateRangesActiveAll;
+  finally
+    AnClient.CriSecForData.Leave;
+  end;
 end;
 
 procedure TATAdapterEControl.UpdateRangesActiveAll;
