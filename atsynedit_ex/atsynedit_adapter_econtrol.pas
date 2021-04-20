@@ -113,11 +113,11 @@ type
     property LexerParsingElapsed: integer read FTimeParseElapsed;
     function LexerAtPos(Pnt: TPoint): TecSyntAnalyzer;
     property EnabledSublexerTreeNodes: boolean read FEnabledSublexerTreeNodes write FEnabledSublexerTreeNodes default false;
-    procedure ParseInvoke(Ed: TATSynEdit; All: boolean);
     procedure ParseFromLine(ALine: integer; AWait: boolean);
     function Stop: boolean;
     function Editor: TATSynEdit;
     procedure StopTreeUpdate;
+    procedure ParseInvoke(Ed: TATSynEdit; All: boolean);
     function IsParsingBusy: boolean;
 
     //tokens
@@ -616,6 +616,11 @@ end;
 procedure TATAdapterEControl.StopTreeUpdate;
 begin
   FStopTreeUpdate:= true;
+end;
+
+procedure TATAdapterEControl.ParseInvoke(Ed: TATSynEdit; All: boolean);
+begin
+  //TODO: delete after merge to master
 end;
 
 function TATAdapterEControl.IsParsingBusy: boolean;
@@ -1119,7 +1124,7 @@ begin
 
   { //TODO: remove this?
   if AAnalyze then
-    ParseInvoke(Ed, false);
+    ParseBegin;
     }
 end;
 
@@ -1156,17 +1161,6 @@ begin
     for i:= 0 to EdList.Count-1 do
       if TATSynEdit(EdList[i]).IsRunningCommand then
         exit(true);
-end;
-
-procedure TATAdapterEControl.ParseInvoke(Ed: TATSynEdit; All: boolean);
-begin
-  if AnClient=nil then exit;
-  if Buffer.TextLength=0 then exit;
-
-  ParseBegin;
-  { //TODO: remove this?
-  AnClient.TextChangedOnLine(0);
-  }
 end;
 
 procedure TATAdapterEControl.ClearFoldIndexers;
