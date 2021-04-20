@@ -142,7 +142,6 @@ type
   public
     procedure OnEditorScroll(Sender: TObject); override;
     procedure OnEditorCaretMove(Sender: TObject); override;
-    //procedure OnEditorChange(Sender: TObject); override;
     procedure OnEditorChangeEx(Sender: TObject; AChange: TATLineChangeKind; ALine, AItemCount: integer); override;
     procedure OnEditorCalcHilite(Sender: TObject;
       var AParts: TATLineParts;
@@ -1066,15 +1065,6 @@ begin
 
   DynamicHiliteSupportedInCurrentSyntax:= GetLexerSuportsDynamicHilite;
 end;
-
-(* //TODO remove it?
-procedure TATAdapterEControl.OnEditorChange(Sender: TObject);
-begin
-  DoCheckEditorList;
-  //if CurrentIdleInterval=0, OnEditorIdle will not fire, analyze here
-  UpdateData(true, CurrentIdleInterval=0);
-end;
-*)
 
 procedure TATAdapterEControl.OnEditorChangeEx(Sender: TObject; AChange: TATLineChangeKind; ALine,
   AItemCount: integer);
