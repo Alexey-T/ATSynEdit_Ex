@@ -14,7 +14,6 @@ uses
   Forms, Dialogs,
   ATSynEdit,
   ATSynEdit_LineParts,
-  ATSynEdit_CanvasProc,
   ATSynEdit_Adapters,
   ATSynEdit_Carets,
   ATSynEdit_Ranges,
