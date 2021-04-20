@@ -114,7 +114,7 @@ type
     property LexerParsingElapsed: integer read FTimeParseElapsed;
     function LexerAtPos(Pnt: TPoint): TecSyntAnalyzer;
     property EnabledSublexerTreeNodes: boolean read FEnabledSublexerTreeNodes write FEnabledSublexerTreeNodes default false;
-    procedure ParseInvoke(AEdit: TATSynEdit; AForceAnalizeAll: boolean);
+    procedure ParseInvoke(Ed: TATSynEdit; All: boolean);
     procedure ParseFromLine(ALine: integer; AWait: boolean);
     function Stop: boolean;
     function Editor: TATSynEdit;
@@ -1112,9 +1112,7 @@ begin
   UpdatePublicDataNeedTo;
 
   if AAnalyze then
-  begin
     ParseInvoke(Ed, false);
-  end;
 end;
 
 procedure TATAdapterEControl.UpdateRanges;
@@ -1152,34 +1150,13 @@ begin
         exit(true);
 end;
 
-procedure TATAdapterEControl.ParseInvoke(AEdit: TATSynEdit; AForceAnalizeAll: boolean);
-var
-  NLine, NPos: integer;
+procedure TATAdapterEControl.ParseInvoke(Ed: TATSynEdit; All: boolean);
 begin
   if AnClient=nil then exit;
   if Buffer.TextLength=0 then exit;
 
   ParseBegin;
-
-  if AForceAnalizeAll then
-  begin
-    AnClient.TextChangedOnLine(0);
-    AnClient.ParseAll(true);
-  end
-  else
-  begin
-    //LineBottom=0, if file just opened at beginning.
-    //or >0 of file is edited at some scroll pos
-    NLine:= AEdit.LineBottom;
-    if NLine=0 then
-      NLine:= AEdit.GetVisibleLines;
-    NLine:= Min(NLine, Buffer.Count-1);
-    NPos:= Buffer.CaretToStr(Point(0, NLine));
-    AnClient.ParseToPos(NPos);
-  end;
-
-  if AnClient.IsFinished then
-    ParseDone(nil);
+  AnClient.TextChangedOnLine(0);
 end;
 
 procedure TATAdapterEControl.ClearFoldIndexers;
