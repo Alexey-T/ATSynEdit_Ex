@@ -1164,7 +1164,7 @@ begin
   if AForceAnalizeAll then
   begin
     AnClient.TextChangedOnLine(0);
-    AnClient.ParseAll(true, true);
+    AnClient.ParseAll(true);
   end
   else
   begin
@@ -1482,7 +1482,7 @@ begin
   if not Assigned(AnClient) then exit;
   ParseBegin;
   AnClient.TextChangedOnLine(ALine);
-  AnClient.ParseAll(true, not AWait);
+  AnClient.ParseAll(true);
 
   if AnClient.IsFinished then
   begin
