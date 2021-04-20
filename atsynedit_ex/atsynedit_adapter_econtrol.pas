@@ -76,7 +76,7 @@ type
     procedure ClearFoldIndexers;
     procedure DoFoldAdd(AX, AY, AY2: integer; AStaple: boolean; const AHint: string);
     procedure DoCalcParts(var AParts: TATLineParts; ALine, AX, ALen: integer;
-      AColorFont, AColorBG: TColor; var AColorAfter: TColor; AEditorIndex: integer); inline;
+      AColorFont, AColorBG: TColor; var AColorAfter: TColor; AEditorIndex: integer);
     procedure ClearRanges;
     function DoFindToken(APos: TPoint; AExactPos: boolean = false): integer;
     function GetTokenColor_FromBoundRanges(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
@@ -262,12 +262,17 @@ begin
   DoCheckEditorList;
   Ed:= TATSynEdit(Sender);
 
-  AColorAfterEol:= clNone;
-  DoCalcParts(AParts, ALineIndex, ACharIndex-1, ALineLen,
-    Ed.Colors.TextFont,
-    clNone,
-    AColorAfterEol,
-    Ed.EditorIndex);
+  AnClient.CriSecForData.Enter;
+  try
+    AColorAfterEol:= clNone;
+    DoCalcParts(AParts, ALineIndex, ACharIndex-1, ALineLen,
+      Ed.Colors.TextFont,
+      clNone,
+      AColorAfterEol,
+      Ed.EditorIndex);
+  finally
+    AnClient.CriSecForData.Leave;
+  end;
 end;
 
 procedure TATAdapterEControl.OnEditorCalcPosColor(Sender: TObject; AX,
