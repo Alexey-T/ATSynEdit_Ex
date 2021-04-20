@@ -799,6 +799,14 @@ var
   Sep: TATStringSeparator;
   i: integer;
 begin
+  Exit;
+  //TODO - after thread work is done, enable again
+  //
+  //
+  //
+  //
+  //
+
   FStopTreeUpdate:= false;
   FBusyTreeUpdate:= true;
   //ATree.Items.BeginUpdate;
