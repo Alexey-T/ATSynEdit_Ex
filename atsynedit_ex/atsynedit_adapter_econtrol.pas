@@ -146,7 +146,6 @@ type
     procedure OnEditorCaretMove(Sender: TObject); override;
     procedure OnEditorChange(Sender: TObject); override;
     procedure OnEditorChangeEx(Sender: TObject; AChange: TATLineChangeKind; ALine, AItemCount: integer); override;
-    //procedure OnEditorIdle(Sender: TObject); override;
     procedure OnEditorCalcHilite(Sender: TObject;
       var AParts: TATLineParts;
       ALineIndex, ACharIndex, ALineLen: integer;
@@ -1089,15 +1088,6 @@ begin
   FRangesColoredBounds.UpdateOnChange(AChange, ALine, AItemCount);
   FRangesSublexer.UpdateOnChange(AChange, ALine, AItemCount);
 end;
-
-(* //TODO: remove this
-procedure TATAdapterEControl.OnEditorIdle(Sender: TObject);
-begin
-  DoCheckEditorList;
-  UpdateData(false, true);
-  UpdateEditors(true);
-end;
-*)
 
 procedure TATAdapterEControl.UpdateData(AUpdateBuffer, AAnalyze: boolean);
 var
