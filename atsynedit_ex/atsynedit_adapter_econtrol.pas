@@ -83,7 +83,7 @@ type
     procedure DoFoldFromLinesHidden;
     procedure DoChangeLog(Sender: TObject; ALine: integer);
     procedure ParseBegin;
-    procedure ParseDone;
+    procedure ParseDone(Sender: TObject);
     function GetIdleInterval: integer;
     function GetRangeParent(const R: TecTextRange): TecTextRange;
     function GetTokenColorBG_FromColoredRanges(const APos: TPoint; ADefColor: TColor;
@@ -1056,6 +1056,7 @@ begin
   if Assigned(AAnalizer) then
   begin
     AnClient:= TecClientSyntAnalyzer.Create(AAnalizer, Buffer, nil, true);
+    AnClient.OnParseDone:= @ParseDone;
     UpdateData(true, true);
   end;
 
@@ -1170,7 +1171,7 @@ begin
   end;
 
   if AnClient.IsFinished then
-    ParseDone;
+    ParseDone(nil);
 end;
 
 procedure TATAdapterEControl.ClearFoldIndexers;
@@ -1454,7 +1455,7 @@ begin
   FTimeParseBegin:= GetTickCount64;
 end;
 
-procedure TATAdapterEControl.ParseDone;
+procedure TATAdapterEControl.ParseDone(Sender: TObject);
 begin
   //UpdateRanges call needed for small files, which are parsed to end by one IdleAppend call,
   //and timer didn't tick
@@ -1477,7 +1478,7 @@ begin
 
   if AnClient.IsFinished then
   begin
-    ParseDone;
+    ParseDone(nil);
   end
   else
   begin
