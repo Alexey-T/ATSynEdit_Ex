@@ -10,8 +10,8 @@ interface
 
 uses
   Classes, SysUtils, Graphics, ExtCtrls, ComCtrls,
-  syncobjs,
   Forms, Dialogs,
+  syncobjs,
   ATSynEdit,
   ATSynEdit_LineParts,
   ATSynEdit_Adapters,
@@ -26,8 +26,7 @@ uses
   ec_SyntAnal;
 
 var
-  //interval of TimerDuringAnalyze
-  cAdapterTimerDuringAnalyzeInterval: integer = 200;
+  //TODO: remove these vars
   //ATSynEdit.OnIdle timer interval
   cAdapterIdleInterval: integer = 500;
   //ATSynEdit.OnIdle will fire only if text size is bigger
