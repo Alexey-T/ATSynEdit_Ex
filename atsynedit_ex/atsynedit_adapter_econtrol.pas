@@ -740,8 +740,7 @@ end;
 function TATAdapterEControl.GetRangeParent(const R: TecTextRange): TecTextRange;
 //cannot use R.Parent!
 //
-//TODO TOFIX: this place is called DURING TreeFill, so
-//code tree is filled during lexer parsing.... not OK
+//this is called from TreeFill, so calls are guarded by CriticalSection.Enter/Leave
 // https://github.com/Alexey-T/CudaText/issues/3074
 var
   RTest: TecTextRange;
