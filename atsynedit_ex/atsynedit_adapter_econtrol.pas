@@ -56,7 +56,6 @@ type
   private
     EdList: TFPList;
     Buffer: TATStringBuffer;
-    CurrentIdleInterval: integer;
     FRangesColored: TATSortedRanges;
     FRangesColoredBounds: TATSortedRanges;
     FRangesSublexer: TATSortedRanges;
@@ -83,7 +82,6 @@ type
     procedure DoChangeLog(Sender: TObject; ALine: integer);
     procedure ParseBegin;
     procedure ParseDone(Sender: TObject);
-    function GetIdleInterval: integer;
     function GetRangeParent(const R: TecTextRange): TecTextRange;
     function GetTokenColorBG_FromColoredRanges(const APos: TPoint; ADefColor: TColor;
       AEditorIndex: integer): TColor;
@@ -144,7 +142,7 @@ type
   public
     procedure OnEditorScroll(Sender: TObject); override;
     procedure OnEditorCaretMove(Sender: TObject); override;
-    procedure OnEditorChange(Sender: TObject); override;
+    //procedure OnEditorChange(Sender: TObject); override;
     procedure OnEditorChangeEx(Sender: TObject; AChange: TATLineChangeKind; ALine, AItemCount: integer); override;
     procedure OnEditorCalcHilite(Sender: TObject;
       var AParts: TATLineParts;
@@ -1074,12 +1072,14 @@ begin
   DynamicHiliteSupportedInCurrentSyntax:= GetLexerSuportsDynamicHilite;
 end;
 
+(* //TODO remove it?
 procedure TATAdapterEControl.OnEditorChange(Sender: TObject);
 begin
   DoCheckEditorList;
   //if CurrentIdleInterval=0, OnEditorIdle will not fire, analyze here
   UpdateData(true, CurrentIdleInterval=0);
 end;
+*)
 
 procedure TATAdapterEControl.OnEditorChangeEx(Sender: TObject; AChange: TATLineChangeKind; ALine,
   AItemCount: integer);
@@ -1178,16 +1178,12 @@ var
   Ed: TATSynEdit;
   i: integer;
 begin
-  for i:= 0 to EdList.Count-1 do
-  begin
-    Ed:= TATSynEdit(EdList[i]);
-
-    CurrentIdleInterval:= GetIdleInterval;
-    Ed.OptIdleInterval:= CurrentIdleInterval;
-
-    if ARepaint then
+  if ARepaint then
+    for i:= 0 to EdList.Count-1 do
+    begin
+      Ed:= TATSynEdit(EdList[i]);
       Ed.Update;
-  end;
+    end;
 end;
 
 
@@ -1387,6 +1383,7 @@ procedure TATAdapterEControl.DoChangeLog(Sender: TObject; ALine: integer);
 //ALine=-1 means 'clear', it's supported by AnClient
 begin
   if AnClient=nil then Exit;
+  UpdateData(true, false);
   AnClient.TextChangedOnLine(ALine);
 end;
 
@@ -1459,14 +1456,6 @@ begin
       Sleep(100);
       Application.ProcessMessages;
     until AnClient.IsFinished;
-end;
-
-function TATAdapterEControl.GetIdleInterval: integer;
-begin
-  if Buffer.TextLength < cAdapterIdleTextSize then
-    Result:= 0
-  else
-    Result:= cAdapterIdleInterval;
 end;
 
 end.
