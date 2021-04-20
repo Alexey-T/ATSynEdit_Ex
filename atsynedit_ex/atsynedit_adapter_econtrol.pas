@@ -93,7 +93,7 @@ type
     procedure UpdateRangesActive(AEdit: TATSynEdit);
     procedure UpdateRangesActiveAll;
     procedure UpdateRangesSublex;
-    procedure UpdateData(AUpdateBuffer, AAnalyze: boolean);
+    procedure UpdateData(AUpdateBuffer: boolean);
     procedure UpdateRangesFoldAndColored;
     procedure UpdateEditors(ARepaint: boolean);
     function GetLexer: TecSyntAnalyzer;
@@ -1058,7 +1058,7 @@ begin
   begin
     AnClient:= TecClientSyntAnalyzer.Create(AAnalizer, Buffer, nil, true);
     AnClient.OnParseDone:= @ParseDone;
-    UpdateData(true, true);
+    UpdateData(true);
   end;
 
   if Assigned(FOnLexerChange) then
@@ -1084,7 +1084,7 @@ begin
   FRangesSublexer.UpdateOnChange(AChange, ALine, AItemCount);
 end;
 
-procedure TATAdapterEControl.UpdateData(AUpdateBuffer, AAnalyze: boolean);
+procedure TATAdapterEControl.UpdateData(AUpdateBuffer: boolean);
 var
   Ed: TATSynEdit;
   Lens: array of integer;
@@ -1106,11 +1106,6 @@ begin
   end;
 
   UpdatePublicDataNeedTo;
-
-  { //TODO: remove this?
-  if AAnalyze then
-    ParseBegin;
-    }
 end;
 
 procedure TATAdapterEControl.UpdateRanges;
@@ -1378,7 +1373,7 @@ procedure TATAdapterEControl.DoChangeLog(Sender: TObject; ALine: integer);
 //ALine=-1 means 'clear', it's supported by AnClient
 begin
   if AnClient=nil then Exit;
-  UpdateData(true, false);
+  UpdateData(true);
   AnClient.TextChangedOnLine(ALine);
 end;
 
