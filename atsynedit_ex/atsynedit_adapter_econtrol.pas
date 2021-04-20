@@ -10,6 +10,7 @@ interface
 
 uses
   Classes, SysUtils, Graphics, ExtCtrls, ComCtrls,
+  syncobjs,
   Forms, Dialogs,
   ATSynEdit,
   ATSynEdit_LineParts,
@@ -623,7 +624,8 @@ end;
 
 function TATAdapterEControl.IsParsingBusy: boolean;
 begin
-  Result:= Assigned(AnClient) and AnClient.TimerIdleIsBusy;
+  Result:= Assigned(AnClient) and
+    not AnClient.IsFinished;
 end;
 
 function TATAdapterEControl.Stop: boolean;
