@@ -1459,21 +1459,13 @@ begin
   if not Assigned(AnClient) then exit;
   ParseBegin;
   AnClient.TextChangedOnLine(ALine);
-  AnClient.ParseAll(true);
 
-  if AnClient.IsFinished then
-  begin
-    ParseDone(nil);
-  end
-  else
-  begin
-    if AWait then
-      while not AnClient.IsFinished do
-      begin
-        Sleep(100);
-        Application.ProcessMessages;
-      end;
-  end;
+  if AWait then
+    while not AnClient.IsFinished do
+    begin
+      Sleep(100);
+      Application.ProcessMessages;
+    end;
 end;
 
 function TATAdapterEControl.GetIdleInterval: integer;
