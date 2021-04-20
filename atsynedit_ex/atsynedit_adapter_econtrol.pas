@@ -1258,8 +1258,8 @@ begin
     if R.Rule.NotParent then Continue;
     {$endif}
 
-    if R.StartIdx<0 then Continue;
-    if R.EndIdx<0 then Continue;
+    if not AnClient.PublicData.Tokens.IsIndexValid(R.StartIdx) then Continue;
+    if not AnClient.PublicData.Tokens.IsIndexValid(R.EndIdx) then Continue;
 
     tokenStart:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx);
     tokenEnd:= AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx);
