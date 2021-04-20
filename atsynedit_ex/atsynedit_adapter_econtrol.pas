@@ -791,21 +791,15 @@ var
   Sep: TATStringSeparator;
   i: integer;
 begin
-  Exit;
-  //TODO - after thread work is done, enable again
-  //
-  //
-  //
-  //
-  //
-
+  if AnClient=nil then exit;
+  AnClient.CriSecForData.Enter;
   FStopTreeUpdate:= false;
   FBusyTreeUpdate:= true;
+
   //ATree.Items.BeginUpdate;
 
   try
     ClearTreeviewWithData(ATree);
-    if AnClient=nil then exit;
     NameLexer:= AnClient.Owner.LexerName;
 
     for i:= 0 to AnClient.PublicData.FoldRanges.Count-1 do
@@ -896,6 +890,7 @@ begin
     //ATree.Items.EndUpdate;
     ATree.Invalidate;
     FBusyTreeUpdate:= false;
+    AnClient.CriSecForData.Leave;
   end;
 end;
 
