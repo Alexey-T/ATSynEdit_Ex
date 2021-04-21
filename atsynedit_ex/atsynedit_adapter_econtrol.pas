@@ -1326,8 +1326,11 @@ begin
     end;
   end;
 
-  Ed:= TATSynEdit(EdList[0]);
-  FRangesSublexer.UpdateLineIndexer(Ed.Strings.Count);
+  if EdList.Count>0 then
+  begin
+    Ed:= TATSynEdit(EdList[0]);
+    FRangesSublexer.UpdateLineIndexer(Ed.Strings.Count);
+  end;
 end;
 
 
