@@ -299,13 +299,13 @@ function TATAdapterEControl.GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
   ADefColor: TColor; AEditorIndex: integer): TColor;
 var
   Token: PecSyntToken;
-  n: integer;
+  NToken: integer;
 begin
   Result:= ADefColor;
-  n:= DoFindToken(APos);
-  if n<0 then exit;
+  NToken:= DoFindToken(APos);
+  if not AnClient.PublicData.Tokens.IsIndexValid(NToken) then exit;
 
-  Token:= AnClient.PublicData.Tokens._GetItemPtr(n);
+  Token:= AnClient.PublicData.Tokens._GetItemPtr(NToken);
   if IsPosInRange(
     APos.X, APos.Y,
     Token^.Range.PointStart.X, Token^.Range.PointStart.Y,
