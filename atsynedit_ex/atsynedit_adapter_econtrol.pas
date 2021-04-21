@@ -302,7 +302,9 @@ var
   NToken: integer;
 begin
   Result:= ADefColor;
+  if AnClient=nil then exit;
   NToken:= DoFindToken(APos);
+  if NToken<0 then exit;
   if not AnClient.PublicData.Tokens.IsIndexValid(NToken) then exit;
 
   Token:= AnClient.PublicData.Tokens._GetItemPtr(NToken);
