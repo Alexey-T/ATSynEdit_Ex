@@ -621,9 +621,16 @@ begin
 end;
 
 function TATAdapterEControl.IsParsingBusy: boolean;
+var
+  EvResult: TWaitResult;
 begin
-  Result:= Assigned(AnClient) and
-    not AnClient.IsFinished;
+  if Assigned(AnClient) then
+  begin
+    EvResult:= AnClient.EventParseIdle.WaitFor(0);
+    Result:= EvResult<>wrSignaled;
+  end
+  else
+    Result:= false;
 end;
 
 function TATAdapterEControl.Stop: boolean;
