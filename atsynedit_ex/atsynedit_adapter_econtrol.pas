@@ -87,6 +87,7 @@ type
     function GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
       ADefColor: TColor; AEditorIndex: integer): TColor;
     function EditorRunningCommand: boolean;
+    procedure UpdateBuffer(Ed: TATSynEdit);
     procedure UpdatePublicDataNeedTo;
     procedure UpdateRanges;
     procedure UpdateRangesActive(AEdit: TATSynEdit);
@@ -1084,25 +1085,30 @@ begin
   FRangesSublexer.UpdateOnChange(AChange, ALine, AItemCount);
 end;
 
-procedure TATAdapterEControl.UpdateData(AUpdateBuffer: boolean);
+procedure TATAdapterEControl.UpdateBuffer(Ed: TATSynEdit);
 var
-  Ed: TATSynEdit;
   Lens: array of integer;
   Str: TATStrings;
   i: integer;
 begin
+  Str:= Ed.Strings;
+  SetLength(Lens{%H-}, Str.Count);
+  for i:= 0 to Length(Lens)-1 do
+    Lens[i]:= Str.LinesLen[i];
+  Buffer.Setup(Str.TextString_Unicode(Ed.OptMaxLineLenToTokenize), Lens);
+end;
+
+procedure TATAdapterEControl.UpdateData(AUpdateBuffer: boolean);
+var
+  Ed: TATSynEdit;
+begin
   if EdList.Count=0 then Exit;
   if AnClient=nil then Exit;
 
-  Ed:= TATSynEdit(EdList[0]);
-  Str:= Ed.Strings;
-
   if AUpdateBuffer then
   begin
-    SetLength(Lens{%H-}, Str.Count);
-    for i:= 0 to Length(Lens)-1 do
-      Lens[i]:= Str.LinesLen[i];
-    Buffer.Setup(Str.TextString_Unicode(Ed.OptMaxLineLenToTokenize), Lens);
+    Ed:= TATSynEdit(EdList[0]);
+    UpdateBuffer(Ed);
   end;
 
   UpdatePublicDataNeedTo;
