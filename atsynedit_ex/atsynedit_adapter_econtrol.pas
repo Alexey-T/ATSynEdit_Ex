@@ -87,13 +87,12 @@ type
     function GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
       ADefColor: TColor; AEditorIndex: integer): TColor;
     function EditorRunningCommand: boolean;
-    procedure UpdateBuffer(Ed: TATSynEdit);
+    procedure UpdateBuffer;
     procedure UpdatePublicDataNeedTo;
     procedure UpdateRanges;
     procedure UpdateRangesActive(AEdit: TATSynEdit);
     procedure UpdateRangesActiveAll;
     procedure UpdateRangesSublex;
-    procedure UpdateData(AUpdateBuffer: boolean);
     procedure UpdateRangesFoldAndColored;
     procedure UpdateEditors(ARepaint: boolean);
     function GetLexer: TecSyntAnalyzer;
@@ -1064,7 +1063,9 @@ begin
 
   if Assigned(AAnalizer) then
   begin
-    UpdateData(true);
+    UpdateBuffer;
+    UpdatePublicDataNeedTo;
+
     AnClient:= TecClientSyntAnalyzer.Create(AAnalizer, Buffer);
     if EdList.Count>0 then
       AnClient.FileName:= ExtractFileName(Editor.FileName);
@@ -1085,33 +1086,20 @@ begin
   FRangesSublexer.UpdateOnChange(AChange, ALine, AItemCount);
 end;
 
-procedure TATAdapterEControl.UpdateBuffer(Ed: TATSynEdit);
+procedure TATAdapterEControl.UpdateBuffer;
 var
+  Ed: TATSynEdit;
   Lens: array of integer;
   Str: TATStrings;
   i: integer;
 begin
+  Ed:= Editor;
+  if Ed=nil then exit;
   Str:= Ed.Strings;
   SetLength(Lens{%H-}, Str.Count);
   for i:= 0 to Length(Lens)-1 do
     Lens[i]:= Str.LinesLen[i];
   Buffer.Setup(Str.TextString_Unicode(Ed.OptMaxLineLenToTokenize), Lens);
-end;
-
-procedure TATAdapterEControl.UpdateData(AUpdateBuffer: boolean);
-var
-  Ed: TATSynEdit;
-begin
-  if EdList.Count=0 then Exit;
-  if AnClient=nil then Exit;
-
-  if AUpdateBuffer then
-  begin
-    Ed:= TATSynEdit(EdList[0]);
-    UpdateBuffer(Ed);
-  end;
-
-  UpdatePublicDataNeedTo;
 end;
 
 procedure TATAdapterEControl.UpdateRanges;
@@ -1382,7 +1370,8 @@ procedure TATAdapterEControl.DoChangeLog(Sender: TObject; ALine: integer);
 //ALine=-1 means 'clear', it's supported by AnClient
 begin
   if AnClient=nil then Exit;
-  UpdateData(true);
+  UpdateBuffer;
+  UpdatePublicDataNeedTo;
   AnClient.TextChangedOnLine(ALine);
 end;
 
