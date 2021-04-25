@@ -116,6 +116,7 @@ type
     procedure StopTreeUpdate;
     procedure ParseInvoke(Ed: TATSynEdit; All: boolean);
     function IsParsingBusy: boolean;
+    function DebugString: string;
 
     //tokens
     procedure GetTokenWithIndex(AIndex: integer; out APntFrom, APntTo: TPoint;
@@ -1435,6 +1436,10 @@ begin
     FOnParseDone(Self);
 
   UpdateEditors(true);
+
+  //debug!
+  //Application.MainForm.Caption:= 'parse-done: '+DebugString;
+  //Sleep(1500);
 end;
 
 procedure TATAdapterEControl.ParseFromLine(ALine: integer; AWait: boolean);
@@ -1448,6 +1453,17 @@ begin
       Sleep(100);
       Application.ProcessMessages;
     until AnClient.IsFinished;
+end;
+
+function TATAdapterEControl.DebugString: string;
+var
+  i: integer;
+begin
+  Result:= '';
+  for i:= 0 to EdList.Count-1 do
+    Result+= '"'+ExtractFileName(TATSynEdit(EdList[i]).FileName)+'" ';
+  if Lexer<>nil then
+    Result+= '- '+Lexer.LexerName;
 end;
 
 end.
