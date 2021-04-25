@@ -1064,11 +1064,11 @@ begin
 
   if Assigned(AAnalizer) then
   begin
-    AnClient:= TecClientSyntAnalyzer.Create(AAnalizer, Buffer, nil, true);
+    UpdateData(true);
+    AnClient:= TecClientSyntAnalyzer.Create(AAnalizer, Buffer);
     if EdList.Count>0 then
       AnClient.FileName:= ExtractFileName(Editor.FileName);
     AnClient.OnParseDone:= @ParseDone;
-    UpdateData(true);
   end;
 
   if Assigned(FOnLexerChange) then
