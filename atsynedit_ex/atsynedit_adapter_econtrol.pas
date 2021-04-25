@@ -984,8 +984,8 @@ var
   Ed: TATSynEdit;
 begin
   if AnClient=nil then exit;
-  if EdList.Count=0 then exit;
-  Ed:= TATSynEdit(EdList[0]);
+  Ed:= Editor;
+  if Ed=nil then exit;
   AnClient.PublicDataNeedTo:= Ed.LineBottom+1;
 end;
 
@@ -1194,8 +1194,8 @@ begin
   if AnClient=nil then Exit;
 
   //check folding enabled
-  if EdList.Count=0 then exit;
-  Ed:= TATSynEdit(EdList[0]);
+  Ed:= Editor;
+  if Ed=nil then exit;
   if not Ed.OptFoldEnabled then exit;
 
   //init Ed.Fold.LineIndexer's
@@ -1332,11 +1332,9 @@ begin
     end;
   end;
 
-  if EdList.Count>0 then
-  begin
-    Ed:= TATSynEdit(EdList[0]);
+  Ed:= Editor;
+  if Assigned(Ed) then
     FRangesSublexer.UpdateLineIndexer(Ed.Strings.Count);
-  end;
 end;
 
 
@@ -1367,7 +1365,6 @@ begin
 end;
 
 procedure TATAdapterEControl.DoChangeLog(Sender: TObject; ALine: integer);
-//ALine=-1 means 'clear', it's supported by AnClient
 begin
   if AnClient=nil then Exit;
   UpdateBuffer;
@@ -1407,8 +1404,11 @@ function TATAdapterEControl.IsDynamicHiliteEnabled: boolean;
 var
   Ed: TATSynEdit;
 begin
-  Ed:= TATSynEdit(EdList[0]);
-  Result:= DynamicHiliteActiveNow(Ed.Strings.Count);
+  Ed:= Editor;
+  if Assigned(Ed) then
+    Result:= DynamicHiliteActiveNow(Ed.Strings.Count)
+  else
+    Result:= false;
 end;
 
 procedure TATAdapterEControl.ParseBegin;
