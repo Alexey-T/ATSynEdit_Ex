@@ -1445,15 +1445,14 @@ begin
 
   if AWait then
   begin
-    //this method gives too small time durations, like 40 microsec
+    //this method gives too small duration time, like 40 microsec
     //AnClient.EventParseIdle.WaitFor(INFINITE);
 
     //this method gives ok duration times, like 140ms
     repeat
       Sleep(60);
       Application.ProcessMessages;
-    until AnClient.IsFinished;
-    {}
+    until AnClient.IsFinished or Application.Terminated;
   end;
 end;
 
