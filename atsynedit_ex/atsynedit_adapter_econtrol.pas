@@ -1444,10 +1444,16 @@ begin
   AnClient.TextChangedOnLine(ALine);
 
   if AWait then
+  begin
+    AnClient.EventParseIdle.WaitFor(INFINITE);
+    {
+    //another method to wait:
     repeat
       Sleep(100);
       Application.ProcessMessages;
     until AnClient.IsFinished;
+    }
+  end;
 end;
 
 function TATAdapterEControl.DebugString: string;
