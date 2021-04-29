@@ -11,9 +11,9 @@ interface
 uses
   Classes, SysUtils, Graphics, ExtCtrls, ComCtrls,
   Forms, Dialogs,
+  syncobjs,
   ATSynEdit,
   ATSynEdit_LineParts,
-  ATSynEdit_CanvasProc,
   ATSynEdit_Adapters,
   ATSynEdit_Carets,
   ATSynEdit_Ranges,
@@ -26,8 +26,7 @@ uses
   ec_SyntAnal;
 
 var
-  //interval of TimerDuringAnalyze
-  cAdapterTimerDuringAnalyzeInterval: integer = 200;
+  //TODO: remove these vars
   //ATSynEdit.OnIdle timer interval
   cAdapterIdleInterval: integer = 500;
   //ATSynEdit.OnIdle will fire only if text size is bigger
@@ -56,15 +55,12 @@ type
   private
     EdList: TFPList;
     Buffer: TATStringBuffer;
-    TimerDuringAnalyze: TTimer;
-    CurrentIdleInterval: integer;
     FRangesColored: TATSortedRanges;
     FRangesColoredBounds: TATSortedRanges;
     FRangesSublexer: TATSortedRanges;
     FEnabledLineSeparators: boolean;
     FEnabledSublexerTreeNodes: boolean;
     FBusyTreeUpdate: boolean;
-    FBusyTimer: boolean;
     FStopTreeUpdate: boolean;
     FTimeParseBegin: QWORD;
     FTimeParseElapsed: integer;
@@ -77,27 +73,26 @@ type
     procedure ClearFoldIndexers;
     procedure DoFoldAdd(AX, AY, AY2: integer; AStaple: boolean; const AHint: string);
     procedure DoCalcParts(var AParts: TATLineParts; ALine, AX, ALen: integer;
-      AColorFont, AColorBG: TColor; var AColorAfter: TColor; AEditorIndex: integer); inline;
+      AColorFont, AColorBG: TColor; var AColorAfter: TColor; AEditorIndex: integer);
     procedure ClearRanges;
     function DoFindToken(APos: TPoint; AExactPos: boolean = false): integer;
     function GetTokenColor_FromBoundRanges(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
     procedure DoFoldFromLinesHidden;
     procedure DoChangeLog(Sender: TObject; ALine: integer);
     procedure ParseBegin;
-    procedure ParseDone;
-    function GetIdleInterval: integer;
+    procedure ParseDone(Sender: TObject);
     function GetRangeParent(const R: TecTextRange): TecTextRange;
     function GetTokenColorBG_FromColoredRanges(const APos: TPoint; ADefColor: TColor;
       AEditorIndex: integer): TColor;
     function GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
       ADefColor: TColor; AEditorIndex: integer): TColor;
     function EditorRunningCommand: boolean;
-    procedure TimerDuringAnalyzeTimer(Sender: TObject);
+    procedure UpdateBuffer;
+    procedure UpdatePublicDataNeedTo;
     procedure UpdateRanges;
     procedure UpdateRangesActive(AEdit: TATSynEdit);
     procedure UpdateRangesActiveAll;
     procedure UpdateRangesSublex;
-    procedure UpdateData(AUpdateBuffer, AAnalyze: boolean);
     procedure UpdateRangesFoldAndColored;
     procedure UpdateEditors(ARepaint: boolean);
     function GetLexer: TecSyntAnalyzer;
@@ -115,12 +110,13 @@ type
     property LexerParsingElapsed: integer read FTimeParseElapsed;
     function LexerAtPos(Pnt: TPoint): TecSyntAnalyzer;
     property EnabledSublexerTreeNodes: boolean read FEnabledSublexerTreeNodes write FEnabledSublexerTreeNodes default false;
-    procedure ParseInvoke(AEdit: TATSynEdit; AForceAnalizeAll: boolean);
     procedure ParseFromLine(ALine: integer; AWait: boolean);
     function Stop: boolean;
     function Editor: TATSynEdit;
     procedure StopTreeUpdate;
+    procedure ParseInvoke(Ed: TATSynEdit; All: boolean);
     function IsParsingBusy: boolean;
+    function DebugString: string;
 
     //tokens
     procedure GetTokenWithIndex(AIndex: integer; out APntFrom, APntTo: TPoint;
@@ -144,10 +140,9 @@ type
       ALexerName: string): boolean;
 
   public
+    procedure OnEditorScroll(Sender: TObject); override;
     procedure OnEditorCaretMove(Sender: TObject); override;
-    procedure OnEditorChange(Sender: TObject); override;
     procedure OnEditorChangeEx(Sender: TObject; AChange: TATLineChangeKind; ALine, AItemCount: integer); override;
-    procedure OnEditorIdle(Sender: TObject); override;
     procedure OnEditorCalcHilite(Sender: TObject;
       var AParts: TATLineParts;
       ALineIndex, ACharIndex, ALineLen: integer;
@@ -258,16 +253,21 @@ procedure TATAdapterEControl.OnEditorCalcHilite(Sender: TObject;
 var
   Ed: TATSynEdit;
 begin
-  if not Assigned(AnClient) then Exit;
+  if AnClient=nil then Exit;
   DoCheckEditorList;
   Ed:= TATSynEdit(Sender);
 
-  AColorAfterEol:= clNone;
-  DoCalcParts(AParts, ALineIndex, ACharIndex-1, ALineLen,
-    Ed.Colors.TextFont,
-    clNone,
-    AColorAfterEol,
-    Ed.EditorIndex);
+  AnClient.CriSecForData.Enter;
+  try
+    AColorAfterEol:= clNone;
+    DoCalcParts(AParts, ALineIndex, ACharIndex-1, ALineLen,
+      Ed.Colors.TextFont,
+      clNone,
+      AColorAfterEol,
+      Ed.EditorIndex);
+  finally
+    AnClient.CriSecForData.Leave;
+  end;
 end;
 
 procedure TATAdapterEControl.OnEditorCalcPosColor(Sender: TObject; AX,
@@ -300,13 +300,15 @@ function TATAdapterEControl.GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
   ADefColor: TColor; AEditorIndex: integer): TColor;
 var
   Token: PecSyntToken;
-  n: integer;
+  NToken: integer;
 begin
   Result:= ADefColor;
-  n:= DoFindToken(APos);
-  if n<0 then exit;
+  if AnClient=nil then exit;
+  NToken:= DoFindToken(APos);
+  if NToken<0 then exit;
+  if not AnClient.PublicData.Tokens.IsIndexValid(NToken) then exit;
 
-  Token:= AnClient.Tags[n];
+  Token:= AnClient.PublicData.Tokens._GetItemPtr(NToken);
   if IsPosInRange(
     APos.X, APos.Y,
     Token^.Range.PointStart.X, Token^.Range.PointStart.Y,
@@ -409,8 +411,8 @@ var
 begin
   partindex:= 0;
 
-  if ALine<=High(AnClient.TokenIndexer) then
-    startindex:= AnClient.TokenIndexer[ALine]
+  if ALine<=High(AnClient.PublicData.TokenIndexer) then
+    startindex:= AnClient.PublicData.TokenIndexer[ALine]
   else
     startindex:= -1;
 
@@ -423,9 +425,9 @@ begin
   FillChar(part{%H-}, SizeOf(part), 0);
 
   if startindex>=0 then
-  for i:= startindex to AnClient.TagCount-1 do
+  for i:= startindex to AnClient.PublicData.Tokens.Count-1 do
   begin
-    token:= AnClient.Tags[i];
+    token:= AnClient.PublicData.Tokens._GetItemPtr(i);
     tokenStart:= token^.Range.PointStart;
     tokenEnd:= token^.Range.PointEnd;
 
@@ -560,11 +562,6 @@ begin
   FRangesSublexer:= TATSortedRanges.Create;
   FEnabledLineSeparators:= false;
   FEnabledSublexerTreeNodes:= false;
-
-  TimerDuringAnalyze:= TTimer.Create(Self);
-  TimerDuringAnalyze.Enabled:= false;
-  TimerDuringAnalyze.Interval:= cAdapterTimerDuringAnalyzeInterval;
-  TimerDuringAnalyze.OnTimer:= @TimerDuringAnalyzeTimer;
 end;
 
 destructor TATAdapterEControl.Destroy;
@@ -609,7 +606,9 @@ function TATAdapterEControl.LexerAtPos(Pnt: TPoint): TecSyntAnalyzer;
 begin
   Result:= nil;
   if AnClient<>nil then
-    Result:= AnClient.AnalyzerAtPos(Buffer.CaretToStr(Pnt));
+    Result:= AnClient.AnalyzerAtPos(
+               Buffer.CaretToStr(Pnt),
+               AnClient.PublicData.SublexRanges);
 end;
 
 procedure TATAdapterEControl.StopTreeUpdate;
@@ -617,26 +616,33 @@ begin
   FStopTreeUpdate:= true;
 end;
 
-function TATAdapterEControl.IsParsingBusy: boolean;
+procedure TATAdapterEControl.ParseInvoke(Ed: TATSynEdit; All: boolean);
 begin
-  Result:= Assigned(AnClient) and AnClient.TimerIdleIsBusy;
+  //TODO: delete after merge to master
+end;
+
+function TATAdapterEControl.IsParsingBusy: boolean;
+var
+  EvResult: TWaitResult;
+begin
+  if Assigned(AnClient) then
+  begin
+    EvResult:= AnClient.EventParseIdle.WaitFor(0);
+    Result:= EvResult<>wrSignaled;
+  end
+  else
+    Result:= false;
 end;
 
 function TATAdapterEControl.Stop: boolean;
 begin
   Result:= true;
-  TimerDuringAnalyze.Enabled:= false;
 
   if not Application.Terminated then
   begin
     if FBusyTreeUpdate then
     begin
       Sleep(100);
-      //Application.ProcessMessages;
-    end;
-    if FBusyTimer then
-    begin
-      Sleep(TimerDuringAnalyze.Interval+50);
       //Application.ProcessMessages;
     end;
   end;
@@ -695,8 +701,8 @@ begin
   if AnClient=nil then exit;
   if Buffer=nil then exit;
 
-  if (AIndex>=0) and (AIndex<AnClient.TagCount) then
-    GetTokenProps(AnClient.Tags[AIndex], APntFrom, APntTo, ATokenString, ATokenStyle, ATokenKind);
+  if (AIndex>=0) and (AIndex<AnClient.PublicData.Tokens.Count) then
+    GetTokenProps(AnClient.PublicData.Tokens._GetItemPtr(AIndex), APntFrom, APntTo, ATokenString, ATokenStyle, ATokenKind);
 end;
 
 procedure TATAdapterEControl.GetTokenAtPos(APos: TPoint;
@@ -717,7 +723,7 @@ begin
 
   n:= DoFindToken(APos);
   if n>=0 then
-    GetTokenProps(AnClient.Tags[n], APntFrom, APntTo, ATokenString, ATokenStyle, ATokenKind);
+    GetTokenProps(AnClient.PublicData.Tokens._GetItemPtr(n), APntFrom, APntTo, ATokenString, ATokenStyle, ATokenKind);
 end;
 
 
@@ -732,29 +738,28 @@ begin
   if Buffer=nil then exit;
 
   n:= DoFindToken(APos, true{AExactPos});
-  if n>=0 then
-  begin
-    Style:= AnClient.Tags[n]^.Style;
-    if Assigned(Style) then
-      Result:= TATTokenKind(Style.TokenKind);
-  end;
+  if n<0 then exit;
+  if not AnClient.PublicData.Tokens.IsIndexValid(n) then exit;
+
+  Style:= AnClient.PublicData.Tokens._GetItemPtr(n)^.Style;
+  if Assigned(Style) then
+    Result:= TATTokenKind(Style.TokenKind);
 end;
 
 function TATAdapterEControl.GetRangeParent(const R: TecTextRange): TecTextRange;
 //cannot use R.Parent!
 //
-//TODO TOFIX: this place is called DURING TreeFill, so
-//code tree is filled during lexer parsing.... not OK
+//this is called from TreeFill, so calls are guarded by CriticalSection.Enter/Leave
 // https://github.com/Alexey-T/CudaText/issues/3074
 var
   RTest: TecTextRange;
   NLast, i: integer;
 begin
   Result:= nil;
-  NLast := AnClient.RangeCount - 1;
+  NLast := AnClient.PublicData.FoldRanges.Count - 1;
   for i:= Min(NLast, R.Index-1) downto 0 do
   begin
-    RTest:= AnClient.Ranges[i];
+    RTest:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
     if (RTest.StartIdx<=R.StartIdx) and
        (RTest.EndIdx>=R.EndIdx) and
        (RTest.Level<R.Level) then
@@ -793,21 +798,23 @@ var
   Sep: TATStringSeparator;
   i: integer;
 begin
+  if AnClient=nil then exit;
+  AnClient.CriSecForData.Enter;
   FStopTreeUpdate:= false;
   FBusyTreeUpdate:= true;
+
   //ATree.Items.BeginUpdate;
 
   try
     ClearTreeviewWithData(ATree);
-    if AnClient=nil then exit;
     NameLexer:= AnClient.Owner.LexerName;
 
-    for i:= 0 to AnClient.RangeCount-1 do
+    for i:= 0 to AnClient.PublicData.FoldRanges.Count-1 do
     begin
       if FStopTreeUpdate then exit;
       if Application.Terminated then exit;
 
-      R:= AnClient.Ranges[i];
+      R:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
       if R.Rule=nil then Continue;
       if not R.Rule.DisplayInTree then Continue;
 
@@ -820,7 +827,7 @@ begin
         if NameRule<>NameLexer then Continue;
       end;
 
-      NodeText:= Trim(Utf8Encode(AnClient.GetRangeName(R)));
+      NodeText:= Trim(Utf8Encode(AnClient.GetRangeName(R, AnClient.PublicData.Tokens)));
       NodeTextGroup:= Trim(Utf8Encode(AnClient.GetRangeGroup(R)));
       NodeData:= R;
       NodeParent:= nil;
@@ -874,12 +881,12 @@ begin
       RangeNew:= TATRangeInCodeTree.Create;
 
       if R.StartIdx>=0 then
-        RangeNew.PosBegin:= AnClient.Tags[R.StartIdx]^.Range.PointStart
+        RangeNew.PosBegin:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx)^.Range.PointStart
       else
         RangeNew.PosBegin:= Point(-1, -1);
 
       if R.EndIdx>=0 then
-        RangeNew.PosEnd:= AnClient.Tags[R.EndIdx]^.Range.PointEnd
+        RangeNew.PosEnd:= AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx)^.Range.PointEnd
       else
         RangeNew.PosEnd:= Point(-1, -1);
 
@@ -890,6 +897,7 @@ begin
     //ATree.Items.EndUpdate;
     ATree.Invalidate;
     FBusyTreeUpdate:= false;
+    AnClient.CriSecForData.Leave;
   end;
 end;
 
@@ -902,10 +910,10 @@ begin
   if AnClient=nil then exit;
 
   if R.StartIdx>=0 then
-    APosBegin:= AnClient.Tags[R.StartIdx]^.Range.PointStart;
+    APosBegin:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx)^.Range.PointStart;
 
   if R.EndIdx>=0 then
-    APosEnd:=  AnClient.Tags[R.EndIdx]^.Range.PointEnd;
+    APosEnd:=  AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx)^.Range.PointEnd;
 end;
 
 //unused function
@@ -922,9 +930,9 @@ begin
   if NTokenOrig<0 then exit;
 
   //find last range, which contains our token
-  for i:= AnClient.RangeCount-1 downto 0 do
+  for i:= AnClient.PublicData.FoldRanges.Count-1 downto 0 do
   begin
-    R:= AnClient.Ranges[i];
+    R:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
     if not R.Rule.DisplayInTree then Continue;
 
     if (R.StartIdx<=NTokenOrig) and
@@ -936,7 +944,7 @@ end;
 function TATAdapterEControl.SublexerRangeCount: integer;
 begin
   if Assigned(AnClient) then
-    Result:= AnClient.SubLexerRangeCount
+    Result:= AnClient.PublicData.SublexRanges.Count
   else
     Result:= 0;
 end;
@@ -957,13 +965,28 @@ begin
   Result:= (AIndex>=0) and (AIndex<SublexerRangeCount);
   if Result then
   begin
-    Range:= AnClient.SubLexerRanges[AIndex];
+    Range:= AnClient.PublicData.SublexRanges[AIndex];
     if Range.Range.StartPos<0 then exit;
     AStart:= Range.Range.PointStart;
     AEnd:= Range.Range.PointEnd;
     if Assigned(Range.Rule) and Assigned(Range.Rule.SyntAnalyzer) then
       ALexerName:= Range.Rule.SyntAnalyzer.LexerName;
   end;
+end;
+
+procedure TATAdapterEControl.OnEditorScroll(Sender: TObject);
+begin
+  UpdatePublicDataNeedTo;
+end;
+
+procedure TATAdapterEControl.UpdatePublicDataNeedTo;
+var
+  Ed: TATSynEdit;
+begin
+  if AnClient=nil then exit;
+  Ed:= Editor;
+  if Ed=nil then exit;
+  AnClient.PublicDataNeedTo:= Ed.LineBottom+1;
 end;
 
 procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer);
@@ -1040,21 +1063,19 @@ begin
 
   if Assigned(AAnalizer) then
   begin
-    AnClient:= TecClientSyntAnalyzer.Create(AAnalizer, Buffer, nil, true);
-    UpdateData(true, true);
+    UpdateBuffer;
+    UpdatePublicDataNeedTo;
+
+    AnClient:= TecClientSyntAnalyzer.Create(AAnalizer, Buffer);
+    if EdList.Count>0 then
+      AnClient.FileName:= ExtractFileName(Editor.FileName);
+    AnClient.OnParseDone:= @ParseDone;
   end;
 
   if Assigned(FOnLexerChange) then
     FOnLexerChange(Editor);
 
   DynamicHiliteSupportedInCurrentSyntax:= GetLexerSuportsDynamicHilite;
-end;
-
-procedure TATAdapterEControl.OnEditorChange(Sender: TObject);
-begin
-  DoCheckEditorList;
-  //if CurrentIdleInterval=0, OnEditorIdle will not fire, analyze here
-  UpdateData(true, CurrentIdleInterval=0);
 end;
 
 procedure TATAdapterEControl.OnEditorChangeEx(Sender: TObject; AChange: TATLineChangeKind; ALine,
@@ -1065,45 +1086,35 @@ begin
   FRangesSublexer.UpdateOnChange(AChange, ALine, AItemCount);
 end;
 
-procedure TATAdapterEControl.OnEditorIdle(Sender: TObject);
-begin
-  DoCheckEditorList;
-  UpdateData(false, true);
-  UpdateEditors(true);
-end;
-
-procedure TATAdapterEControl.UpdateData(AUpdateBuffer, AAnalyze: boolean);
+procedure TATAdapterEControl.UpdateBuffer;
 var
   Ed: TATSynEdit;
   Lens: array of integer;
   Str: TATStrings;
   i: integer;
 begin
-  if EdList.Count=0 then Exit;
-  if not Assigned(AnClient) then Exit;
-
-  Ed:= TATSynEdit(EdList[0]);
+  Ed:= Editor;
+  if Ed=nil then exit;
   Str:= Ed.Strings;
-
-  if AUpdateBuffer then
-  begin
-    SetLength(Lens{%H-}, Str.Count);
-    for i:= 0 to Length(Lens)-1 do
-      Lens[i]:= Str.LinesLen[i];
-    Buffer.Setup(Str.TextString_Unicode(Ed.OptMaxLineLenToTokenize), Lens);
-  end;
-
-  if AAnalyze then
-  begin
-    ParseInvoke(Ed, false);
-  end;
+  SetLength(Lens{%H-}, Str.Count);
+  for i:= 0 to Length(Lens)-1 do
+    Lens[i]:= Str.LinesLen[i];
+  Buffer.Setup(Str.TextString_Unicode(Ed.OptMaxLineLenToTokenize), Lens);
 end;
 
 procedure TATAdapterEControl.UpdateRanges;
 begin
   ClearRanges;
-  UpdateRangesFoldAndColored;
-  UpdateRangesSublex; //sublexer ranges last
+
+  if AnClient=nil then exit;
+  AnClient.CriSecForData.Enter;
+  try
+    UpdateRangesFoldAndColored;
+    UpdateRangesSublex; //sublexer ranges last
+  finally
+    AnClient.CriSecForData.Leave;
+  end;
+
   UpdateRangesActiveAll;
 end;
 
@@ -1124,42 +1135,6 @@ begin
     for i:= 0 to EdList.Count-1 do
       if TATSynEdit(EdList[i]).IsRunningCommand then
         exit(true);
-end;
-
-procedure TATAdapterEControl.ParseInvoke(AEdit: TATSynEdit; AForceAnalizeAll: boolean);
-var
-  NLine, NPos: integer;
-begin
-  if AnClient=nil then exit;
-  if Buffer.TextLength=0 then exit;
-
-  ParseBegin;
-
-  if AForceAnalizeAll then
-  begin
-    AnClient.TextChangedOnLine(0);
-    AnClient.ParseAll(true, true);
-  end
-  else
-  begin
-    //LineBottom=0, if file just opened at beginning.
-    //or >0 of file is edited at some scroll pos
-    NLine:= AEdit.LineBottom;
-    if NLine=0 then
-      NLine:= AEdit.GetVisibleLines;
-    NLine:= Min(NLine, Buffer.Count-1);
-    NPos:= Buffer.CaretToStr(Point(0, NLine));
-    AnClient.ParseToPos(NPos);
-  end;
-
-  if AnClient.IsFinished then
-  begin
-    ParseDone;
-  end
-  else
-  begin
-    TimerDuringAnalyze.Enabled:= true;
-  end;
 end;
 
 procedure TATAdapterEControl.ClearFoldIndexers;
@@ -1187,16 +1162,12 @@ var
   Ed: TATSynEdit;
   i: integer;
 begin
-  for i:= 0 to EdList.Count-1 do
-  begin
-    Ed:= TATSynEdit(EdList[i]);
-
-    CurrentIdleInterval:= GetIdleInterval;
-    Ed.OptIdleInterval:= CurrentIdleInterval;
-
-    if ARepaint then
+  if ARepaint then
+    for i:= 0 to EdList.Count-1 do
+    begin
+      Ed:= TATSynEdit(EdList[i]);
       Ed.Update;
-  end;
+    end;
 end;
 
 
@@ -1220,21 +1191,21 @@ var
   ColoredRange: TATSortedRange;
   i: integer;
 begin
-  if not Assigned(AnClient) then Exit;
+  if AnClient=nil then Exit;
 
   //check folding enabled
-  if EdList.Count=0 then exit;
-  Ed:= TATSynEdit(EdList[0]);
+  Ed:= Editor;
+  if Ed=nil then exit;
   if not Ed.OptFoldEnabled then exit;
 
   //init Ed.Fold.LineIndexer's
   ClearFoldIndexers;
 
-  for i:= 0 to AnClient.RangeCount-1 do
+  for i:= 0 to AnClient.PublicData.FoldRanges.Count-1 do
   begin
     if Application.Terminated then exit;
 
-    R:= AnClient.Ranges[i];
+    R:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
     if R.Rule=nil then Continue;
     if R.Rule.BlockType<>btRangeStart then Continue;
 
@@ -1246,11 +1217,11 @@ begin
     if R.Rule.NotParent then Continue;
     {$endif}
 
-    if R.StartIdx<0 then Continue;
-    if R.EndIdx<0 then Continue;
+    if not AnClient.PublicData.Tokens.IsIndexValid(R.StartIdx) then Continue;
+    if not AnClient.PublicData.Tokens.IsIndexValid(R.EndIdx) then Continue;
 
-    tokenStart:= AnClient.Tags[R.StartIdx];
-    tokenEnd:= AnClient.Tags[R.EndIdx];
+    tokenStart:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx);
+    tokenEnd:= AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx);
     Pnt1:= tokenStart^.Range.PointStart;
     Pnt2:= tokenEnd^.Range.PointEnd;
     if Pnt1.Y<0 then Continue;
@@ -1333,11 +1304,11 @@ var
   Range: TATSortedRange;
   i: integer;
 begin
-  for i:= 0 to AnClient.SubLexerRangeCount-1 do
+  for i:= 0 to AnClient.PublicData.SublexRanges.Count-1 do
   begin
     if Application.Terminated then exit;
 
-    R:= AnClient.SubLexerRanges[i];
+    R:= AnClient.PublicData.SublexRanges[i];
     if R.Rule=nil then Continue;
     if R.Range.StartPos<0 then Continue;
     if R.Range.EndPos<0 then Continue;
@@ -1361,8 +1332,9 @@ begin
     end;
   end;
 
-  Ed:= TATSynEdit(EdList[0]);
-  FRangesSublexer.UpdateLineIndexer(Ed.Strings.Count);
+  Ed:= Editor;
+  if Assigned(Ed) then
+    FRangesSublexer.UpdateLineIndexer(Ed.Strings.Count);
 end;
 
 
@@ -1372,16 +1344,16 @@ begin
     exit(-1);
   if APos.X=0 then
   begin
-    if APos.Y<=High(AnClient.TokenIndexer) then
-      Result:= AnClient.TokenIndexer[APos.Y]
+    if APos.Y<=High(AnClient.PublicData.TokenIndexer) then
+      Result:= AnClient.PublicData.TokenIndexer[APos.Y]
     else
       Result:= -1;
   end
   else
   if AExactPos then
-    Result:= AnClient.FindTokenAt(AnClient.Buffer.CaretToStr(APos))
+    Result:= AnClient.PublicData.Tokens.FindAt(AnClient.Buffer.CaretToStr(APos))
   else
-    Result:= AnClient.PriorTokenAt(AnClient.Buffer.CaretToStr(APos));
+    Result:= AnClient.PublicData.Tokens.PriorAt(AnClient.Buffer.CaretToStr(APos));
 end;
 
 function TATAdapterEControl.GetLexer: TecSyntAnalyzer;
@@ -1393,34 +1365,12 @@ begin
 end;
 
 procedure TATAdapterEControl.DoChangeLog(Sender: TObject; ALine: integer);
-//ALine=-1 means 'clear', it's supported by AnClient
 begin
-  if not Assigned(AnClient) then Exit;
+  if AnClient=nil then Exit;
+  UpdateBuffer;
+  UpdatePublicDataNeedTo;
   AnClient.TextChangedOnLine(ALine);
 end;
-
-procedure TATAdapterEControl.TimerDuringAnalyzeTimer(Sender: TObject);
-begin
-  if Application.Terminated then
-  begin
-    TimerDuringAnalyze.Enabled:= false;
-    exit
-  end;
-
-  if not Assigned(AnClient) then Exit;
-
-  FBusyTimer:= true;
-  try
-    if AnClient.IsFinished then
-    begin
-      TimerDuringAnalyze.Enabled:= false;
-      ParseDone;
-    end;
-  finally
-    FBusyTimer:= false;
-  end;
-end;
-
 
 function TATAdapterEControl.GetTokenColor_FromBoundRanges(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
 begin
@@ -1439,7 +1389,7 @@ var
   i: integer;
 begin
   Result:= false;
-  if not Assigned(AnClient) then exit;
+  if AnClient=nil then exit;
   An:= AnClient.Owner;
   for i:= 0 to An.BlockRules.Count-1 do
   begin
@@ -1454,8 +1404,11 @@ function TATAdapterEControl.IsDynamicHiliteEnabled: boolean;
 var
   Ed: TATSynEdit;
 begin
-  Ed:= TATSynEdit(EdList[0]);
-  Result:= DynamicHiliteActiveNow(Ed.Strings.Count);
+  Ed:= Editor;
+  if Assigned(Ed) then
+    Result:= DynamicHiliteActiveNow(Ed.Strings.Count)
+  else
+    Result:= false;
 end;
 
 procedure TATAdapterEControl.ParseBegin;
@@ -1466,7 +1419,7 @@ begin
   FTimeParseBegin:= GetTickCount64;
 end;
 
-procedure TATAdapterEControl.ParseDone;
+procedure TATAdapterEControl.ParseDone(Sender: TObject);
 begin
   //UpdateRanges call needed for small files, which are parsed to end by one IdleAppend call,
   //and timer didn't tick
@@ -1478,38 +1431,40 @@ begin
     FOnParseDone(Self);
 
   UpdateEditors(true);
+
+  //debug!
+  //Application.MainForm.Caption:= 'parse-done: '+DebugString;
+  //Sleep(1500);
 end;
 
 procedure TATAdapterEControl.ParseFromLine(ALine: integer; AWait: boolean);
 begin
-  if not Assigned(AnClient) then exit;
+  if AnClient=nil then exit;
   ParseBegin;
   AnClient.TextChangedOnLine(ALine);
-  AnClient.ParseAll(true, not AWait);
 
-  if AnClient.IsFinished then
+  if AWait then
   begin
-    ParseDone;
-  end
-  else
-  begin
-    TimerDuringAnalyze.Enabled:= true;
+    //this method gives too small duration time, like 40 microsec
+    //AnClient.EventParseIdle.WaitFor(INFINITE);
 
-    if AWait then
-      while not AnClient.IsFinished do
-      begin
-        Sleep(TimerDuringAnalyze.Interval+20);
-        Application.ProcessMessages;
-      end;
+    //this method gives ok duration times, like 140ms
+    repeat
+      Sleep(60);
+      Application.ProcessMessages;
+    until AnClient.IsFinished or Application.Terminated;
   end;
 end;
 
-function TATAdapterEControl.GetIdleInterval: integer;
+function TATAdapterEControl.DebugString: string;
+var
+  i: integer;
 begin
-  if Buffer.TextLength < cAdapterIdleTextSize then
-    Result:= 0
-  else
-    Result:= cAdapterIdleInterval;
+  Result:= '';
+  for i:= 0 to EdList.Count-1 do
+    Result+= '"'+ExtractFileName(TATSynEdit(EdList[i]).FileName)+'" ';
+  if Lexer<>nil then
+    Result+= '- '+Lexer.LexerName;
 end;
 
 end.
