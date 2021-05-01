@@ -94,7 +94,7 @@ type
     procedure UpdateRangesActiveAll;
     procedure UpdateRangesSublex;
     procedure UpdateRangesFoldAndColored;
-    procedure UpdateEditors(ARepaint: boolean);
+    procedure UpdateEditors;
     function GetLexer: TecSyntAnalyzer;
     procedure SetLexer(AAnalizer: TecSyntAnalyzer);
     function GetLexerSuportsDynamicHilite: boolean;
@@ -1054,7 +1054,6 @@ begin
   if IsParsingBusy then exit;
 
   ClearRanges;
-  UpdateEditors(false);
 
   if Assigned(AnClient) then
     FreeAndNil(AnClient);
@@ -1157,17 +1156,16 @@ begin
     TATSynEdit(EdList[i]).Fold.Add(AX, AY, AY2, AStaple, AHint);
 end;
 
-procedure TATAdapterEControl.UpdateEditors(ARepaint: boolean);
+procedure TATAdapterEControl.UpdateEditors;
 var
   Ed: TATSynEdit;
   i: integer;
 begin
-  if ARepaint then
-    for i:= 0 to EdList.Count-1 do
-    begin
-      Ed:= TATSynEdit(EdList[i]);
-      Ed.Update;
-    end;
+  for i:= 0 to EdList.Count-1 do
+  begin
+    Ed:= TATSynEdit(EdList[i]);
+    Ed.Update;
+  end;
 end;
 
 
@@ -1430,7 +1428,7 @@ begin
   if Assigned(FOnParseDone) then
     FOnParseDone(Self);
 
-  UpdateEditors(true);
+  UpdateEditors;
 end;
 
 procedure TATAdapterEControl.ParseFromLine(ALine: integer; AWait: boolean);
