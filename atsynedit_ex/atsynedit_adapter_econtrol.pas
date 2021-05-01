@@ -1431,10 +1431,6 @@ begin
     FOnParseDone(Self);
 
   UpdateEditors(true);
-
-  //debug!
-  //Application.MainForm.Caption:= 'parse-done: '+DebugString;
-  //Sleep(1500);
 end;
 
 procedure TATAdapterEControl.ParseFromLine(ALine: integer; AWait: boolean);
