@@ -25,15 +25,7 @@ uses
   ec_syntax_format,
   ec_SyntAnal;
 
-var
-  //TODO: remove these vars
-  //ATSynEdit.OnIdle timer interval
-  cAdapterIdleInterval: integer = 500;
-  //ATSynEdit.OnIdle will fire only if text size is bigger
-  cAdapterIdleTextSize: integer = 10*1000;
-
 type
-
   { TATRangeInCodeTree }
 
   TATRangeInCodeTree = class
