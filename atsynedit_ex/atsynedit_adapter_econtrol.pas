@@ -974,11 +974,28 @@ end;
 procedure TATAdapterEControl.UpdatePublicDataNeedTo;
 var
   Ed: TATSynEdit;
+  NLine1, NLine2: integer;
 begin
   if AnClient=nil then exit;
-  Ed:= Editor;
-  if Ed=nil then exit;
-  AnClient.PublicDataNeedTo:= Ed.LineBottom+1;
+  if EdList.Count=0 then exit;
+
+  Ed:= TATSynEdit(EdList[0]);
+  NLine1:= Ed.LineBottom+1;
+  AnClient.PublicDataNeedTo:= NLine1;
+
+  if EdList.Count>1 then
+  begin
+    Ed:= TATSynEdit(EdList[1]);
+    if Ed.Visible then
+    begin
+      NLine2:= Ed.LineBottom+1;
+      if NLine2<=NLine1 then
+        NLine2:= 0;
+    end
+    else
+      NLine2:= 0;
+    AnClient.PublicDataNeedTo2:= NLine2;
+  end;
 end;
 
 procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer);
