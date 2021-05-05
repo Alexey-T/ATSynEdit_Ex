@@ -1173,17 +1173,22 @@ begin
   for i:= 0 to EdList.Count-1 do
   begin
     Ed:= TATSynEdit(EdList[i]);
-    Ed.Update;
+    if (i=0) or Ed.Visible then
+      Ed.Update;
   end;
 end;
 
 
 procedure TATAdapterEControl.DoFoldFromLinesHidden;
 var
+  Ed: TATSynEdit;
   i: integer;
 begin
   for i:= 0 to EdList.Count-1 do
-    TATSynEdit(EdList[i]).UpdateFoldedFromLinesHidden;
+  begin
+    Ed:= TATSynEdit(EdList[i]);
+    Ed.UpdateFoldedFromLinesHidden;
+  end;
 end;
 
 
