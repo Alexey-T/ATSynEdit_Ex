@@ -44,6 +44,8 @@ type
   { TATAdapterEControl }
 
   TATAdapterEControl = class(TATAdapterHilite)
+  private type
+    TATAdapterProgressKind = (epkFirst, epkSecond, epkBoth);
   private
     EdList: TFPList;
     Buffer: TATStringBuffer;
@@ -73,6 +75,9 @@ type
     procedure DoChangeLog(Sender: TObject; ALine: integer);
     procedure ParseBegin;
     procedure ParseDone(Sender: TObject);
+    procedure ProgressFirst(Sender: TObject);
+    procedure ProgressSecond(Sender: TObject);
+    procedure ProgressBoth(Sender: TObject);
     function GetRangeParent(const R: TecTextRange): TecTextRange;
     function GetTokenColorBG_FromColoredRanges(const APos: TPoint; ADefColor: TColor;
       AEditorIndex: integer): TColor;
@@ -86,7 +91,7 @@ type
     procedure UpdateRangesActiveAll;
     procedure UpdateRangesSublex;
     procedure UpdateRangesFoldAndColored;
-    procedure UpdateEditors;
+    procedure UpdateEditors(AKind: TATAdapterProgressKind);
     function GetLexer: TecSyntAnalyzer;
     procedure SetLexer(AAnalizer: TecSyntAnalyzer);
     function GetLexerSuportsDynamicHilite: boolean;
@@ -981,21 +986,26 @@ begin
 
   Ed:= TATSynEdit(EdList[0]);
   NLine1:= Ed.LineBottom+1;
-  AnClient.PublicDataNeedTo:= NLine1;
 
   if EdList.Count>1 then
   begin
     Ed:= TATSynEdit(EdList[1]);
     if Ed.Visible then
-    begin
-      NLine2:= Ed.LineBottom+1;
-      if NLine2<=NLine1 then
-        NLine2:= 0;
-    end
+      NLine2:= Ed.LineBottom+1
     else
       NLine2:= 0;
-    AnClient.PublicDataNeedTo2:= NLine2;
+  end
+  else
+    NLine2:= 0;
+
+  if (NLine2>0) and (Abs(NLine1-NLine2)<50) then
+  begin
+    NLine1:= Max(NLine1, NLine2);
+    NLine2:= NLine1;
   end;
+
+  AnClient.PublicDataNeedTo:= NLine1;
+  AnClient.PublicDataNeedTo2:= NLine2;
 end;
 
 procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer);
@@ -1078,6 +1088,9 @@ begin
     if EdList.Count>0 then
       AnClient.FileName:= ExtractFileName(Editor.FileName);
     AnClient.OnParseDone:= @ParseDone;
+    AnClient.OnProgressFirst:= @ProgressFirst;
+    AnClient.OnProgressSecond:= @ProgressSecond;
+    AnClient.OnProgressBoth:= @ProgressBoth;
   end;
 
   if Assigned(FOnLexerChange) then
@@ -1165,17 +1178,28 @@ begin
     TATSynEdit(EdList[i]).Fold.Add(AX, AY, AY2, AStaple, AHint);
 end;
 
-procedure TATAdapterEControl.UpdateEditors;
+
+procedure TATAdapterEControl.UpdateEditors(AKind: TATAdapterProgressKind);
+const
+  cStrProgress: array[TATAdapterProgressKind] of string = ('1st', '2nd', 'both');
 var
   Ed: TATSynEdit;
-  i: integer;
 begin
-  for i:= 0 to EdList.Count-1 do
+  //Application.MainForm.Caption:= TimeToStr(Now)+', update '+cStrProgress[AKind];
+
+  if AKind in [epkFirst, epkBoth] then
   begin
-    Ed:= TATSynEdit(EdList[i]);
-    if (i=0) or Ed.Visible then
-      Ed.Update;
+    Ed:= TATSynEdit(EdList[0]);
+    Ed.Update;
   end;
+
+  if AKind in [epkSecond, epkBoth] then
+    if EdList.Count>1 then
+    begin
+      Ed:= TATSynEdit(EdList[1]);
+      if Ed.Visible then
+        Ed.Update;
+    end;
 end;
 
 
@@ -1442,7 +1466,22 @@ begin
   if Assigned(FOnParseDone) then
     FOnParseDone(Self);
 
-  UpdateEditors;
+  UpdateEditors(epkBoth);
+end;
+
+procedure TATAdapterEControl.ProgressFirst(Sender: TObject);
+begin
+  UpdateEditors(epkFirst);
+end;
+
+procedure TATAdapterEControl.ProgressSecond(Sender: TObject);
+begin
+  UpdateEditors(epkSecond);
+end;
+
+procedure TATAdapterEControl.ProgressBoth(Sender: TObject);
+begin
+  UpdateEditors(epkBoth);
 end;
 
 procedure TATAdapterEControl.ParseFromLine(ALine: integer; AWait: boolean);
