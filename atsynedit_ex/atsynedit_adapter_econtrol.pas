@@ -111,7 +111,6 @@ type
     function Stop: boolean;
     function Editor: TATSynEdit;
     procedure StopTreeUpdate;
-    procedure ParseInvoke(Ed: TATSynEdit; All: boolean);
     function IsParsingBusy: boolean;
     function DebugString: string;
 
@@ -611,11 +610,6 @@ end;
 procedure TATAdapterEControl.StopTreeUpdate;
 begin
   FStopTreeUpdate:= true;
-end;
-
-procedure TATAdapterEControl.ParseInvoke(Ed: TATSynEdit; All: boolean);
-begin
-  //TODO: delete after merge to master
 end;
 
 function TATAdapterEControl.IsParsingBusy: boolean;
