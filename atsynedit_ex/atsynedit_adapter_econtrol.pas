@@ -32,6 +32,7 @@ type
   public
     PosBegin: TPoint;
     PosEnd: TPoint;
+    DataString: string;
     procedure Assign(Src: TATRangeInCodeTree);
   end;
 
@@ -232,6 +233,7 @@ procedure TATRangeInCodeTree.Assign(Src: TATRangeInCodeTree);
 begin
   PosBegin:= Src.PosBegin;
   PosEnd:= Src.PosEnd;
+  DataString:= Src.DataString;
 end;
 
 
