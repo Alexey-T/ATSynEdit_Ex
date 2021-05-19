@@ -32,7 +32,7 @@ type
   public
     PosBegin: TPoint;
     PosEnd: TPoint;
-    DataString: string;
+    DataString: string; //for CudaText plugins
     procedure Assign(Src: TATRangeInCodeTree);
   end;
 
