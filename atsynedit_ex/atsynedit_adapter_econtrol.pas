@@ -36,8 +36,6 @@ type
     procedure Assign(Src: TATRangeInCodeTree);
   end;
 
-procedure ClearTreeviewWithData(ATree: TTreeView);
-
 type
   TATEditorEvent = procedure(Sender: TATSynEdit) of object;
 
@@ -174,24 +172,6 @@ const
     cLineStyleWave,
     cLineStyleDotted
     );
-
-procedure ClearTreeviewWithData(ATree: TTreeView);
-//var
-//  i: integer;
-begin
-  {
-  //Data is freed via Tree.OnDeletion
-  for i:= ATree.Items.Count-1 downto 0 do
-    with ATree.Items[i] do
-      if Data<>nil then
-      begin
-        TObject(Data).Free;
-        Data:= nil;
-      end;
-      }
-  ATree.Items.Clear;
-end;
-
 
 procedure ApplyPartStyleFromEcontrolStyle(var part: TATLinePart; st: TecSyntaxFormat); inline;
 var
@@ -802,7 +782,7 @@ begin
   //ATree.Items.BeginUpdate;
 
   try
-    ClearTreeviewWithData(ATree);
+    ATree.Items.Clear;
     NameLexer:= AnClient.Owner.LexerName;
 
     for i:= 0 to AnClient.PublicData.FoldRanges.Count-1 do
