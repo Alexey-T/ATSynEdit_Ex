@@ -176,9 +176,11 @@ const
     );
 
 procedure ClearTreeviewWithData(ATree: TTreeView);
-var
-  i: integer;
+//var
+//  i: integer;
 begin
+  {
+  //Data is freed via Tree.OnDeletion
   for i:= ATree.Items.Count-1 downto 0 do
     with ATree.Items[i] do
       if Data<>nil then
@@ -186,6 +188,7 @@ begin
         TObject(Data).Free;
         Data:= nil;
       end;
+      }
   ATree.Items.Clear;
 end;
 
