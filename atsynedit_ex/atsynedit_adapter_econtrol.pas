@@ -1098,20 +1098,7 @@ begin
   SetLength(Lens{%H-}, Str.Count);
   for i:= 0 to Length(Lens)-1 do
     Lens[i]:= Str.LinesLen[i];
-
-  if OptCriticalSectionForBuffer then
-  begin
-    if Assigned(AnClient) then
-      AnClient.CriSecForBuffer.Enter;
-    try
-      Buffer.Setup(Str.TextString_Unicode(Ed.OptMaxLineLenToTokenize), Lens);
-    finally
-      if Assigned(AnClient) then
-        AnClient.CriSecForBuffer.Leave;
-    end;
-  end
-  else
-    Buffer.Setup(Str.TextString_Unicode(Ed.OptMaxLineLenToTokenize), Lens);
+  Buffer.Setup(Str.TextString_Unicode(Ed.OptMaxLineLenToTokenize), Lens);
 end;
 
 procedure TATAdapterEControl.UpdateRanges;
