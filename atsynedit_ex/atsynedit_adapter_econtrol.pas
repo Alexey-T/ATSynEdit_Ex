@@ -83,7 +83,7 @@ type
     function GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
       ADefColor: TColor; AEditorIndex: integer): TColor;
     function EditorRunningCommand: boolean;
-    procedure UpdateBuffer;
+    procedure UpdateBuffer(ABuffer: TATStringBuffer);
     procedure UpdatePublicDataNeedTo;
     procedure UpdateRanges;
     procedure UpdateRangesActive(AEdit: TATSynEdit);
@@ -1059,7 +1059,7 @@ begin
 
   if Assigned(AAnalizer) then
   begin
-    UpdateBuffer;
+    UpdateBuffer(Buffer);
     UpdatePublicDataNeedTo;
 
     AnClient:= TecClientSyntAnalyzer.Create(AAnalizer, Buffer);
@@ -1085,7 +1085,7 @@ begin
   FRangesSublexer.UpdateOnChange(AChange, ALine, AItemCount);
 end;
 
-procedure TATAdapterEControl.UpdateBuffer;
+procedure TATAdapterEControl.UpdateBuffer(ABuffer: TATStringBuffer);
 var
   Ed: TATSynEdit;
   Lens: array of integer;
@@ -1098,7 +1098,7 @@ begin
   SetLength(Lens{%H-}, Str.Count);
   for i:= 0 to Length(Lens)-1 do
     Lens[i]:= Str.LinesLen[i];
-  Buffer.Setup(Str.TextString_Unicode(Ed.OptMaxLineLenToTokenize), Lens);
+  ABuffer.Setup(Str.TextString_Unicode(Ed.OptMaxLineLenToTokenize), Lens);
 end;
 
 procedure TATAdapterEControl.UpdateRanges;
@@ -1381,7 +1381,7 @@ end;
 procedure TATAdapterEControl.DoChangeLog(Sender: TObject; ALine: integer);
 begin
   if AnClient=nil then Exit;
-  UpdateBuffer;
+  UpdateBuffer(Buffer);
   UpdatePublicDataNeedTo;
   AnClient.TextChangedOnLine(ALine);
 end;
