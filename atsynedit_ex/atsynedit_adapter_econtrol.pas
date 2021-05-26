@@ -107,7 +107,7 @@ type
     function LexerAtPos(Pnt: TPoint): TecSyntAnalyzer;
     property EnabledSublexerTreeNodes: boolean read FEnabledSublexerTreeNodes write FEnabledSublexerTreeNodes default false;
     procedure ParseFromLine(ALine: integer; AWait: boolean);
-    function Stop: boolean;
+    procedure Stop;
     function Editor: TATSynEdit;
     procedure StopTreeUpdate;
     function IsParsingBusy: boolean;
@@ -609,10 +609,8 @@ begin
     Result:= false;
 end;
 
-function TATAdapterEControl.Stop: boolean;
+procedure TATAdapterEControl.Stop;
 begin
-  Result:= true;
-
   if not Application.Terminated then
   begin
     if FBusyTreeUpdate then
@@ -623,7 +621,7 @@ begin
   end;
 
   if Assigned(AnClient) then
-    Result:= AnClient.Stop;
+    AnClient.Stop;
 end;
 
 function TATAdapterEControl.Editor: TATSynEdit;
