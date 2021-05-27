@@ -1379,6 +1379,7 @@ end;
 procedure TATAdapterEControl.DoChangeLog(Sender: TObject; ALine: integer);
 begin
   if AnClient=nil then Exit;
+  AnClient.Stop; //do it before slow UpdateBuffer()
   UpdateBuffer(Buffer);
   UpdatePublicDataNeedTo;
   AnClient.TextChangedOnLine(ALine);
