@@ -585,7 +585,7 @@ end;
 function TATAdapterEControl.LexerAtPos(Pnt: TPoint): TecSyntAnalyzer;
 begin
   Result:= nil;
-  if AnClient<>nil then
+  if Assigned(AnClient) then
     Result:= AnClient.AnalyzerAtPos(
                Buffer.CaretToStr(Pnt),
                AnClient.PublicData.SublexRanges);
@@ -675,7 +675,13 @@ begin
   if Buffer=nil then exit;
 
   if (AIndex>=0) and (AIndex<AnClient.PublicData.Tokens.Count) then
-    GetTokenProps(AnClient.PublicData.Tokens._GetItemPtr(AIndex), APntFrom, APntTo, ATokenString, ATokenStyle, ATokenKind);
+    GetTokenProps(
+      AnClient.PublicData.Tokens._GetItemPtr(AIndex),
+      APntFrom,
+      APntTo,
+      ATokenString,
+      ATokenStyle,
+      ATokenKind);
 end;
 
 procedure TATAdapterEControl.GetTokenAtPos(APos: TPoint;
@@ -696,7 +702,13 @@ begin
 
   n:= DoFindToken(APos);
   if n>=0 then
-    GetTokenProps(AnClient.PublicData.Tokens._GetItemPtr(n), APntFrom, APntTo, ATokenString, ATokenStyle, ATokenKind);
+    GetTokenProps(
+      AnClient.PublicData.Tokens._GetItemPtr(n),
+      APntFrom,
+      APntTo,
+      ATokenString,
+      ATokenStyle,
+      ATokenKind);
 end;
 
 
