@@ -1168,13 +1168,14 @@ end;
 
 
 procedure TATAdapterEControl.UpdateEditors(AKind: TATAdapterProgressKind);
-const
-  cStrProgress: array[TATAdapterProgressKind] of string = ('1st', '2nd', 'both');
+//const
+//  cStrProgress: array[TATAdapterProgressKind] of string = ('1st', '2nd', 'both');
 var
   Ed: TATSynEdit;
 begin
   //Application.MainForm.Caption:= TimeToStr(Now)+', update '+cStrProgress[AKind];
 
+  if EdList.Count>0 then
   if AKind in [epkFirst, epkBoth] then
   begin
     Ed:= TATSynEdit(EdList[0]);
@@ -1391,7 +1392,7 @@ end;
 procedure TATAdapterEControl.DoChangeLog(Sender: TObject; ALine: integer);
 begin
   if AnClient=nil then Exit;
-  AnClient.Stop; //do it before slow UpdateBuffer()
+  AnClient.Stop; //stop parsing before slow UpdateBuffer()
   UpdateBuffer(Buffer);
   UpdatePublicDataNeedTo;
   AnClient.TextChangedOnLine(ALine);
