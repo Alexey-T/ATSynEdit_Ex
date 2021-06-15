@@ -89,7 +89,6 @@ type
     procedure UpdateRangesActive(AEdit: TATSynEdit);
     procedure UpdateRangesActiveAll;
     procedure UpdateRangesSublex;
-    procedure UpdateRangesFoldAndColored;
     procedure UpdateEditors(AKind: TATAdapterProgressKind);
     function GetLexer: TecSyntAnalyzer;
     procedure SetLexer(AAnalizer: TecSyntAnalyzer);
@@ -112,6 +111,7 @@ type
     procedure StopTreeUpdate;
     function IsParsingBusy: boolean;
     function DebugString: string;
+    procedure UpdateRangesFoldAndColored;
 
     //tokens
     procedure GetTokenWithIndex(AIndex: integer; out APntFrom, APntTo: TPoint;
@@ -145,6 +145,7 @@ type
       AMainText: boolean); override;
     procedure OnEditorCalcPosColor(Sender: TObject;
       AX, AY: integer; var AColor: TColor); override;
+
   published
     property OnLexerChange: TATEditorEvent read FOnLexerChange write FOnLexerChange;
     property OnParseBegin: TNotifyEvent read FOnParseBegin write FOnParseBegin;
