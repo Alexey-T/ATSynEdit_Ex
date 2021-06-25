@@ -281,7 +281,7 @@ end;
 function TATAdapterEControl.IsParsedAtLeastPartially: boolean;
 begin
   Result:= Assigned(AnClient) and
-    (AnClient.PublicData.FinishedPartially);
+    AnClient.PublicData.FinishedPartially;
 end;
 
 function TATAdapterEControl.GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
