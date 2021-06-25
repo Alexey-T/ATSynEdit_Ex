@@ -145,6 +145,7 @@ type
       AMainText: boolean); override;
     procedure OnEditorCalcPosColor(Sender: TObject;
       AX, AY: integer; var AColor: TColor); override;
+    function IsParsingDoneAtLeastPartially: boolean; override;
 
   published
     property OnLexerChange: TATEditorEvent read FOnLexerChange write FOnLexerChange;
@@ -275,6 +276,12 @@ begin
     AColor:= NColor;
     exit;
   end;
+end;
+
+function TATAdapterEControl.IsParsingDoneAtLeastPartially: boolean;
+begin
+  Result:= Assigned(AnClient) and
+    (AnClient.PublicData.FinishedPartially);
 end;
 
 function TATAdapterEControl.GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
