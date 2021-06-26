@@ -282,8 +282,7 @@ end;
 function TATAdapterEControl.IsParsedAtLeastPartially: boolean;
 begin
   if Assigned(AnClient) then
-    Result:= AnClient.PublicData.FinishedPartially or
-             (AnClient.PublicData.Tokens.Count=0)
+    Result:= AnClient.PublicData.FinishedPartially
   else
     Result:= true; //return 'true' for none-lexer
 end;
