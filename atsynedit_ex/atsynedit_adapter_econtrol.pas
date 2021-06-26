@@ -146,6 +146,7 @@ type
     procedure OnEditorCalcPosColor(Sender: TObject;
       AX, AY: integer; var AColor: TColor); override;
     function IsParsedAtLeastPartially: boolean; override;
+    function GetLexerName: string; override;
 
   published
     property OnLexerChange: TATEditorEvent read FOnLexerChange write FOnLexerChange;
@@ -280,8 +281,18 @@ end;
 
 function TATAdapterEControl.IsParsedAtLeastPartially: boolean;
 begin
-  Result:= Assigned(AnClient) and
-    AnClient.PublicData.FinishedPartially;
+  if Assigned(AnClient) then
+    Result:= AnClient.PublicData.FinishedPartially
+  else
+    Result:= true; //return 'true' for none-lexer
+end;
+
+function TATAdapterEControl.GetLexerName: string;
+begin
+  if Assigned(AnClient) then
+    Result:= AnClient.Owner.LexerName
+  else
+    Result:= '-';
 end;
 
 function TATAdapterEControl.GetTokenColorBG_FromMultiLineTokens(APos: TPoint;

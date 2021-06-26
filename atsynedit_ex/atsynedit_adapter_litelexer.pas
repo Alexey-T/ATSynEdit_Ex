@@ -58,6 +58,7 @@ type
     CommentBlockEnd: string;
     constructor Create(AOnwer: TComponent); override;
     destructor Destroy; override;
+    function GetLexerName: string; override;
     procedure Clear;
     procedure LoadFromFile(const AFilename: string);
     function IsFilenameMatch(const AFilename: string): boolean;
@@ -244,6 +245,11 @@ begin
   Clear;
   FreeAndNil(FRules);
   inherited;
+end;
+
+function TATLiteLexer.GetLexerName: string;
+begin
+  Result:= LexerName;
 end;
 
 procedure TATLiteLexer.Clear;
