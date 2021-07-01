@@ -155,6 +155,8 @@ type
   end;
 
 procedure ApplyPartStyleFromEcontrolStyle(var part: TATLinePart; st: TecSyntaxFormat);
+
+function CodetreeFindItemForPosition(ATree: TTreeView; APosX, APosY: integer): TTreeNode;
 procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer);
 
 implementation
@@ -1018,14 +1020,15 @@ begin
   AnClient.PublicDataNeedTo2:= NLine2;
 end;
 
-procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer);
+
+function CodetreeFindItemForPosition(ATree: TTreeView; APosX, APosY: integer): TTreeNode;
 var
-  Node, NodeNear, NodeResult: TTreeNode;
+  Node, NodeNear: TTreeNode;
   Range: TATRangeInCodeTree;
   Pos1, Pos2: TPoint;
   i: integer;
 begin
-  NodeResult:= nil;
+  Result:= nil;
   NodeNear:= nil;
 
   //ranges are sorted only by start position, but are nested, cannot use binary search
@@ -1054,23 +1057,29 @@ begin
           Pos2.X, Pos2.Y,
           true) = cRelateInside then
         begin
-          NodeResult:= Node;
+          Result:= Node;
           Break;
         end;
       end;
   end;
 
-  if NodeResult=nil then
+  if Result=nil then
     if NodeNear<>nil then
-      NodeResult:= NodeNear;
-
-  if Assigned(NodeResult) then
-  begin
-    NodeResult.MakeVisible;
-    ATree.Selected:= NodeResult;
-  end;
+      Result:= NodeNear;
 end;
 
+
+procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer);
+var
+  Node: TTreeNode;
+begin
+  Node:= CodetreeFindItemForPosition(ATree, APosX, APosY);
+  if Assigned(Node) then
+  begin
+    Node.MakeVisible;
+    ATree.Selected:= Node;
+  end;
+end;
 
 procedure TATAdapterEControl.OnEditorCaretMove(Sender: TObject);
 begin
