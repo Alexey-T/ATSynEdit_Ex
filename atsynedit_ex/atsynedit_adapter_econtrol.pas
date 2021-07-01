@@ -99,8 +99,8 @@ type
     //
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure AddEditor(AEditor: TComponent); override;
     //
+    procedure AddEditor(AEditor: TComponent);
     property Lexer: TecSyntAnalyzer read GetLexer write SetLexer;
     property LexerParsingElapsed: integer read FTimeParseElapsed;
     function LexerAtPos(Pnt: TPoint): TecSyntAnalyzer;
@@ -581,6 +581,9 @@ begin
 end;
 
 procedure TATAdapterEControl.AddEditor(AEditor: TComponent);
+// not nil: adapter adds this editor object to his editors list,
+//   and should setup editor's OnLog
+// nil: adapter forgets about all editors
 var
   i: integer;
 begin
