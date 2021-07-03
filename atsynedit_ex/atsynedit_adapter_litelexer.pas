@@ -249,7 +249,8 @@ end;
 
 function TATLiteLexer.GetLexerName: string;
 begin
-  Result:= LexerName;
+  //it's important to return value with ' ^' suffix because suffix in checked in ATSynEdit
+  Result:= LexerName+' ^';
 end;
 
 procedure TATLiteLexer.Clear;
