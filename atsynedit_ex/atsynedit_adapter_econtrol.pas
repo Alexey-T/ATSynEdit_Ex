@@ -975,6 +975,7 @@ end;
 
 function TATAdapterEControl.SublexerRangeProps(AIndex: integer;
   out AStart, AEnd: TPoint; out ALexerName: string): boolean;
+//this func must be guarded with CriSecForData.Enter/Leave
 var
   Range: TecSubLexerRange;
 begin
