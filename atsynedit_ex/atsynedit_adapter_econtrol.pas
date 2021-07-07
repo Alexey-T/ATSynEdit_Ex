@@ -305,6 +305,7 @@ end;
 
 function TATAdapterEControl.GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
   ADefColor: TColor; AEditorIndex: integer): TColor;
+//all calls of this func must be guarded by CriSecForData.Enter/Leave
 var
   Token: PecSyntToken;
   NToken: integer;
@@ -373,6 +374,7 @@ end;
 
 procedure TATAdapterEControl.DoCalcParts(var AParts: TATLineParts; ALine, AX,
   ALen: integer; AColorFont, AColorBG: TColor; var AColorAfter: TColor; AEditorIndex: integer);
+//all calls of this proc must be guarded by CriSecForData.Enter/Leave
 var
   partindex: integer;
   //
