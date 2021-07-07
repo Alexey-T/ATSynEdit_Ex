@@ -114,7 +114,7 @@ type
     procedure UpdateRangesFoldAndColored;
 
     //tokens
-    procedure GetTokenWithIndex(AIndex: integer; out APntFrom, APntTo: TPoint;
+    procedure __GetTokenWithIndex(AIndex: integer; out APntFrom, APntTo: TPoint;
       out ATokenString, ATokenStyle: string; out ATokenKind: TATTokenKind);
     procedure GetTokenAtPos(APos: TPoint; out APntFrom, APntTo: TPoint;
       out ATokenString, ATokenStyle: string; out ATokenKind: TATTokenKind);
@@ -690,10 +690,11 @@ begin
   end;
 end;
 
-procedure TATAdapterEControl.GetTokenWithIndex(AIndex: integer;
+procedure TATAdapterEControl.__GetTokenWithIndex(AIndex: integer;
   out APntFrom, APntTo: TPoint;
   out ATokenString, ATokenStyle: string;
   out ATokenKind: TATTokenKind);
+//this function is not used in CudaText
 begin
   APntFrom:= Point(-1, -1);
   APntTo:= Point(-1, -1);
