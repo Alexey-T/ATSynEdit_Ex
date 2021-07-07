@@ -1250,6 +1250,7 @@ end;
 
 
 procedure TATAdapterEControl.UpdateRangesFoldAndColored;
+//all calls of this procedure must be guarded with CriSecForData.Enter/Leave
 var
   Ed: TATSynEdit;
   R: TecTextRange;
