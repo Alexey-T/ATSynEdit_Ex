@@ -126,7 +126,7 @@ type
     //support for syntax-tree
     property TreeBusy: boolean read FBusyTreeUpdate;
     procedure TreeFill(ATree: TTreeView);
-    procedure TreeGetPositionOfRange_EC(const R: TecTextRange; out APosBegin, APosEnd: TPoint);
+    procedure __TreeGetPositionOfRange_EC(const R: TecTextRange; out APosBegin, APosEnd: TPoint);
     function __TreeGetRangeOfPosition(APos: TPoint): TecTextRange; //unused function
 
     //sublexers
@@ -923,7 +923,7 @@ begin
   end;
 end;
 
-procedure TATAdapterEControl.TreeGetPositionOfRange_EC(const R: TecTextRange;
+procedure TATAdapterEControl.__TreeGetPositionOfRange_EC(const R: TecTextRange;
   out APosBegin, APosEnd: TPoint);
 begin
   APosBegin:= Point(-1, -1);
