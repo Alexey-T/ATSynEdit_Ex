@@ -748,11 +748,16 @@ begin
 
   n:= DoFindToken(APos, true{AExactPos});
   if n<0 then exit;
-  if not AnClient.PublicData.Tokens.IsIndexValid(n) then exit;
 
-  Style:= AnClient.PublicData.Tokens._GetItemPtr(n)^.Style;
-  if Assigned(Style) then
-    Result:= TATTokenKind(Style.TokenKind);
+  AnClient.CriSecForData.Enter;
+  try
+    if not AnClient.PublicData.Tokens.IsIndexValid(n) then exit;
+    Style:= AnClient.PublicData.Tokens._GetItemPtr(n)^.Style;
+    if Assigned(Style) then
+      Result:= TATTokenKind(Style.TokenKind);
+  finally
+    AnClient.CriSecForData.Leave;
+  end;
 end;
 
 function TATAdapterEControl.GetRangeParent(const R: TecTextRange): TecTextRange;
