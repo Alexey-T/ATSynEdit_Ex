@@ -116,7 +116,7 @@ type
     //tokens
     procedure __GetTokenWithIndex(AIndex: integer; out APntFrom, APntTo: TPoint;
       out ATokenString, ATokenStyle: string; out ATokenKind: TATTokenKind);
-    procedure GetTokenAtPos(APos: TPoint; out APntFrom, APntTo: TPoint;
+    procedure __GetTokenAtPos(APos: TPoint; out APntFrom, APntTo: TPoint;
       out ATokenString, ATokenStyle: string; out ATokenKind: TATTokenKind);
     function GetTokenKindAtPos(APos: TPoint): TATTokenKind;
     function GetTokenString(const token: PecSyntToken): string;
@@ -690,11 +690,11 @@ begin
   end;
 end;
 
+//function is not used in CudaText
 procedure TATAdapterEControl.__GetTokenWithIndex(AIndex: integer;
   out APntFrom, APntTo: TPoint;
   out ATokenString, ATokenStyle: string;
   out ATokenKind: TATTokenKind);
-//this function is not used in CudaText
 begin
   APntFrom:= Point(-1, -1);
   APntTo:= Point(-1, -1);
@@ -715,7 +715,8 @@ begin
       ATokenKind);
 end;
 
-procedure TATAdapterEControl.GetTokenAtPos(APos: TPoint;
+//function is not used in CudaText
+procedure TATAdapterEControl.__GetTokenAtPos(APos: TPoint;
   out APntFrom, APntTo: TPoint;
   out ATokenString, ATokenStyle: string;
   out ATokenKind: TATTokenKind);
