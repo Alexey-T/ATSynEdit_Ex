@@ -261,6 +261,7 @@ var
   Ed: TATSynEdit;
   NColor: TColor;
 begin
+  if AnClient=nil then exit;
   Ed:= Sender as TATSynEdit;
 
   //this is for lexer "ranges" with BG color
@@ -271,13 +272,18 @@ begin
     exit;
   end;
 
-  //this is for multi-line tokens with BG color
-  //example: code-blocks in reST lexer
-  NColor:= GetTokenColorBG_FromMultiLineTokens(Point(AX, AY), clNone, Ed.EditorIndex);
-  if NColor<>clNone then
-  begin
-    AColor:= NColor;
-    exit;
+  AnClient.CriSecForData.Enter;
+  try
+    //this is for multi-line tokens with BG color
+    //example: code-blocks in reST lexer
+    NColor:= GetTokenColorBG_FromMultiLineTokens(Point(AX, AY), clNone, Ed.EditorIndex);
+    if NColor<>clNone then
+    begin
+      AColor:= NColor;
+      exit;
+    end;
+  finally
+    AnClient.CriSecForData.Leave;
   end;
 end;
 
@@ -698,7 +704,7 @@ begin
   if AnClient=nil then exit;
   if Buffer=nil then exit;
 
-  if (AIndex>=0) and (AIndex<AnClient.PublicData.Tokens.Count) then
+  if AnClient.PublicData.Tokens.IsIndexValid(AIndex) then
     GetTokenProps(
       AnClient.PublicData.Tokens._GetItemPtr(AIndex),
       APntFrom,
