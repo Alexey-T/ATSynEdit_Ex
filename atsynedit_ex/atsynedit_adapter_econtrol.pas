@@ -1367,6 +1367,7 @@ begin
 end;
 
 procedure TATAdapterEControl.UpdateRangesSublex;
+//all calls of this proc must be guarded by CriSecForData.Enter/Leave
 var
   Ed: TATSynEdit;
   R: TecSubLexerRange;
