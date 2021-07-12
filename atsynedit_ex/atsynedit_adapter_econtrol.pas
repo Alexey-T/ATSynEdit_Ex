@@ -1209,8 +1209,6 @@ procedure TATAdapterEControl.DoFoldAdd(AX, AY, AY2: integer; AStaple: boolean; c
 var
   i: integer;
 begin
-  //ignore too small ranges
-  if AY2 - AY <= 1 then exit;
   for i:= 0 to EdList.Count-1 do
     TATSynEdit(EdList[i]).Fold.Add(AX, AY, AY2, AStaple, AHint);
 end;
