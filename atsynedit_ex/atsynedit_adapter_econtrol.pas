@@ -147,6 +147,7 @@ type
       AX, AY: integer; var AColor: TColor); override;
     function IsParsedAtLeastPartially: boolean; override;
     function GetLexerName: string; override;
+    function IsDataReady: boolean; override;
 
   published
     property OnLexerChange: TATEditorEvent read FOnLexerChange write FOnLexerChange;
@@ -1551,6 +1552,14 @@ begin
     Result+= '"'+ExtractFileName(TATSynEdit(EdList[i]).FileName)+'" ';
   if Lexer<>nil then
     Result+= '- '+Lexer.LexerName;
+end;
+
+function TATAdapterEControl.IsDataReady: boolean;
+begin
+  if Assigned(AnClient) then
+    Result:= AnClient.PublicData.Finished
+  else
+    Result:= true;
 end;
 
 end.
