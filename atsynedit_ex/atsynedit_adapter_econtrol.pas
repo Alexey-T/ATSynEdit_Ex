@@ -148,6 +148,7 @@ type
     function IsParsedAtLeastPartially: boolean; override;
     function GetLexerName: string; override;
     function IsDataReady: boolean; override;
+    function IsDataReadyPartially: boolean; override;
 
   published
     property OnLexerChange: TATEditorEvent read FOnLexerChange write FOnLexerChange;
@@ -1558,6 +1559,14 @@ function TATAdapterEControl.IsDataReady: boolean;
 begin
   if Assigned(AnClient) then
     Result:= AnClient.PublicData.Finished
+  else
+    Result:= true;
+end;
+
+function TATAdapterEControl.IsDataReadyPartially: boolean;
+begin
+  if Assigned(AnClient) then
+    Result:= AnClient.PublicData.FinishedPartially
   else
     Result:= true;
 end;
