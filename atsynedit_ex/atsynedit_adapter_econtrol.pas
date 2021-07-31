@@ -1444,6 +1444,7 @@ procedure TATAdapterEControl.DoChangeLog(Sender: TObject; ALine: integer);
 begin
   if AnClient=nil then Exit;
   AnClient.Stop; //stop parsing before slow UpdateBuffer()
+  Sleep(15);
   UpdateBuffer(Buffer);
   UpdatePublicDataNeedTo;
   AnClient.TextChangedOnLine(ALine);
