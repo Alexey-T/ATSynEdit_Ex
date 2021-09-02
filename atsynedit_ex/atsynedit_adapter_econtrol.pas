@@ -1149,6 +1149,7 @@ var
   Ed: TATSynEdit;
   Lens: array of integer;
   Str: TATStrings;
+  NMaxLineLen: integer;
   i: integer;
 begin
   Ed:= Editor;
@@ -1157,7 +1158,10 @@ begin
   SetLength(Lens{%H-}, Str.Count);
   for i:= 0 to Length(Lens)-1 do
     Lens[i]:= Str.LinesLen[i];
-  ABuffer.Setup(Str.TextString_Unicode(Ed.OptMaxLineLenToTokenize), Lens);
+
+  NMaxLineLen:= 0;
+  //NMaxLineLen:= Ed.OptMaxLineLenToTokenize; //0 is to solve CudaText issue #3693
+  ABuffer.Setup(Str.TextString_Unicode(NMaxLineLen), Lens);
 end;
 
 procedure TATAdapterEControl.UpdateRanges;
