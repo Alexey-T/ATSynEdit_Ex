@@ -1160,7 +1160,7 @@ begin
     Lens[i]:= Str.LinesLen[i];
 
   NMaxLineLen:= 0;
-  //NMaxLineLen:= Ed.OptMaxLineLenToTokenize; //0 is to solve CudaText issue #3693
+  //NMaxLineLen:= Ed.OptMaxLineLenToTokenize; //don't limit, to not break lexer context; solve CudaText issue #3693
   ABuffer.Setup(Str.TextString_Unicode(NMaxLineLen), Lens);
 end;
 
