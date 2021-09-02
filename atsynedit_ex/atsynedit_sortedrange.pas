@@ -457,7 +457,8 @@ begin
   for iRange:= 0 to NCount-1 do
   begin
     Ptr:= ItemPtr(iRange);
-    for iLine:= Ptr^.Pos1.Y to Ptr^.Pos2.Y do
+    //range check for iLine vs FLineIndexer[]
+    for iLine:= Ptr^.Pos1.Y to Min(Ptr^.Pos2.Y, High(FLineIndexer)) do
     begin
       NItemLen:= Length(FLineIndexer[iLine]);
       SetLength(FLineIndexer[iLine], NItemLen+1);
