@@ -145,7 +145,7 @@ type
       AMainText: boolean); override;
     procedure OnEditorCalcPosColor(Sender: TObject;
       AX, AY: integer; var AColor: TColor); override;
-    procedure OnEditorCalcPosForeColor(Sender: TObject;
+    procedure OnEditorCalcPosForeground(Sender: TObject;
       AX, AY: integer; var AColor: TColor; var AFontStyles: TFontStyles); override;
     function IsParsedAtLeastPartially: boolean; override;
     function GetLexerName: string; override;
@@ -774,7 +774,7 @@ begin
   end;
 end;
 
-procedure TATAdapterEControl.OnEditorCalcPosForeColor(Sender: TObject;
+procedure TATAdapterEControl.OnEditorCalcPosForeground(Sender: TObject;
   AX, AY: integer; var AColor: TColor; var AFontStyles: TFontStyles);
 var
   Style: TecSyntaxFormat;
