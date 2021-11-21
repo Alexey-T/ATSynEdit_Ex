@@ -145,6 +145,8 @@ type
       AMainText: boolean); override;
     procedure OnEditorCalcPosColor(Sender: TObject;
       AX, AY: integer; var AColor: TColor); override;
+    procedure OnEditorCalcPosForeColor(Sender: TObject;
+      AX, AY: integer; var AColor: TColor; var AFontStyles: TFontStyles); override;
     function IsParsedAtLeastPartially: boolean; override;
     function GetLexerName: string; override;
     function IsDataReady: boolean; override;
@@ -771,6 +773,36 @@ begin
     AnClient.CriSecForData.Leave;
   end;
 end;
+
+procedure TATAdapterEControl.OnEditorCalcPosForeColor(Sender: TObject;
+  AX, AY: integer; var AColor: TColor; var AFontStyles: TFontStyles);
+var
+  Style: TecSyntaxFormat;
+  n: integer;
+begin
+  AColor:= clNone;
+  AFontStyles:= [];
+
+  if AnClient=nil then exit;
+  if Buffer=nil then exit;
+
+  n:= DoFindToken(Point(AX, AY), true{AExactPos});
+  if n<0 then exit;
+
+  AnClient.CriSecForData.Enter;
+  try
+    if not AnClient.PublicData.Tokens.IsIndexValid(n) then exit;
+    Style:= AnClient.PublicData.Tokens._GetItemPtr(n)^.Style;
+    if Assigned(Style) then
+    begin
+      AColor:= Style.Font.Color;
+      AFontStyles:= Style.Font.Style;
+    end;
+  finally
+    AnClient.CriSecForData.Leave;
+  end;
+end;
+
 
 function TATAdapterEControl.GetRangeParent(const R: TecTextRange): TecTextRange;
 //cannot use R.Parent!
