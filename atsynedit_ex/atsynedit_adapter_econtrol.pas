@@ -183,8 +183,6 @@ const
     );
 
 procedure ApplyPartStyleFromEcontrolStyle(var part: TATLinePart; st: TecSyntaxFormat); inline;
-var
-  NStyles: byte;
 begin
   if st.FormatType in [ftCustomFont, ftFontAttr, ftColor, ftBackGround] then
   begin
@@ -201,14 +199,7 @@ begin
     end;
     if st.FormatType in [ftCustomFont, ftFontAttr] then
     begin
-      NStyles:= 0;
-      if fsBold in st.Font.Style then
-        NStyles:= NStyles or afsFontBold;
-      if fsItalic in st.Font.Style then
-        NStyles:= NStyles or afsFontItalic;
-      if fsStrikeOut in st.Font.Style then
-        NStyles:= NStyles or afsFontCrossed;
-      part.FontStyles:= NStyles;
+      part.FontStyles:= ConvertFontStylesToInteger(st.Font.Style);
     end;
   end;
 
