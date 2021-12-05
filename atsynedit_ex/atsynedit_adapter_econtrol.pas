@@ -1017,8 +1017,13 @@ begin
     if Range.Range.StartPos<0 then exit;
     AStart:= Range.Range.PointStart;
     AEnd:= Range.Range.PointEnd;
-    if Assigned(Range.Rule) and Assigned(Range.Rule.SyntAnalyzer) then
-      ALexerName:= Range.Rule.SyntAnalyzer.LexerName;
+
+    // before we had the Range.FinalSubAnalyzer:
+    //if Assigned(Range.Rule) and Assigned(Range.Rule.SyntAnalyzer) then
+    //  ALexerName:= Range.Rule.SyntAnalyzer.LexerName;
+
+    if Assigned(Range.FinalSubAnalyzer) then
+      ALexerName:= Range.FinalSubAnalyzer.LexerName;
   end;
 end;
 
