@@ -13,12 +13,10 @@ uses
   ATSynEdit,
   ATSynEdit_Adapters,
   ATSynEdit_LineParts,
-  ATSynEdit_CanvasProc,
   Masks,
   FileUtil,
   at__jsonConf,
-  ec_RegExpr,
-  math;
+  ec_RegExpr;
 
 type
   { TATLiteLexerRule }

@@ -12,8 +12,7 @@ uses
   Classes, SysUtils, Graphics,
   ATSynEdit,
   ATSynEdit_Adapters,
-  ATSynEdit_LineParts,
-  ATSynEdit_CanvasProc;
+  ATSynEdit_LineParts;
 
 type
   TATAdapterOnGetLineColor = procedure (Editor: TATSynEdit; ALineIndex: integer;
