@@ -1407,7 +1407,7 @@ var
   Ed: TATSynEdit;
   Sub: PecSubLexerRange;
   Style: TecSyntaxFormat;
-  SortedRange: TATSortedRange;
+  NewSubRange: TATSortedRange;
   i: integer;
 begin
   for i:= 0 to AnClient.PublicData.SublexRanges.Count-1 do
@@ -1423,7 +1423,7 @@ begin
     if Style=nil then Continue;
     if Style.BgColor<>clNone then
     begin
-      SortedRange.Init(
+      NewSubRange.Init(
         Sub^.Range.PointStart,
         Sub^.Range.PointEnd,
         Sub^.Range.PointStart,
@@ -1434,7 +1434,7 @@ begin
         nil,
         true
         );
-      FRangesSublexer.Add(SortedRange);
+      FRangesSublexer.Add(NewSubRange);
     end;
   end;
 
