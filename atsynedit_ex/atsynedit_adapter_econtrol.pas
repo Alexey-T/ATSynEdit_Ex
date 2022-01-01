@@ -1000,7 +1000,7 @@ function TATAdapterEControl.SublexerRangeProps(AIndex: integer;
   out AStart, AEnd: TPoint; out ALexerName: string): boolean;
 //this func must be guarded with CriSecForData.Enter/Leave
 var
-  Range: TecSubLexerRange;
+  Sub: PecSubLexerRange;
 begin
   Result:= false;
   AStart:= Point(0, 0);
@@ -1013,17 +1013,17 @@ begin
   Result:= (AIndex>=0) and (AIndex<SublexerRangeCount);
   if Result then
   begin
-    Range:= AnClient.PublicData.SublexRanges[AIndex];
-    if Range.Range.StartPos<0 then exit;
-    AStart:= Range.Range.PointStart;
-    AEnd:= Range.Range.PointEnd;
+    Sub:= AnClient.PublicData.SublexRanges.InternalGet(AIndex);
+    if Sub^.Range.StartPos<0 then exit;
+    AStart:= Sub^.Range.PointStart;
+    AEnd:= Sub^.Range.PointEnd;
 
     // before we had the Range.FinalSubAnalyzer:
     //if Assigned(Range.Rule) and Assigned(Range.Rule.SyntAnalyzer) then
     //  ALexerName:= Range.Rule.SyntAnalyzer.LexerName;
 
-    if Assigned(Range.FinalSubAnalyzer) then
-      ALexerName:= Range.FinalSubAnalyzer.LexerName;
+    if Assigned(Sub^.FinalSubAnalyzer) then
+      ALexerName:= Sub^.FinalSubAnalyzer.LexerName;
   end;
 end;
 
@@ -1405,36 +1405,36 @@ procedure TATAdapterEControl.UpdateRangesSublex;
 //all calls of this proc must be guarded by CriSecForData.Enter/Leave
 var
   Ed: TATSynEdit;
-  R: TecSubLexerRange;
+  Sub: PecSubLexerRange;
   Style: TecSyntaxFormat;
-  Range: TATSortedRange;
+  SortedRange: TATSortedRange;
   i: integer;
 begin
   for i:= 0 to AnClient.PublicData.SublexRanges.Count-1 do
   begin
     if Application.Terminated then exit;
 
-    R:= AnClient.PublicData.SublexRanges[i];
-    if R.Rule=nil then Continue;
-    if R.Range.StartPos<0 then Continue;
-    if R.Range.EndPos<0 then Continue;
+    Sub:= AnClient.PublicData.SublexRanges.InternalGet(i);
+    if Sub^.Rule=nil then Continue;
+    if Sub^.Range.StartPos<0 then Continue;
+    if Sub^.Range.EndPos<0 then Continue;
 
-    Style:= R.Rule.Style;
+    Style:= Sub^.Rule.Style;
     if Style=nil then Continue;
     if Style.BgColor<>clNone then
     begin
-      Range.Init(
-        R.Range.PointStart,
-        R.Range.PointEnd,
-        R.Range.PointStart,
-        R.Range.PointEnd,
+      SortedRange.Init(
+        Sub^.Range.PointStart,
+        Sub^.Range.PointEnd,
+        Sub^.Range.PointStart,
+        Sub^.Range.PointEnd,
         -1,
         -1,
         Style.BgColor,
         nil,
         true
         );
-      FRangesSublexer.Add(Range);
+      FRangesSublexer.Add(SortedRange);
     end;
   end;
 
