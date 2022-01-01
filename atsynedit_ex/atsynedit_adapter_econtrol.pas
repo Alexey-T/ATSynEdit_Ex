@@ -869,7 +869,7 @@ begin
       begin
         NameRule:= R.Rule.SyntOwner.LexerName;
         //must allow lexer name "PHP_" if main lexer is "PHP"
-        if NameRule[Length(NameRule)]='_' then
+        if NameRule='PHP_' then
           SetLength(NameRule, Length(NameRule)-1);
         if NameRule<>NameLexer then Continue;
       end;
