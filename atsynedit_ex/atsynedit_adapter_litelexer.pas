@@ -186,6 +186,7 @@ begin
   Files:= TStringList.Create;
   try
     FindAllFiles(Files, ADir, '*.json;*.cuda-litelexer', false);
+    Files.UseLocale:= false;
     Files.Sorted:= true;
 
     for i:= 0 to Files.Count-1 do
