@@ -119,7 +119,7 @@ type
     procedure __GetTokenAtPos(APos: TPoint; out APntFrom, APntTo: TPoint;
       out ATokenString, ATokenStyle: string; out ATokenKind: TATTokenKind);
     function GetTokenStyleAtPos(APos: TPoint): TecSyntaxFormat;
-    function GetTokenKindAtPos(APos: TPoint): TATTokenKind;
+    function GetTokenKindAtPos(APos: TPoint; ADocCommentIsAlsoComment: boolean=true): TATTokenKind;
     function GetTokenString(const token: PecSyntToken): string;
     procedure GetTokenProps(const token: PecSyntToken; out APntFrom, APntTo: TPoint;
       out ATokenString, ATokenStyle: string; out ATokenKind: TATTokenKind);
@@ -763,13 +763,20 @@ begin
   end;
 end;
 
-function TATAdapterEControl.GetTokenKindAtPos(APos: TPoint): TATTokenKind;
+function TATAdapterEControl.GetTokenKindAtPos(APos: TPoint;
+  ADocCommentIsAlsoComment: boolean): TATTokenKind;
 var
   Style: TecSyntaxFormat;
 begin
   Style:= GetTokenStyleAtPos(APos);
   if Assigned(Style) then
-    Result:= TATTokenKind(Style.TokenKind)
+  begin
+    Result:= TATTokenKind(Style.TokenKind);
+    //support 'documentation comments'
+    if (Result=atkComment) and (not ADocCommentIsAlsoComment) then
+      if Pos('doc', LowerCase(Style.DisplayName))>0 then
+        Result:= atkOther;
+  end
   else
     Result:= atkOther;
 end;
