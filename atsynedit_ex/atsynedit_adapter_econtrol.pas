@@ -1049,17 +1049,14 @@ begin
 
   Ed:= TATSynEdit(EdList[0]);
   NLine1:= Ed.LineBottom+1;
+  NLine2:= 0;
 
   if EdList.Count>1 then
   begin
     Ed:= TATSynEdit(EdList[1]);
     if Ed.Visible then
-      NLine2:= Ed.LineBottom+1
-    else
-      NLine2:= 0;
-  end
-  else
-    NLine2:= 0;
+      NLine2:= Ed.LineBottom+1;
+  end;
 
   if (NLine2>0) and (Abs(NLine1-NLine2)<50) then
   begin
