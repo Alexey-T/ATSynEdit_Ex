@@ -1044,7 +1044,8 @@ var
   Ed: TATSynEdit;
   NLine1, NLine2: integer;
 begin
-  if AnClient=nil then exit;
+  if AnClient=nil then
+    raise Exception.Create('UpdatePublicDataNeedTo called with AnClient=nil');
   if EdList.Count=0 then exit;
 
   Ed:= TATSynEdit(EdList[0]);
