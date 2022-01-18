@@ -1049,6 +1049,8 @@ begin
 
   Ed:= TATSynEdit(EdList[0]);
   NLine1:= Ed.LineBottom+1;
+  if NLine1<=2 then
+    NLine1:= Ed.LineTop+Ed.GetVisibleLines;
   NLine2:= 0;
 
   if EdList.Count>1 then
@@ -1149,7 +1151,6 @@ begin
   if Assigned(AAnalizer) then
   begin
     UpdateBuffer(Buffer);
-    UpdatePublicDataNeedTo;
 
     AnClient:= TecClientSyntAnalyzer.Create(AAnalizer, Buffer);
     if EdList.Count>0 then
@@ -1158,6 +1159,9 @@ begin
     AnClient.OnProgressFirst:= @ProgressFirst;
     AnClient.OnProgressSecond:= @ProgressSecond;
     AnClient.OnProgressBoth:= @ProgressBoth;
+
+    //after AnClient assigning
+    UpdatePublicDataNeedTo;
   end;
 
   if Assigned(FOnLexerChange) then
