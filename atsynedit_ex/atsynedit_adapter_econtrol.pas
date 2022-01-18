@@ -1050,9 +1050,13 @@ begin
   if EdList.Count=0 then exit;
 
   Ed:= TATSynEdit(EdList[0]);
+
+  //on the first file opening in CudaText, Ed.LineBottom gets 0 (because editor was not painted yet?)
+  //so we have the workaround which gets Ed.GetVisibleLines
   NLine1:= Ed.LineBottom+1;
   if NLine1<2 then
     NLine1:= Ed.LineTop+Ed.GetVisibleLines;
+
   NLine2:= 0;
 
   if EdList.Count>1 then
@@ -1062,7 +1066,10 @@ begin
     begin
       NLine2:= Ed.LineBottom+1;
       if NLine2<2 then
-        NLine2:= 0
+      begin
+        //seems we don't need the Ed.GetVisibleLines here?
+        NLine2:= 0;
+      end
       else
       if Abs(NLine1-NLine2)<cMaxDistanceForEditors then
       begin
