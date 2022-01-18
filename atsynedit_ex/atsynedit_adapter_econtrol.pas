@@ -1040,17 +1040,18 @@ begin
 end;
 
 procedure TATAdapterEControl.UpdatePublicDataNeedTo;
+const
+  cMaxDistanceForEditors = 50;
 var
   Ed: TATSynEdit;
   NLine1, NLine2: integer;
 begin
-  if AnClient=nil then
-    raise Exception.Create('UpdatePublicDataNeedTo called with AnClient=nil');
+  if AnClient=nil then exit; //raise Exception.Create('UpdatePublicDataNeedTo called with AnClient=nil');
   if EdList.Count=0 then exit;
 
   Ed:= TATSynEdit(EdList[0]);
   NLine1:= Ed.LineBottom+1;
-  if NLine1<=2 then
+  if NLine1<2 then
     NLine1:= Ed.LineTop+Ed.GetVisibleLines;
   NLine2:= 0;
 
@@ -1058,13 +1059,17 @@ begin
   begin
     Ed:= TATSynEdit(EdList[1]);
     if Ed.Visible then
+    begin
       NLine2:= Ed.LineBottom+1;
-  end;
-
-  if (NLine2>0) and (Abs(NLine1-NLine2)<50) then
-  begin
-    NLine1:= Max(NLine1, NLine2);
-    NLine2:= NLine1;
+      if NLine2<2 then
+        NLine2:= 0
+      else
+      if Abs(NLine1-NLine2)<cMaxDistanceForEditors then
+      begin
+        NLine1:= Max(NLine1, NLine2);
+        NLine2:= NLine1;
+      end;
+    end;
   end;
 
   AnClient.PublicDataNeedTo:= NLine1;
