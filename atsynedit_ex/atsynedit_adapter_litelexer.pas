@@ -35,6 +35,9 @@ type
   TATLiteLexer_GetStyleHash = function (const AStyleName: string): integer;
   TATLiteLexer_ApplyStyle = procedure (AStyleHash: integer; var APart: TATLinePart);
 
+var
+  ATLiteLexerMaxLineLength: integer = 2000;
+
 type
   { TATLiteLexer }
 
@@ -376,6 +379,7 @@ begin
   if Application.Terminated then exit;
   Ed:= Sender as TATSynEdit;
 
+  if Ed.Strings.LinesLen[ALineIndex]>ATLiteLexerMaxLineLength then exit;
   EdLine:= Ed.Strings.Lines[ALineIndex];
   NParts:= 0;
   NPos:= 0;
