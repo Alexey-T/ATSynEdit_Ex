@@ -378,6 +378,7 @@ begin
   if Application.Terminated then exit;
   Ed:= Sender as TATSynEdit;
 
+  //this is to prevent big slowdown on huge line length=40M, eg single line XML with XML^ lite lexer
   if Ed.Strings.LinesLen[ALineIndex]>cMaxLenUsed then
     EdLine:= Ed.Strings.LineSub(ALineIndex, 1, cMaxLenUsed)
   else
