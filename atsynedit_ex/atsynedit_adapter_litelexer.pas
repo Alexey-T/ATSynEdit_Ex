@@ -94,6 +94,9 @@ type
     property OnApplyStyle: TATLiteLexer_ApplyStyle read FOnApplyStyle write FOnApplyStyle;
   end;
 
+var
+  ATMaxLineLengthForLiteLexer: integer = 8*1024;
+
 implementation
 
 { TATLiteLexers }
@@ -364,8 +367,6 @@ end;
 procedure TATLiteLexer.OnEditorCalcHilite(Sender: TObject;
   var AParts: TATLineParts; ALineIndex, ACharIndex, ALineLen: integer;
   var AColorAfterEol: TColor; AMainText: boolean);
-const
-  cMaxLenUsed = 8*1024;
 var
   Ed: TATSynEdit;
   EdLine: UnicodeString;
@@ -379,8 +380,8 @@ begin
   Ed:= Sender as TATSynEdit;
 
   //this is to prevent big slowdown on huge line length=40M, eg single line XML with XML^ lite lexer
-  if Ed.Strings.LinesLen[ALineIndex]>cMaxLenUsed then
-    EdLine:= Ed.Strings.LineSub(ALineIndex, 1, cMaxLenUsed)
+  if Ed.Strings.LinesLen[ALineIndex]>ATMaxLineLengthForLiteLexer then
+    EdLine:= Ed.Strings.LineSub(ALineIndex, 1, ATMaxLineLengthForLiteLexer)
   else
     EdLine:= Ed.Strings.Lines[ALineIndex];
 
