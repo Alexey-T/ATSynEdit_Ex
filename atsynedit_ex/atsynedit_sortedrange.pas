@@ -534,8 +534,8 @@ var
   iLine: integer;
 begin
   for iLine:= High(FLineIndexer) downto 0 do
-    SetLength(FLineIndexer[iLine], 0);
-  SetLength(FLineIndexer, 0);
+    FLineIndexer[iLine] := nil;
+  FLineIndexer := nil;
 end;
 
 end.
