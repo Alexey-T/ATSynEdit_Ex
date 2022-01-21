@@ -95,7 +95,7 @@ type
   end;
 
 var
-  ATMaxLineLengthForLiteLexer: integer = 8*1024;
+  ATLiteLexerMaxLineLength: integer = 8*1024;
 
 implementation
 
@@ -380,8 +380,8 @@ begin
   Ed:= Sender as TATSynEdit;
 
   //this is to prevent big slowdown on huge line length=40M, eg single line XML with XML^ lite lexer
-  if Ed.Strings.LinesLen[ALineIndex]>ATMaxLineLengthForLiteLexer then
-    EdLine:= Ed.Strings.LineSub(ALineIndex, 1, ATMaxLineLengthForLiteLexer)
+  if Ed.Strings.LinesLen[ALineIndex]>ATLiteLexerMaxLineLength then
+    EdLine:= Ed.Strings.LineSub(ALineIndex, 1, ATLiteLexerMaxLineLength)
   else
     EdLine:= Ed.Strings.Lines[ALineIndex];
 
