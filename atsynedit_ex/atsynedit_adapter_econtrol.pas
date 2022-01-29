@@ -162,7 +162,7 @@ type
 procedure ApplyPartStyleFromEcontrolStyle(var part: TATLinePart; st: TecSyntaxFormat);
 
 function CodetreeFindItemForPosition(ATree: TTreeView; APosX, APosY: integer): TTreeNode;
-procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer);
+procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer; out ASelLine: integer);
 
 implementation
 
@@ -1132,15 +1132,23 @@ begin
 end;
 
 
-procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer);
+procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer; out ASelLine: integer);
 var
   Node: TTreeNode;
+  Range: TATRangeInCodeTree;
 begin
+  ASelLine:= -1;
   Node:= CodetreeFindItemForPosition(ATree, APosX, APosY);
   if Assigned(Node) then
   begin
     Node.MakeVisible;
     ATree.Selected:= Node;
+
+    if TObject(Node.Data) is TATRangeInCodeTree then
+    begin
+      Range:= TATRangeInCodeTree(Node.Data);
+      ASelLine:= Range.PosBegin.Y;
+    end;
   end;
 end;
 
