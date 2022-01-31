@@ -1625,7 +1625,8 @@ end;
 function TATAdapterEControl.IsDataReadyPartially: boolean;
 begin
   if Assigned(AnClient) then
-    Result:= AnClient.PublicData.FinishedPartially
+    Result:= AnClient.PublicData.Finished or
+             AnClient.PublicData.FinishedPartially
   else
     Result:= true;
 end;
