@@ -559,6 +559,7 @@ constructor TATAdapterEControl.Create(AOwner: TComponent);
 begin
   inherited;
 
+  ImplementsDataReady:= true;
   EdList:= TFPList.Create;
   AnClient:= nil;
   Buffer:= TATStringBuffer.Create;
