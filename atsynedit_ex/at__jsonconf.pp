@@ -136,6 +136,10 @@ implementation
 uses
   Windows;
 {$endif}
+{$ifdef unix}
+uses
+  Unix;
+{$endif}
 
 Resourcestring
   SErrInvalidJSONFile = '"%s" is not a valid JSON configuration file.';
@@ -191,6 +195,10 @@ begin
           //solve https://github.com/Alexey-T/CudaText/issues/3949
           {$ifdef windows}
           Windows.FlushFileBuffers(F.Handle);
+          {$endif}
+
+          {$ifdef unix}
+          Unix.fpfsync(F.Handle);
           {$endif}
         end;
       Finally
