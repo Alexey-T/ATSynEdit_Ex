@@ -132,6 +132,11 @@ type
 
 implementation
 
+{$ifdef windows}
+uses
+  Windows;
+{$endif}
+
 Resourcestring
   SErrInvalidJSONFile = '"%s" is not a valid JSON configuration file.';
   SErrCouldNotOpenKey = 'Could not open key "%s".';
@@ -179,8 +184,15 @@ begin
           S:=FJSON.FormatJSON(Formatoptions,FormatIndentSize)
         else
           S:=FJSON.AsJSON;
-        if S>'' then
+        if S<>'' then
+        begin
           F.WriteBuffer(S[1],Length(S));
+
+          //solve https://github.com/Alexey-T/CudaText/issues/3949
+          {$ifdef windows}
+          Windows.FlushFileBuffers(F.Handle);
+          {$endif}
+        end;
       Finally
         F.Free;
       end;
