@@ -168,6 +168,37 @@ procedure TJSONConfig.Flush;
 Var
   F : TFileStream;
   S : TJSONStringType;
+
+begin
+  if Modified then
+    begin
+    try
+      F:=TFileStream.Create(FileName,fmCreate);
+      Try
+        if Formatted then
+          S:=FJSON.FormatJSON(Formatoptions,FormatIndentSize)
+        else
+          S:=FJSON.AsJSON;
+        if S<>'' then
+        begin
+          F.WriteBuffer(S[1],Length(S));
+        end;
+      Finally
+        F.Free;
+      end;
+    except
+      // Alexey: added try-except to avoid crash when app tries to write to Program Files dir
+    end;
+    FModified := False;
+    end;
+end;
+
+(*
+procedure TJSONConfig.Flush;
+
+Var
+  F : TFileStream;
+  S : TJSONStringType;
   TempName: string;
   
 begin
@@ -199,6 +230,7 @@ begin
     FModified := False;
     end;
 end;
+*)
 
 
 function TJSONConfig.FindObject(const APath: UnicodeString; AllowCreate: Boolean
