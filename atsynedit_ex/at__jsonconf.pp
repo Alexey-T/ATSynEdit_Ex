@@ -132,15 +132,6 @@ type
 
 implementation
 
-{$ifdef windows}
-uses
-  Windows;
-{$endif}
-{$ifdef unix}
-uses
-  Unix;
-{$endif}
-
 Resourcestring
   SErrInvalidJSONFile = '"%s" is not a valid JSON configuration file.';
   SErrCouldNotOpenKey = 'Could not open key "%s".';
@@ -177,12 +168,14 @@ procedure TJSONConfig.Flush;
 Var
   F : TFileStream;
   S : TJSONStringType;
+  TempName: string;
   
 begin
   if Modified then
     begin
     try
-      F:=TFileStream.Create(FileName,fmCreate);
+      TempName := FileName + '.tmp';
+      F:=TFileStream.Create(TempName,fmCreate);
       Try
         if Formatted then
           S:=FJSON.FormatJSON(Formatoptions,FormatIndentSize)
@@ -191,21 +184,17 @@ begin
         if S<>'' then
         begin
           F.WriteBuffer(S[1],Length(S));
-
-          //solve https://github.com/Alexey-T/CudaText/issues/3949
-          {$ifdef windows}
-          Windows.FlushFileBuffers(F.Handle);
-          {$endif}
-
-          {$ifdef unix}
-          Unix.fpfsync(F.Handle);
-          {$endif}
         end;
       Finally
         F.Free;
       end;
+
+      // Alexey: renaming of file is recommended at https://gitlab.com/freepascal.org/fpc/source/-/issues/39619
+      if FileExists(FileName) then
+        DeleteFile(FileName);
+      RenameFile(TempName, FileName);
     except
-      //AT: added try-except to avoid crash when app tries to write to Program Files dir
+      // Alexey: added try-except to avoid crash when app tries to write to Program Files dir
     end;
     FModified := False;
     end;
