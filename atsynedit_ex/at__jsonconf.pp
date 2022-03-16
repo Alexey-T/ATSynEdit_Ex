@@ -182,6 +182,7 @@ begin
         if S<>'' then
         begin
           F.WriteBuffer(S[1],Length(S));
+          FileFlush(F.Handle);
         end;
       Finally
         F.Free;
