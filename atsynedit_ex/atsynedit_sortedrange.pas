@@ -14,7 +14,7 @@ uses
   ATStrings,
   ATStringProc,
   ATSynEdit,
-  ATSynEdit_Options,
+  ATSynEdit_Globals,
   ATSynEdit_Carets,
   ATSynEdit_FGL,
   ec_SyntAnal,
@@ -539,4 +539,3 @@ begin
 end;
 
 end.
-
