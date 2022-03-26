@@ -82,6 +82,7 @@ type
     function GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
       ADefColor: TColor; AEditorIndex: integer): TColor;
     function EditorRunningCommand: boolean;
+    procedure UpdateBufferFromEvent(Sender: TObject);
     procedure UpdateBuffer(ABuffer: TATStringBuffer);
     procedure UpdatePublicDataNeedTo;
     procedure UpdateRanges;
@@ -1172,11 +1173,13 @@ begin
 
   if Assigned(AAnalizer) then
   begin
-    UpdateBuffer(Buffer);
+    Buffer.Valid:= false;
 
     AnClient:= TecClientSyntAnalyzer.Create(AAnalizer, Buffer);
     if EdList.Count>0 then
       AnClient.FileName:= ExtractFileName(Editor.FileName);
+
+    AnClient.OnUpdateBuffer:= @UpdateBufferFromEvent;
     AnClient.OnParseDone:= @ParseDone;
     AnClient.OnProgressFirst:= @ProgressFirst;
     AnClient.OnProgressSecond:= @ProgressSecond;
@@ -1492,6 +1495,12 @@ begin
     Result:= AnClient.PublicData.Tokens.PriorAt(AnClient.Buffer.CaretToStr(APos));
 end;
 
+procedure TATAdapterEControl.UpdateBufferFromEvent(Sender: TObject);
+begin
+  if Assigned(AnClient) then
+    UpdateBuffer(AnClient.Buffer);
+end;
+
 function TATAdapterEControl.GetLexer: TecSyntAnalyzer;
 begin
   if Assigned(AnClient) then
@@ -1503,8 +1512,7 @@ end;
 procedure TATAdapterEControl.DoChangeLog(Sender: TObject; ALine: integer);
 begin
   if AnClient=nil then Exit;
-  AnClient.Stop; //stop parsing before slow UpdateBuffer()
-  UpdateBuffer(Buffer);
+  AnClient.Stop;
   UpdatePublicDataNeedTo;
   AnClient.TextChangedOnLine(ALine);
 end;
