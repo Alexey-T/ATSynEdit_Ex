@@ -47,7 +47,6 @@ type
     TATAdapterProgressKind = (epkFirst, epkSecond, epkBoth);
   private
     EdList: TFPList;
-    Buffer: TATStringBuffer;
     FRangesColored: TATSortedRanges;
     FRangesColoredBounds: TATSortedRanges;
     FRangesSublexer: TATSortedRanges;
@@ -95,6 +94,7 @@ type
     function GetLexerSuportsDynamicHilite: boolean;
     function IsDynamicHiliteEnabled: boolean;
   public
+    Buffer: TATStringBuffer;
     AnClient: TecClientSyntAnalyzer;
     //
     constructor Create(AOwner: TComponent); override;
