@@ -128,8 +128,6 @@ type
     //support for syntax-tree
     property TreeBusy: boolean read FBusyTreeUpdate;
     procedure TreeFill(ATree: TTreeView);
-    procedure __TreeGetPositionOfRange_EC(const R: TecTextRange; out APosBegin, APosEnd: TPoint);
-    function __TreeGetRangeOfPosition(APos: TPoint): TecTextRange; //unused function
 
     //sublexers
     function SublexerRangeCount: integer;
@@ -954,46 +952,6 @@ begin
     ATree.Invalidate;
     FBusyTreeUpdate:= false;
     AnClient.CriSecForData.Leave;
-  end;
-end;
-
-procedure TATAdapterEControl.__TreeGetPositionOfRange_EC(const R: TecTextRange;
-  out APosBegin, APosEnd: TPoint);
-begin
-  APosBegin:= Point(-1, -1);
-  APosEnd:= Point(-1, -1);
-  if R=nil then exit;
-  if AnClient=nil then exit;
-
-  if R.StartIdx>=0 then
-    APosBegin:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx)^.Range.PointStart;
-
-  if R.EndIdx>=0 then
-    APosEnd:=  AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx)^.Range.PointEnd;
-end;
-
-//unused function
-function TATAdapterEControl.__TreeGetRangeOfPosition(APos: TPoint): TecTextRange;
-var
-  R: TecTextRange;
-  NTokenOrig: integer;
-  i: integer;
-begin
-  Result:= nil;
-  if AnClient=nil then exit;
-
-  NTokenOrig:= DoFindToken(APos);
-  if NTokenOrig<0 then exit;
-
-  //find last range, which contains our token
-  for i:= AnClient.PublicData.FoldRanges.Count-1 downto 0 do
-  begin
-    R:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
-    if not R.Rule.DisplayInTree then Continue;
-
-    if (R.StartIdx<=NTokenOrig) and
-       (R.EndIdx>=NTokenOrig) then
-       exit(R);
   end;
 end;
 
