@@ -841,6 +841,17 @@ begin
   until false;
 end;
 
+function TreeFindNodeWithData(ATree: TTreeView; AData: pointer): TTreeNode;
+begin
+  //Result:= ATree.Items.FindNodeWithData(AData);
+  // this is very slow on big XML files.
+  // 3 Mb XML file: TreeFill takes 14 seconds, while with reverse search: only 2 seconds
+
+  Result := ATree.Items.GetLastNode;
+  while Assigned(Result) and (Result.Data <> AData) do
+    Result := Result.GetPrev;
+end;
+
 procedure TATAdapterEControl.TreeFill(ATree: TTreeView);
 var
   R, RangeParent: TecTextRange;
@@ -895,7 +906,7 @@ begin
       while (RangeParent<>nil) and (not RangeParent.Rule.DisplayInTree) do
         RangeParent:= GetRangeParent(RangeParent);
       if RangeParent<>nil then
-        NodeParent:= ATree.Items.FindNodeWithData(RangeParent);
+        NodeParent:= TreeFindNodeWithData(ATree, RangeParent);
 
       if NodeTextGroup<>'' then
       begin
