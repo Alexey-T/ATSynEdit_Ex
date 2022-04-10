@@ -810,7 +810,7 @@ var
   NLast, i: integer;
 begin
   Result:= nil;
-  NLast := AnClient.PublicData.FoldRanges.Count - 1;
+  NLast:= AnClient.PublicData.FoldRanges.Count - 1;
   for i:= Min(NLast, R.Index-1) downto 0 do
   begin
     RTest:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
@@ -847,9 +847,9 @@ begin
   // this is very slow on big XML files.
   // 3 Mb XML file: TreeFill takes 14 seconds, while with reverse search: only 2 seconds
 
-  Result := ATree.Items.GetLastNode;
+  Result:= ATree.Items.GetLastNode;
   while Assigned(Result) and (Result.Data <> AData) do
-    Result := Result.GetPrev;
+    Result:= Result.GetPrev;
 end;
 
 procedure TATAdapterEControl.TreeFill(ATree: TTreeView);
