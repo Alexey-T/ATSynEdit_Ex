@@ -817,10 +817,7 @@ begin
     if (RTest.StartIdx<=R.StartIdx) and
        (RTest.EndIdx>=R.EndIdx) and
        (RTest.Level<R.Level) then
-    begin
-      Result:= RTest;
-      Exit
-    end;
+      Exit(RTest);
   end;
 end;
 
