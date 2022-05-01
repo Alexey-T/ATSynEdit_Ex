@@ -164,6 +164,9 @@ procedure ApplyPartStyleFromEcontrolStyle(var part: TATLinePart; st: TecSyntaxFo
 function CodetreeFindItemForPosition(ATree: TTreeView; APosX, APosY: integer): TTreeNode;
 procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer; out ASelLine: integer);
 
+var
+  OptCodeTreeMaxTimeMessage: string = '[>%dms, skipped %d/%d]';
+
 implementation
 
 uses Math;
@@ -916,7 +919,7 @@ begin
 
       if GetTickCount64-NTick>AMaxTime then
       begin
-        NodeText:= Format('[>%dms, skipped: %d/%d]', [AMaxTime, NItemCount-ATree.Items.Count, NItemCount]);
+        NodeText:= Format(OptCodeTreeMaxTimeMessage, [AMaxTime, NItemCount-ATree.Items.Count, NItemCount]);
         NodeParent:= ATree.Items.AddChildObject(nil, NodeText, NodeData);
         Break;
       end;
