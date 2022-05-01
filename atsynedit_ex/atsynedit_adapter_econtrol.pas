@@ -165,7 +165,7 @@ function CodetreeFindItemForPosition(ATree: TTreeView; APosX, APosY: integer): T
 procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer; out ASelLine: integer);
 
 var
-  OptCodeTreeMaxTimeMessage: string = '[>%dms, skipped %d/%d]';
+  OptCodeTreeMaxTimeMessage: string = '>%dms, skipped %d/%d';
 
 implementation
 
