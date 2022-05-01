@@ -846,11 +846,6 @@ begin
        (RTest.Level<R.Level) then
       Exit(RTest);
   end;
-  {
-  if R.Index>0 then
-    if Result=nil then
-      ShowMessage(Format('GetRangeParent=nil for idx=%d'#10, [R.Index])+DebugFoldRanges);
-      }
 end;
 
 function TreeFindNode(ATree: TTreeView; ANode: TTreeNode; const ANodeText: string): TTreeNode;
@@ -868,17 +863,6 @@ begin
     if N.Text=ANodeText then Exit(N);
     N:= N.GetNextSibling;
   until false;
-end;
-
-function TreeFindNodeWithData(ATree: TTreeView; AData: pointer): TTreeNode;
-begin
-  //Result:= ATree.Items.FindNodeWithData(AData);
-  // this is very slow on big XML files.
-  // 3 Mb XML file: TreeFill takes 14 seconds, while with reverse search: only 2 seconds
-
-  Result:= ATree.Items.GetLastNode;
-  while Assigned(Result) and (Result.Data <> AData) do
-    Result:= Result.GetPrev;
 end;
 
 procedure TATAdapterEControl.TreeFill(ATree: TTreeView);
@@ -935,7 +919,7 @@ begin
       while (RangeParent<>nil) and (not RangeParent.Rule.DisplayInTree) do
         RangeParent:= GetRangeParent(RangeParent);
       if RangeParent<>nil then
-        NodeParent:= TreeFindNodeWithData(ATree, RangeParent);
+        NodeParent:= ATree.Items.FindNodeWithData(RangeParent);
 
       if NodeTextGroup<>'' then
       begin
