@@ -112,6 +112,7 @@ type
     procedure StopTreeUpdate;
     function IsParsingBusy: boolean;
     function DebugString: string;
+    function DebugFoldRanges: string;
     procedure UpdateRangesFoldAndColored;
 
     //tokens
@@ -330,6 +331,32 @@ begin
     Rng:= FRangesColored.ItemPtr(0);
     Application.MainForm.Caption:= Format('RngColored: (%d,%d..%d,%d)',
       [Rng^.Pos1.X, Rng^.Pos1.Y, Rng^.Pos2.X, Rng^.Pos2.Y]);
+  end;
+end;
+
+function TATAdapterEControl.DebugFoldRanges: string;
+var
+  L: TStringList;
+  R: TecTextRange;
+  Idx, i: integer;
+begin
+  L := TStringList.Create;
+  try
+    L.TextLineBreakStyle:= tlbsLF;
+    for i := 0 to AnClient.PublicData.FoldRanges.Count - 1 do
+    begin
+      R := TecTextRange(AnClient.PublicData.FoldRanges[i]);
+      if R.Parent<>nil then
+        Idx := R.Parent.Index
+      else
+        Idx := -1;
+      L.Add(Format('[%d] StartIdx=%d EndIdx=%d Parent=%d Text="%s"',
+        [R.Index, R.StartIdx, R.EndIdx, Idx,
+        AnClient.PublicData.Tokens[R.StartIdx].GetStr(AnClient.Buffer.FText)]));
+    end;
+    Result:= L.Text;
+  finally
+    FreeAndNil(L);
   end;
 end;
 
@@ -819,6 +846,11 @@ begin
        (RTest.Level<R.Level) then
       Exit(RTest);
   end;
+  {
+  if R.Index>0 then
+    if Result=nil then
+      ShowMessage(Format('GetRangeParent=nil for idx=%d'#10, [R.Index])+DebugFoldRanges);
+      }
 end;
 
 function TreeFindNode(ATree: TTreeView; ANode: TTreeNode; const ANodeText: string): TTreeNode;
