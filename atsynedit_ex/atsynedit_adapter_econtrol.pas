@@ -165,7 +165,7 @@ function CodetreeFindItemForPosition(ATree: TTreeView; APosX, APosY: integer): T
 procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer; out ASelLine: integer);
 
 var
-  OptCodeTreeMaxTimeMessage: string = '>%dms, skipped %d/%d';
+  OptCodeTreeMaxTimeMessage: string = '>%dms, skipped %s/%s';
 
 implementation
 
@@ -868,6 +868,14 @@ begin
   until false;
 end;
 
+function _FormatIntByKilo(N: integer): string;
+begin
+  if N>=1000 then
+    Result:= IntToStr(N div 1000)+'k'
+  else
+    Result:= IntToStr(N);
+end;
+
 procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer);
 var
   R, RangeParent: TecTextRange;
@@ -919,7 +927,11 @@ begin
 
       if GetTickCount64-NTick>AMaxTime then
       begin
-        NodeText:= Format(OptCodeTreeMaxTimeMessage, [AMaxTime, NItemCount-ATree.Items.Count, NItemCount]);
+        NodeText:= Format(OptCodeTreeMaxTimeMessage, [
+            AMaxTime,
+            _FormatIntByKilo(NItemCount-ATree.Items.Count),
+            _FormatIntByKilo(NItemCount)
+            ]);
         NodeParent:= ATree.Items.AddChildObject(nil, NodeText, NodeData);
         Break;
       end;
