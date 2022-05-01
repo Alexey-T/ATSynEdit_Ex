@@ -128,7 +128,7 @@ type
 
     //support for syntax-tree
     property TreeBusy: boolean read FBusyTreeUpdate;
-    procedure TreeFill(ATree: TTreeView);
+    procedure TreeFill(ATree: TTreeView; AMaxTime: integer);
 
     //sublexers
     function SublexerRangeCount: integer;
@@ -865,7 +865,7 @@ begin
   until false;
 end;
 
-procedure TATAdapterEControl.TreeFill(ATree: TTreeView);
+procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer);
 var
   R, RangeParent: TecTextRange;
   NodeParent, NodeGroup: TTreeNode;
@@ -874,20 +874,23 @@ var
   NodeData: pointer;
   RangeNew: TATRangeInCodeTree;
   Sep: TATStringSeparator;
-  i: integer;
+  NTick: QWord;
+  NItemCount, i: integer;
 begin
   if AnClient=nil then exit;
   AnClient.CriSecForData.Enter;
   FStopTreeUpdate:= false;
   FBusyTreeUpdate:= true;
+  NTick:= GetTickCount64;
 
   //ATree.Items.BeginUpdate;
 
   try
     ATree.Items.Clear;
     NameLexer:= AnClient.Owner.LexerName;
+    NItemCount:= AnClient.PublicData.FoldRanges.Count;
 
-    for i:= 0 to AnClient.PublicData.FoldRanges.Count-1 do
+    for i:= 0 to NItemCount-1 do
     begin
       if FStopTreeUpdate then exit;
       if Application.Terminated then exit;
@@ -910,6 +913,13 @@ begin
       NodeData:= R;
       NodeParent:= nil;
       NodeGroup:= nil;
+
+      if GetTickCount64-NTick>AMaxTime then
+      begin
+        NodeText:= Format('[>%dms, skipped: %d/%d]', [AMaxTime, NItemCount-ATree.Items.Count, NItemCount]);
+        NodeParent:= ATree.Items.AddChildObject(nil, NodeText, NodeData);
+        Break;
+      end;
 
       //strip tree items from #10
       SDeleteFromEol(NodeText);
