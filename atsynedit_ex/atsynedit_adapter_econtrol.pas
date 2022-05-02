@@ -163,7 +163,7 @@ procedure ApplyPartStyleFromEcontrolStyle(var part: TATLinePart; st: TecSyntaxFo
 
 function CodetreeFindItemForPosition(ATree: TTreeView; APosX, APosY: integer): TTreeNode;
 procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer; out ASelLine: integer);
-procedure CodetreeClear(ATree: TTreeView);
+//procedure CodetreeClear(ATree: TTreeView);
 
 var
   OptCodeTreeMaxTimeMessage: string = '>%dms, skipped %s/%s';
@@ -1165,6 +1165,7 @@ begin
   end;
 end;
 
+(*
 procedure CodetreeClear(ATree: TTreeView);
 var
   Node: TTreeNode;
@@ -1183,6 +1184,7 @@ begin
   end;
   ATree.Items.Clear;
 end;
+*)
 
 procedure TATAdapterEControl.OnEditorCaretMove(Sender: TObject);
 begin
