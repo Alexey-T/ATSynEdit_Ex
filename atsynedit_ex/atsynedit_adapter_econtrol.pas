@@ -163,6 +163,7 @@ procedure ApplyPartStyleFromEcontrolStyle(var part: TATLinePart; st: TecSyntaxFo
 
 function CodetreeFindItemForPosition(ATree: TTreeView; APosX, APosY: integer): TTreeNode;
 procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer; out ASelLine: integer);
+procedure CodetreeClear(ATree: TTreeView);
 
 var
   OptCodeTreeMaxTimeMessage: string = '>%dms, skipped %s/%s';
@@ -899,7 +900,6 @@ var
   NodeText, NodeTextGroup, SItem: string;
   NameRule, NameLexer: string;
   NodeData: pointer;
-  RangeNew: TATRangeInCodeTree;
   Sep: TATStringSeparator;
   NTick: QWord;
   NItemCount, i: integer;
@@ -913,7 +913,8 @@ begin
   //ATree.Items.BeginUpdate;
 
   try
-    ATree.Items.Clear;
+    CodetreeClear(ATree);
+
     NameLexer:= AnClient.Owner.LexerName;
     NItemCount:= AnClient.PublicData.FoldRanges.Count;
 
@@ -1162,6 +1163,25 @@ begin
       ASelLine:= Range.PosBegin.Y;
     end;
   end;
+end;
+
+procedure CodetreeClear(ATree: TTreeView);
+var
+  Node: TTreeNode;
+  D: pointer;
+  i: integer;
+begin
+  for i:= ATree.Items.Count-1 downto 0 do
+  begin
+    Node:= ATree.Items[i];
+    D:= Node.Data;
+    if Assigned(D) then
+    begin
+      TObject(D).Free;
+      Node.Data:= nil;
+    end;
+  end;
+  ATree.Items.Clear;
 end;
 
 procedure TATAdapterEControl.OnEditorCaretMove(Sender: TObject);
