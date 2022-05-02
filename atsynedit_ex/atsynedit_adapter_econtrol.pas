@@ -877,6 +877,22 @@ begin
 end;
 
 procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer);
+  //
+  function ConvertRangeToTreeRange(R: TecTextRange): TATRangeInCodeTree;
+  begin
+    Result:= TATRangeInCodeTree.Create;
+
+    if R.StartIdx>=0 then
+      Result.PosBegin:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx)^.Range.PointStart
+    else
+      Result.PosBegin:= Point(-1, -1);
+
+    if R.EndIdx>=0 then
+      Result.PosEnd:= AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx)^.Range.PointEnd
+    else
+      Result.PosEnd:= Point(-1, -1);
+  end;
+  //
 var
   R, RangeParent: TecTextRange;
   NodeParent, NodeGroup: TTreeNode;
@@ -980,20 +996,7 @@ begin
       NodeParent:= ATree.Items[i];
       if NodeParent.Data=nil then Continue;
       R:= TecTextRange(NodeParent.Data);
-
-      RangeNew:= TATRangeInCodeTree.Create;
-
-      if R.StartIdx>=0 then
-        RangeNew.PosBegin:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx)^.Range.PointStart
-      else
-        RangeNew.PosBegin:= Point(-1, -1);
-
-      if R.EndIdx>=0 then
-        RangeNew.PosEnd:= AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx)^.Range.PointEnd
-      else
-        RangeNew.PosEnd:= Point(-1, -1);
-
-      NodeParent.Data:= RangeNew;
+      NodeParent.Data:= ConvertRangeToTreeRange(R);
     end;
 
   finally
