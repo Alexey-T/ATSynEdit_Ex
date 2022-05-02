@@ -913,7 +913,7 @@ begin
   //ATree.Items.BeginUpdate;
 
   try
-    CodetreeClear(ATree);
+    ATree.Items.Clear;
 
     NameLexer:= AnClient.Owner.LexerName;
     NItemCount:= AnClient.PublicData.FoldRanges.Count;
