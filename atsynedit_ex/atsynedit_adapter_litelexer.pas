@@ -53,8 +53,8 @@ type
       //calc tokens not from ACharIndex, but from n chars lefter,
       //to hilite comments/strings, partly scrolled to left
     function GetRule(AIndex: integer): TATLiteLexerRule;
-    procedure CalcParts(Ed: TATSynEdit; var AParts: TATLineParts; ALineIndex,
-      ACharIndex: integer; AMainText: boolean);
+    procedure CalcParts(Ed: TATSynEdit; var AParts: TATLineParts;
+      ALineIndex: integer; AMainText: boolean);
   public
     LexerName: string;
     FileTypes: string;
@@ -391,7 +391,7 @@ begin
   end
   else
   begin
-    CalcParts(Ed, AParts, ALineIndex, ACharIndex, AMainText);
+    CalcParts(Ed, AParts, ALineIndex, AMainText);
     if ACharIndex+ALineLen<Ed.Strings.LinesLen[ALineIndex] then
     begin
       FCache.LineIndex:= ALineIndex;
@@ -405,7 +405,7 @@ begin
 end;
 
 procedure TATLiteLexer.CalcParts(Ed: TATSynEdit; var AParts: TATLineParts;
-  ALineIndex, ACharIndex: integer; AMainText: boolean);
+  ALineIndex: integer; AMainText: boolean);
 var
   EdLine: UnicodeString;
   ch: WideChar;
@@ -447,7 +447,7 @@ begin
     if not bRuleFound then
     begin
       //add one char to part
-      if NPos+NLen>=ACharIndex then
+      //if NPos+NLen>=ACharIndex then
       begin
         if (NParts=0) or bLastFound then
         begin
@@ -466,7 +466,7 @@ begin
     else
     begin
       //found rule, add NLen chars to part
-      if NPos+NLen>=ACharIndex then
+      //if NPos+NLen>=ACharIndex then
       begin
         FixedOffset:= NPos-1;
         FixedLen:= NLen;
