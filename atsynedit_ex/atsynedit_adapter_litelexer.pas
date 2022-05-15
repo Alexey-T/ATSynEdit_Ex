@@ -35,12 +35,19 @@ type
   TATLiteLexer_GetStyleHash = function (const AStyleName: string): integer;
   TATLiteLexer_ApplyStyle = procedure (AStyleHash: integer; var APart: TATLinePart);
 
+  TATLinePartsCache = record
+    Version: Int64;
+    LineIndex: integer;
+    Parts: TATLineParts;
+  end;
+
 type
   { TATLiteLexer }
 
   TATLiteLexer = class(TATAdapterHilite)
   private
     FRules: TFPList;
+    FCache: TATLinePartsCache;
     FOnGetStyleHash: TATLiteLexer_GetStyleHash;
     FOnApplyStyle: TATLiteLexer_ApplyStyle;
       //calc tokens not from ACharIndex, but from n chars lefter,
@@ -371,11 +378,27 @@ procedure TATLiteLexer.OnEditorCalcHilite(Sender: TObject;
   var AColorAfterEol: TColor; AMainText: boolean);
 var
   Ed: TATSynEdit;
+  Version: Int64;
 begin
   if Application.Terminated then exit;
   Ed:= Sender as TATSynEdit;
+  Version:= Ed.Strings.ModifiedVersion;
 
-  CalcParts(Ed, AParts, ALineIndex, ACharIndex, AMainText);
+  if (ALineIndex=FCache.LineIndex) and
+    (Version=FCache.Version) then
+  begin
+    Move(FCache.Parts, AParts, SizeOf(AParts));
+  end
+  else
+  begin
+    CalcParts(Ed, AParts, ALineIndex, ACharIndex, AMainText);
+    if ACharIndex+ALineLen<Ed.Strings.LinesLen[ALineIndex] then
+    begin
+      FCache.LineIndex:= ALineIndex;
+      FCache.Version:= Version;
+      Move(AParts, FCache.Parts, SizeOf(AParts));
+    end;
+  end;
 
   if ACharIndex>1 then
     DoPartsCutFromOffset(AParts, ACharIndex-1);
