@@ -46,6 +46,8 @@ type
       //calc tokens not from ACharIndex, but from n chars lefter,
       //to hilite comments/strings, partly scrolled to left
     function GetRule(AIndex: integer): TATLiteLexerRule;
+    procedure CalcParts(Ed: TATSynEdit; var AParts: TATLineParts; ALineIndex,
+      ACharIndex: integer; AMainText: boolean);
   public
     LexerName: string;
     FileTypes: string;
@@ -369,6 +371,19 @@ procedure TATLiteLexer.OnEditorCalcHilite(Sender: TObject;
   var AColorAfterEol: TColor; AMainText: boolean);
 var
   Ed: TATSynEdit;
+begin
+  if Application.Terminated then exit;
+  Ed:= Sender as TATSynEdit;
+
+  CalcParts(Ed, AParts, ALineIndex, ACharIndex, AMainText);
+
+  if ACharIndex>1 then
+    DoPartsCutFromOffset(AParts, ACharIndex-1);
+end;
+
+procedure TATLiteLexer.CalcParts(Ed: TATSynEdit; var AParts: TATLineParts;
+  ALineIndex, ACharIndex: integer; AMainText: boolean);
+var
   EdLine: UnicodeString;
   ch: WideChar;
   NParts, NPos, NLen, IndexRule: integer;
@@ -376,9 +391,6 @@ var
   Rule: TATLiteLexerRule;
   bLastFound, bRuleFound: boolean;
 begin
-  if Application.Terminated then exit;
-  Ed:= Sender as TATSynEdit;
-
   //this is to prevent big slowdown on huge line length=40M, eg single line XML with XML^ lite lexer
   if Ed.Strings.LinesLen[ALineIndex]>ATLiteLexerMaxLineLength then
     EdLine:= Ed.Strings.LineSub(ALineIndex, 1, ATLiteLexerMaxLineLength)
@@ -392,7 +404,7 @@ begin
   repeat
     Inc(NPos);
     if NPos>Length(EdLine) then Break;
-    if NPos>ACharIndex+ALineLen then Break;
+    //if NPos>ACharIndex+ALineLen then Break;
     if NParts>=High(TATLineParts) then Break;
     bRuleFound:= false;
 
@@ -449,9 +461,6 @@ begin
 
     bLastFound:= bRuleFound;
   until false;
-
-  if ACharIndex>1 then
-    DoPartsCutFromOffset(AParts, ACharIndex-1);
 end;
 
 end.
