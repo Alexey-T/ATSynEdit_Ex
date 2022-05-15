@@ -385,6 +385,9 @@ begin
   Ed:= Sender as TATSynEdit;
   Version:= Ed.Strings.ModifiedVersion;
 
+  if Ed.OptWrapMode=cWrapOff then
+    CalcParts(Ed, AParts, ALineIndex, AMainText)
+  else
   if (Ed=FCache.Editor) and
     (ALineIndex=FCache.LineIndex) and
     (Version=FCache.Version) then
