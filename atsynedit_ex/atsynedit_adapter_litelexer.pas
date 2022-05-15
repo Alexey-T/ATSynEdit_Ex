@@ -39,6 +39,7 @@ type
     Editor: TATSynEdit;
     Version: Int64;
     LineIndex: integer;
+    CharIndex: integer;
     Parts: TATLineParts;
   end;
 
@@ -391,19 +392,22 @@ begin
   end
   else
   if (Ed=FCache.Editor) and
+    (Version=FCache.Version) and
     (ALineIndex=FCache.LineIndex) and
-    (Version=FCache.Version) then
+    (ACharIndex>=FCache.CharIndex) and
+    (ACharIndex<FCache.CharIndex+Length(TATLineParts)) then
   begin
     Move(FCache.Parts, AParts, SizeOf(AParts));
   end
   else
   begin
-    CalcParts(Ed, AParts, ALineIndex, 1{don't pass ACharIndex}, AMainText);
+    CalcParts(Ed, AParts, ALineIndex, ACharIndex, AMainText);
     if ACharIndex+ALineLen<Ed.Strings.LinesLen[ALineIndex] then
     begin
       FCache.Editor:= Ed;
-      FCache.LineIndex:= ALineIndex;
       FCache.Version:= Version;
+      FCache.LineIndex:= ALineIndex;
+      FCache.CharIndex:= ACharIndex;
       Move(AParts, FCache.Parts, SizeOf(AParts));
     end;
   end;
