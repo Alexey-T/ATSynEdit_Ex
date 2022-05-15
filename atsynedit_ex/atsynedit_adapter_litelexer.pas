@@ -36,6 +36,7 @@ type
   TATLiteLexer_ApplyStyle = procedure (AStyleHash: integer; var APart: TATLinePart);
 
   TATLinePartsCache = record
+    Editor: TATSynEdit;
     Version: Int64;
     LineIndex: integer;
     Parts: TATLineParts;
@@ -384,7 +385,8 @@ begin
   Ed:= Sender as TATSynEdit;
   Version:= Ed.Strings.ModifiedVersion;
 
-  if (ALineIndex=FCache.LineIndex) and
+  if (Ed=FCache.Editor) and
+    (ALineIndex=FCache.LineIndex) and
     (Version=FCache.Version) then
   begin
     Move(FCache.Parts, AParts, SizeOf(AParts));
@@ -394,6 +396,7 @@ begin
     CalcParts(Ed, AParts, ALineIndex, AMainText);
     if ACharIndex+ALineLen<Ed.Strings.LinesLen[ALineIndex] then
     begin
+      FCache.Editor:= Ed;
       FCache.LineIndex:= ALineIndex;
       FCache.Version:= Version;
       Move(AParts, FCache.Parts, SizeOf(AParts));
