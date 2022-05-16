@@ -40,6 +40,7 @@ type
     Version: Int64;
     LineIndex: integer;
     CharIndex: integer;
+    LastCachedChar: integer;
     Parts: TATLineParts;
   end;
 
@@ -391,11 +392,12 @@ begin
     CalcParts(Ed, AParts, ALineIndex, ACharIndex, AMainText)
   end
   else
+  //can get from cache?
   if (Ed=FCache.Editor) and
     (Version=FCache.Version) and
     (ALineIndex=FCache.LineIndex) and
     (ACharIndex>=FCache.CharIndex) and
-    (ACharIndex<FCache.CharIndex+Length(TATLineParts)) then
+    (ACharIndex+ALineLen<FCache.LastCachedChar) then
   begin
     Move(FCache.Parts, AParts, SizeOf(AParts));
   end
@@ -408,6 +410,7 @@ begin
       FCache.Version:= Version;
       FCache.LineIndex:= ALineIndex;
       FCache.CharIndex:= ACharIndex;
+      FCache.LastCachedChar:= DoPartsGetLastCachedChar(AParts);
       Move(AParts, FCache.Parts, SizeOf(AParts));
     end;
   end;
