@@ -1560,21 +1560,8 @@ begin
 end;
 
 function TATAdapterEControl.GetLexerSuportsDynamicHilite: boolean;
-var
-  An: TecSyntAnalyzer;
-  Rule: TecTagBlockCondition;
-  i: integer;
 begin
-  Result:= false;
-  if AnClient=nil then exit;
-  An:= AnClient.Owner;
-  for i:= 0 to An.BlockRules.Count-1 do
-  begin
-    Rule:= An.BlockRules[i];
-    if Assigned(Rule) and
-      (Rule.HighlightPos in [cpBound, cpRange, cpOutOfRange]) and
-      (Rule.DynHighlight in [dhRange, dhRangeNoBound, dhBound]) then exit(true);
-  end;
+  Result:= Assigned(AnClient) and AnClient.Owner.SupportsDynamicHighlight;
 end;
 
 function TATAdapterEControl.IsDynamicHiliteEnabled: boolean;
