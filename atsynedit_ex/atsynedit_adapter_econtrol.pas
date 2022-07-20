@@ -59,6 +59,7 @@ type
     FOnLexerChange: TATEditorEvent;
     FOnParseBegin: TNotifyEvent;
     FOnParseDone: TNotifyEvent;
+    procedure HandleBlockReopen(Sender: TObject; ABlockPos: TPoint);
     procedure DebugIntegersWithPointers(L: TATIntegersWithPointers);
     procedure DebugRangesColored;
     procedure DoCheckEditorList; inline;
@@ -1216,6 +1217,7 @@ begin
     AnClient.OnProgressFirst:= @ProgressFirst;
     AnClient.OnProgressSecond:= @ProgressSecond;
     AnClient.OnProgressBoth:= @ProgressBoth;
+    AnClient.OnBlockReopen:= @HandleBlockReopen;
 
     //after AnClient assigning
     UpdatePublicDataNeedTo;
@@ -1464,6 +1466,19 @@ begin
   for i:= 0 to Min(30, L.Count-1) do
     s+= IntToStr(L[i].Value)+#10;
   ShowMessage(s);
+end;
+
+procedure TATAdapterEControl.HandleBlockReopen(Sender: TObject; ABlockPos: TPoint);
+var
+  Ed: TATSynEdit;
+  N: integer;
+begin
+  Ed:= Editor;
+  if Ed=nil then exit;
+  N:= Ed.Fold.FindRangeWithPlusAtLine(ABlockPos.Y);
+  if N>=0 then
+    if Ed.Fold[N].Folded then
+      Ed.DoRangeUnfold(N);
 end;
 
 procedure TATAdapterEControl.UpdateRangesSublex;
