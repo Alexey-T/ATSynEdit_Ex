@@ -556,7 +556,7 @@ begin
   begin
     Ed:= TATSynEdit(EdList[j]);
 
-    //Tag=-1 means persistent range from command "Fold selection"
+    //Tag=cTagPersistentFoldRange means persistent range from command "Fold selection"
     if Ed.Fold.HasTagPersist then
       Ed.Fold.DeleteAllExceptTag(cTagPersistentFoldRange)
     else
