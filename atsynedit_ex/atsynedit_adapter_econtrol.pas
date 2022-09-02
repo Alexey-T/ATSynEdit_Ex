@@ -556,11 +556,8 @@ begin
   begin
     Ed:= TATSynEdit(EdList[j]);
 
-    //Tag=cTagPersistentFoldRange means persistent range from command "Fold selection"
-    if Ed.Fold.HasTagPersist then
-      Ed.Fold.DeleteAllExceptTag(cTagPersistentFoldRange)
-    else
-      Ed.Fold.Clear;
+    Ed.Fold.BackupPersistentRanges;
+    Ed.Fold.Clear;
 
     //Ed.Strings.ClearSeparators; //separators are not used in this adapter
   end;
@@ -1269,6 +1266,9 @@ begin
   finally
     AnClient.CriSecForData.Leave;
   end;
+
+  if EdList.Count>0 then
+    TATSynEdit(EdList[0]).Fold.RestorePersistentRanges;
 
   UpdateRangesActiveAll;
 end;
