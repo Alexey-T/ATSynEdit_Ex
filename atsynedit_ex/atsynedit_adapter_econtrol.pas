@@ -1205,16 +1205,21 @@ begin
   begin
     Buffer.Valid:= false;
 
-    AnClient:= TecClientSyntAnalyzer.Create(AAnalizer, Buffer);
-    if EdList.Count>0 then
-      AnClient.FileName:= ExtractFileName(Editor.FileName);
+    try
+      AnClient:= TecClientSyntAnalyzer.Create(AAnalizer, Buffer);
+      if EdList.Count>0 then
+        AnClient.FileName:= ExtractFileName(Editor.FileName);
 
-    AnClient.OnUpdateBuffer:= @UpdateBufferFromEvent;
-    AnClient.OnParseDone:= @ParseDone;
-    AnClient.OnProgressFirst:= @ProgressFirst;
-    AnClient.OnProgressSecond:= @ProgressSecond;
-    AnClient.OnProgressBoth:= @ProgressBoth;
-    AnClient.OnBlockReopen:= @HandleBlockReopen;
+      AnClient.OnUpdateBuffer:= @UpdateBufferFromEvent;
+      AnClient.OnParseDone:= @ParseDone;
+      AnClient.OnProgressFirst:= @ProgressFirst;
+      AnClient.OnProgressSecond:= @ProgressSecond;
+      AnClient.OnProgressBoth:= @ProgressBoth;
+      AnClient.OnBlockReopen:= @HandleBlockReopen;
+    except
+      AnClient:= nil;
+      raise;
+    end;
 
     //after AnClient assigning
     UpdatePublicDataNeedTo;
