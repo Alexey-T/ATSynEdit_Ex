@@ -187,7 +187,7 @@ const
     cLineStyleDotted
     );
 
-procedure ApplyPartStyleFromEcontrolStyle(var part: TATLinePart; st: TecSyntaxFormat); inline;
+procedure ApplyPartStyleFromEcontrolStyle(var part: TATLinePart; st: TecSyntaxFormat);
 begin
   if st.FormatType in [ftCustomFont, ftFontAttr, ftColor, ftBackGround] then
   begin
