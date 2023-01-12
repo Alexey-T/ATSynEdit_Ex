@@ -13,6 +13,7 @@ uses
   ATSynEdit,
   ATSynEdit_Adapters,
   ATSynEdit_LineParts,
+  Math,
   Masks,
   FileUtil,
   at__jsonConf,
@@ -427,10 +428,13 @@ var
   NParts, NPos, NLen, IndexRule: integer;
   FixedOffset, FixedLen: integer;
   Rule: TATLiteLexerRule;
-  bLastFound, bRuleFound: boolean;
+  bLastFound, bRuleFound, bLineTruncated: boolean;
+  NTotalLineLen: integer;
 begin
   //this is to prevent big slowdown on huge line length=40M, eg single line XML with XML^ lite lexer
-  if Ed.Strings.LinesLen[ALineIndex]>ATLiteLexerMaxLineLength then
+  NTotalLineLen:= Ed.Strings.LinesLen[ALineIndex];
+  bLineTruncated:= NTotalLineLen>ATLiteLexerMaxLineLength;
+  if bLineTruncated then
     EdLine:= Ed.Strings.LineSub(ALineIndex, 1, ATLiteLexerMaxLineLength)
   else
     EdLine:= Ed.Strings.Lines[ALineIndex];
@@ -440,10 +444,23 @@ begin
   bLastFound:= false;
 
   repeat
-    Inc(NPos);
-    if NPos>Length(EdLine) then Break;
-    //if NPos>ACharIndex+ALineLen then Break;
     if NParts>=High(TATLineParts) then Break;
+
+    Inc(NPos);
+    if NPos>Length(EdLine) then
+    begin
+      if bLineTruncated then
+      begin
+        Inc(NParts);
+        AParts[NParts-1].Offset:= NPos-1;
+        AParts[NParts-1].Len:= NTotalLineLen-NPos+1;
+        AParts[NParts-1].ColorBG:= clNone;
+        AParts[NParts-1].ColorFont:= Ed.Colors.TextFont;
+      end;
+      Break;
+    end;
+
+    //if NPos>ACharIndex+ALineLen then Break;
     bRuleFound:= false;
 
     ch:= EdLine[NPos];
