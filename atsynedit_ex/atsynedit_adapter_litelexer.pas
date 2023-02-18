@@ -13,7 +13,6 @@ uses
   ATSynEdit,
   ATSynEdit_Adapters,
   ATSynEdit_LineParts,
-  Math,
   Masks,
   FileUtil,
   at__jsonConf,
