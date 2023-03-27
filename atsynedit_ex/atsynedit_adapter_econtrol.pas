@@ -855,16 +855,18 @@ var
   N: TTreeNode;
 begin
   Result:= nil;
-  if ATree.Items.Count=0 then exit;
+  if ATree.Items.Count=0 then Exit;
+
   if ANode<>nil then
     N:= ANode.GetFirstChild
   else
     N:= ATree.Items[0];
-  repeat
-    if N=nil then exit;
+
+  while N<>nil do
+  begin
     if N.Text=ANodeText then Exit(N);
     N:= N.GetNextSibling;
-  until false;
+  end;
 end;
 
 function _FormatIntByKilo(N: integer): string;
