@@ -1393,7 +1393,7 @@ begin
       Pnt2:= tokenEnd^.Range.PointEnd;
       if Pnt1.Y<0 then Continue;
       if Pnt2.Y<0 then Continue;
-      DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.Y, true, '');
+      DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.Y, false, '');
       Continue;
     end;
 
