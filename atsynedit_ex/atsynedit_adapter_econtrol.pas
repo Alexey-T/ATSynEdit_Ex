@@ -1383,7 +1383,20 @@ begin
     if Application.Terminated then exit;
 
     R:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
-    if R.Rule=nil then Continue;
+
+    //R.Rule is nil for AutoFoldComment ranges, we need them
+    if R.Rule=nil then
+    begin
+      tokenStart:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx);
+      tokenEnd:= AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx);
+      Pnt1:= tokenStart^.Range.PointStart;
+      Pnt2:= tokenEnd^.Range.PointEnd;
+      if Pnt1.Y<0 then Continue;
+      if Pnt2.Y<0 then Continue;
+      DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.Y, true, '');
+      Continue;
+    end;
+
     if R.Rule.BlockType<>btRangeStart then Continue;
 
     /////issue: rules in C# with 'parent' set give wrong ranges;
