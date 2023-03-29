@@ -1389,13 +1389,16 @@ begin
     //R.Rule is nil for AutoFoldComment ranges, we need them
     if R.Rule=nil then
     begin
-      tokenStart:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx);
-      tokenEnd:= AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx);
-      Pnt1:= tokenStart^.Range.PointStart;
-      Pnt2:= tokenEnd^.Range.PointEnd;
-      if Pnt1.Y<0 then Continue;
-      if Pnt2.Y<0 then Continue;
-      DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.Y, false, '//...');
+      if (R.StartIdx >= 0) and (R.EndIdx >= 0) then //sometimes we get R.EndIdx=-1, CudaText issue #4939
+      begin
+        tokenStart:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx);
+        tokenEnd:= AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx);
+        Pnt1:= tokenStart^.Range.PointStart;
+        Pnt2:= tokenEnd^.Range.PointEnd;
+        if Pnt1.Y<0 then Continue;
+        if Pnt2.Y<0 then Continue;
+        DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.Y, false, '//...');
+      end;
       Continue;
     end;
 
