@@ -1038,10 +1038,6 @@ begin
     AStart:= Sub^.Range.PointStart;
     AEnd:= Sub^.Range.PointEnd;
 
-    // before we had the Range.FinalSubAnalyzer:
-    //if Assigned(Range.Rule) and Assigned(Range.Rule.SyntAnalyzer) then
-    //  ALexerName:= Range.Rule.SyntAnalyzer.LexerName;
-
     if Assigned(Sub^.FinalSubAnalyzer) then
       ALexerName:= Sub^.FinalSubAnalyzer.LexerName;
   end;
