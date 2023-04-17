@@ -958,7 +958,7 @@ begin
       SDeleteFromEol(NodeTextGroup);
 
       RangeParent:= GetRangeParent(R);
-      while (RangeParent<>nil) and (not RangeParent.Rule.DisplayInTree) do
+      while (RangeParent<>nil) and Assigned(RangeParent.Rule) and (not RangeParent.Rule.DisplayInTree) do
         RangeParent:= GetRangeParent(RangeParent);
       if RangeParent<>nil then
         NodeParent:= ATree.Items.FindNodeWithData(RangeParent);
