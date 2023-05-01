@@ -71,7 +71,7 @@ type
     function DoFindToken(APos: TPoint; AExactPos: boolean = false): integer;
     function GetTokenColor_FromBoundRanges(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
     procedure DoFoldFromLinesHidden;
-    procedure DoChangeLog(Sender: TObject; ALine: integer);
+    procedure DoChangeLog(Sender: TObject; ALine: SizeInt);
     procedure ParseBegin;
     procedure ParseDone(Sender: TObject);
     procedure ProgressFirst(Sender: TObject);
@@ -1575,7 +1575,7 @@ begin
     Result:= nil;
 end;
 
-procedure TATAdapterEControl.DoChangeLog(Sender: TObject; ALine: integer);
+procedure TATAdapterEControl.DoChangeLog(Sender: TObject; ALine: SizeInt);
 begin
   if AnClient=nil then Exit;
   AnClient.Stop;
