@@ -107,7 +107,7 @@ type
   end;
 
 var
-  ATLiteLexerMaxLineLength: integer = 8*1024;
+  ATLiteLexerMaxLineLength: integer = 4000;
 
 implementation
 
