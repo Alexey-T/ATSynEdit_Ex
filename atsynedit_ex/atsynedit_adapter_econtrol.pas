@@ -1190,7 +1190,11 @@ end;
 
 procedure TATAdapterEControl.SetLexer(AAnalizer: TecSyntAnalyzer);
 begin
-  if IsParsingBusy then exit;
+  while IsParsingBusy do
+  begin
+    Sleep(50);
+    Application.ProcessMessages;
+  end;
 
   ClearRanges;
 
