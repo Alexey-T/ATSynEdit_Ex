@@ -387,7 +387,7 @@ begin
   Ed:= Sender as TATSynEdit;
   Version:= Ed.Strings.ModifiedVersion;
 
-  if Ed.OptWrapMode=cWrapOff then
+  if Ed.OptWrapMode=TATEditorWrapMode.ModeOff then
   begin
     CalcParts(Ed, AParts, ALineIndex, ACharIndex, AMainText)
   end

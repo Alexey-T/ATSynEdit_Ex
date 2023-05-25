@@ -713,7 +713,7 @@ begin
   else
   begin
     ATokenStyle:= '';
-    ATokenKind:= atkOther;
+    ATokenKind:= TATTokenKind.Other;
   end;
 end;
 
@@ -727,7 +727,7 @@ begin
   APntTo:= Point(-1, -1);
   ATokenString:= '';
   ATokenStyle:= '';
-  ATokenKind:= atkOther;
+  ATokenKind:= TATTokenKind.Other;
 
   if AnClient=nil then exit;
   if Buffer=nil then exit;
@@ -754,7 +754,7 @@ begin
   APntTo:= Point(-1, -1);
   ATokenString:= '';
   ATokenStyle:= '';
-  ATokenKind:= atkOther;
+  ATokenKind:= TATTokenKind.Other;
 
   if AnClient=nil then exit;
   if Buffer=nil then exit;
@@ -802,12 +802,12 @@ begin
   begin
     Result:= TATTokenKind(Style.TokenKind);
     //support 'documentation comments'
-    if (Result=atkComment) and (not ADocCommentIsAlsoComment) then
+    if (Result=TATTokenKind.Comment) and (not ADocCommentIsAlsoComment) then
       if Pos('doc', LowerCase(Style.DisplayName))>0 then
-        Result:= atkOther;
+        Result:= TATTokenKind.Other;
   end
   else
-    Result:= atkOther;
+    Result:= TATTokenKind.Other;
 end;
 
 procedure TATAdapterEControl.OnEditorCalcPosForeground(Sender: TObject;

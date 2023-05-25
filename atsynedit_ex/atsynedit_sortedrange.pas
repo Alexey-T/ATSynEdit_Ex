@@ -296,10 +296,10 @@ var
   i: integer;
 begin
   case AChange of
-    cLineChangeDeletedAll:
+    TATLineChangeKind.DeletedAll:
       Clear;
 
-    cLineChangeAdded:
+    TATLineChangeKind.Added:
       begin
         for i:= Count-1 downto 0 do
         begin
@@ -315,7 +315,7 @@ begin
         end;
       end;
 
-    cLineChangeDeleted:
+    TATLineChangeKind.Deleted:
       begin
         for i:= Count-1 downto 0 do
         begin
