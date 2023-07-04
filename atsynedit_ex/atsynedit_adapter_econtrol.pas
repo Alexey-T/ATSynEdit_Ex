@@ -1370,6 +1370,7 @@ var
   tokenStart, tokenEnd: PecSyntToken;
   ColoredRange: TATSortedRange;
   bCanExcludeLastLine: boolean;
+  NLineLen: SizeInt;
   i: integer;
 begin
   if AnClient=nil then Exit;
@@ -1436,11 +1437,14 @@ begin
       //exclude last line if it ends with '{'
       //to allow user to fold that block {...}
       if bCanExcludeLastLine then
-        if (St.LinesLen[Pnt2.Y]<=20) and (SEndsWith(St.Lines[Pnt2.Y], '{')) then
+      begin
+        NLineLen:= St.LinesLen[Pnt2.Y];
+        if (NLineLen>0) and (NLineLen<=20) and (St.LineCharAt(Pnt2.Y, NLineLen)='{') then
         begin
           Dec(Pnt2.Y);
           if Pnt1.Y>=Pnt2.Y then Continue;
         end;
+      end;
 
       DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.Y, R.Rule.DrawStaple, SHint);
     end;
