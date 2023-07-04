@@ -1362,6 +1362,7 @@ procedure TATAdapterEControl.UpdateRangesFoldAndColored;
 //all calls of this procedure must be guarded with CriSecForData.Enter/Leave
 var
   Ed: TATSynEdit;
+  St: TATStrings;
   R: TecTextRange;
   Pnt1, Pnt2, Pnt1Wide, Pnt2Wide: TPoint;
   Style: TecSyntaxFormat;
@@ -1383,6 +1384,7 @@ begin
 
   bCanExcludeLastLine:=
     Assigned(AnClient.Owner) and (AnClient.Owner.LexerName='JSON');
+  St:= Editor.Strings;
 
   for i:= 0 to AnClient.PublicData.FoldRanges.Count-1 do
   begin
@@ -1434,7 +1436,7 @@ begin
       //exclude last line if it ends with '{'
       //to allow user to fold that block {...}
       if bCanExcludeLastLine then
-        if SEndsWith(Editor.Strings.Lines[Pnt2.Y], '{') then
+        if (St.LinesLen[Pnt2.Y]<=20) and (SEndsWith(St.Lines[Pnt2.Y], '{')) then
         begin
           Dec(Pnt2.Y);
           if Pnt1.Y>=Pnt2.Y then Continue;
