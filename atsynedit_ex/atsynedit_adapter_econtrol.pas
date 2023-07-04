@@ -1426,6 +1426,16 @@ begin
     if not R.Rule.NotCollapsed then
     begin
       SHint:= UTF8Encode(AnClient.GetCollapsedText(R)); //+'/'+R.Rule.GetNamePath;
+
+      //exclude last line if it ends with '{'
+      //to allow user to fold that block {...}
+      if Assigned(AnClient.Owner) and (AnClient.Owner.LexerName='JSON') then
+        if SEndsWith(Editor.Strings.Lines[Pnt2.Y], '{') then
+        begin
+          Dec(Pnt2.Y);
+          if Pnt1.Y>=Pnt2.Y then Continue;
+        end;
+
       DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.Y, R.Rule.DrawStaple, SHint);
     end;
 
