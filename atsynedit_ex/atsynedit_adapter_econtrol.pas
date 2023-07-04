@@ -1368,6 +1368,7 @@ var
   SHint: string;
   tokenStart, tokenEnd: PecSyntToken;
   ColoredRange: TATSortedRange;
+  bCanExcludeLastLine: boolean;
   i: integer;
 begin
   if AnClient=nil then Exit;
@@ -1379,6 +1380,9 @@ begin
 
   //init Ed.Fold.LineIndexer's
   ClearFoldIndexers;
+
+  bCanExcludeLastLine:=
+    Assigned(AnClient.Owner) and (AnClient.Owner.LexerName='JSON');
 
   for i:= 0 to AnClient.PublicData.FoldRanges.Count-1 do
   begin
@@ -1429,7 +1433,7 @@ begin
 
       //exclude last line if it ends with '{'
       //to allow user to fold that block {...}
-      if Assigned(AnClient.Owner) and (AnClient.Owner.LexerName='JSON') then
+      if bCanExcludeLastLine then
         if SEndsWith(Editor.Strings.Lines[Pnt2.Y], '{') then
         begin
           Dec(Pnt2.Y);
