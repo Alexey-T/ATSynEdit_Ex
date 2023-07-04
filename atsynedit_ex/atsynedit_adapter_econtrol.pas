@@ -1439,7 +1439,7 @@ begin
       if bCanExcludeLastLine then
       begin
         NLineLen:= St.LinesLen[Pnt2.Y];
-        if (NLineLen>0) and (NLineLen<=20) and (St.LineCharAt(Pnt2.Y, NLineLen)='{') then
+        if (NLineLen>0) and (NLineLen<=50) and (St.LineCharAt(Pnt2.Y, NLineLen)='{') then
         begin
           Dec(Pnt2.Y);
           if Pnt1.Y>=Pnt2.Y then Continue;
