@@ -168,6 +168,7 @@ procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer;
 
 var
   OptCodeTreeMaxTimeMessage: string = '>%dms, skipped %s/%s';
+  OptLexersInWhichFoldingCanExcludeLastLine: string = 'JSON';
 
 implementation
 
@@ -1384,7 +1385,8 @@ begin
   ClearFoldIndexers;
 
   bCanExcludeLastLine:=
-    Assigned(AnClient.Owner) and (AnClient.Owner.LexerName='JSON');
+    Assigned(AnClient.Owner) and
+    (Pos(','+AnClient.Owner.LexerName+',', ','+OptLexersInWhichFoldingCanExcludeLastLine+',')>0);
   St:= Editor.Strings;
 
   for i:= 0 to AnClient.PublicData.FoldRanges.Count-1 do
