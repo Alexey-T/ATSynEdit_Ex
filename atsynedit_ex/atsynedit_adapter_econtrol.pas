@@ -1380,6 +1380,7 @@ begin
   Ed:= Editor;
   if Ed=nil then exit;
   if not Ed.OptFoldEnabled then exit;
+  St:= Ed.Strings;
 
   //init Ed.Fold.LineIndexer's
   ClearFoldIndexers;
@@ -1387,7 +1388,6 @@ begin
   bCanExcludeLastLine:=
     Assigned(AnClient.Owner) and
     (Pos(','+AnClient.Owner.LexerName+',', ','+OptLexersInWhichFoldingCanExcludeLastLine+',')>0);
-  St:= Editor.Strings;
 
   for i:= 0 to AnClient.PublicData.FoldRanges.Count-1 do
   begin
