@@ -168,8 +168,8 @@ procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer;
 
 var
   OptCodeTreeMaxTimeMessage: string = '>%dms, skipped %s/%s';
-  OptLexersInWhichFoldingCanExcludeLastLine: string = 'JSON';
-  OptMaxLineLenWhichCanBeExcludedFromFolding: integer = 50;
+  OptFoldingCanExcludeLastLine_Lexers: string = 'JSON';
+  OptFoldingCanExcludeLastLine_MaxLineLen: integer = 50;
 
 implementation
 
@@ -1388,7 +1388,7 @@ begin
 
   bCanExcludeLastLine:=
     Assigned(AnClient.Owner) and
-    (Pos(','+AnClient.Owner.LexerName+',', ','+OptLexersInWhichFoldingCanExcludeLastLine+',')>0);
+    (Pos(','+AnClient.Owner.LexerName+',', ','+OptFoldingCanExcludeLastLine_Lexers+',')>0);
 
   for i:= 0 to AnClient.PublicData.FoldRanges.Count-1 do
   begin
@@ -1442,7 +1442,7 @@ begin
       if bCanExcludeLastLine then
       begin
         NLineLen:= St.LinesLen[Pnt2.Y];
-        if (NLineLen>0) and (NLineLen<=OptMaxLineLenWhichCanBeExcludedFromFolding) and
+        if (NLineLen>0) and (NLineLen<=OptFoldingCanExcludeLastLine_MaxLineLen) and
           (St.LineCharAt(Pnt2.Y, NLineLen)='{') then
         begin
           Dec(Pnt2.Y);
