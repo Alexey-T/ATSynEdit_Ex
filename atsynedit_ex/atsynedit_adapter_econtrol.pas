@@ -64,7 +64,7 @@ type
     procedure DebugRangesColored;
     procedure DoCheckEditorList; inline;
     procedure ClearFoldIndexers;
-    procedure DoFoldAdd(AX, AY, AY2: integer; AStaple: boolean; const AHint: string);
+    procedure DoFoldAdd(AX, AY, AX2, AY2: integer; AStaple: boolean; const AHint: string);
     procedure DoCalcParts(var AParts: TATLineParts; ALine, AX, ALen: integer;
       AColorFont, AColorBG: TColor; var AColorAfter: TColor; AEditorIndex: integer);
     procedure ClearRanges;
@@ -1313,12 +1313,12 @@ begin
   end;
 end;
 
-procedure TATAdapterEControl.DoFoldAdd(AX, AY, AY2: integer; AStaple: boolean; const AHint: string);
+procedure TATAdapterEControl.DoFoldAdd(AX, AY, AX2, AY2: integer; AStaple: boolean; const AHint: string);
 var
   i: integer;
 begin
   for i:= 0 to EdList.Count-1 do
-    TATSynEdit(EdList[i]).Fold.Add(AX, AY, AY2, AStaple, AHint);
+    TATSynEdit(EdList[i]).Fold.Add(AX, AY, AX2, AY2, AStaple, AHint);
 end;
 
 
@@ -1407,7 +1407,7 @@ begin
         Pnt2:= tokenEnd^.Range.PointEnd;
         if Pnt1.Y<0 then Continue;
         if Pnt2.Y<0 then Continue;
-        DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.Y, false, '//...');
+        DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.X+1, Pnt2.Y, false, '//...');
       end;
       Continue;
     end;
@@ -1450,7 +1450,7 @@ begin
         end;
       end;
 
-      DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.Y, R.Rule.DrawStaple, SHint);
+      DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.X+1, Pnt2.Y, R.Rule.DrawStaple, SHint);
     end;
 
     //fill FRangesColored
