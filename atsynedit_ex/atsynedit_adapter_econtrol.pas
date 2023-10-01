@@ -177,16 +177,16 @@ uses Math;
 
 const
   cBorderEc: array[TecBorderLineType] of TATLineStyle = (
-    cLineStyleNone,
-    cLineStyleSolid,
-    cLineStyleDash,
-    cLineStyleDash,
-    cLineStyleDash,
-    cLineStyleDash,
-    cLineStyleSolid2px,
-    cLineStyleSolid2px,
-    cLineStyleWave,
-    cLineStyleDotted
+    TATLineStyle.None,
+    TATLineStyle.Solid,
+    TATLineStyle.Dash,
+    TATLineStyle.Dash,
+    TATLineStyle.Dash,
+    TATLineStyle.Dash,
+    TATLineStyle.Solid2px,
+    TATLineStyle.Solid2px,
+    TATLineStyle.Wave,
+    TATLineStyle.Dotted
     );
 
 procedure ApplyPartStyleFromEcontrolStyle(var part: TATLinePart; st: TecSyntaxFormat);
