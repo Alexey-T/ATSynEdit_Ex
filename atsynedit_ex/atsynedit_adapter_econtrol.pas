@@ -1439,7 +1439,7 @@ begin
 
       //exclude last line if it ends with '{'
       //to allow user to fold that block {...}
-      if bCanExcludeLastLine then
+      if bCanExcludeLastLine and St.IsIndexValid(Pnt2.Y) then
       begin
         NLineLen:= St.LinesLen[Pnt2.Y];
         if (NLineLen>0) and (NLineLen<=OptFoldingCanExcludeLastLine_MaxLineLen) and
