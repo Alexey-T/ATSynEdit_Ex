@@ -1330,20 +1330,43 @@ var
 begin
   //Application.MainForm.Caption:= TimeToStr(Now)+', update '+cStrProgress[AKind];
 
-  if EdList.Count>0 then
-  if AKind in [epkFirst, epkBoth] then
-  begin
-    Ed:= TATSynEdit(EdList[0]);
-    Ed.Update;
+  //check for Ed.Focused don't help to avoid flicker is passive ed.
+  //tofix.
+  case AKind of
+    epkFirst:
+      begin
+        if EdList.Count>0 then
+        begin
+          Ed:= TATSynEdit(EdList[0]);
+          if Ed.Visible then
+            Ed.Update;
+        end;
+      end;
+    epkSecond:
+      begin
+        if EdList.Count>1 then
+        begin
+          Ed:= TATSynEdit(EdList[1]);
+          if Ed.Visible then
+            Ed.Update;
+        end;
+      end;
+    epkBoth:
+      begin
+        if EdList.Count>0 then
+        begin
+          Ed:= TATSynEdit(EdList[0]);
+          if Ed.Visible then
+            Ed.Update;
+        end;
+        if EdList.Count>1 then
+        begin
+          Ed:= TATSynEdit(EdList[1]);
+          if Ed.Visible then
+            Ed.Update;
+        end;
+      end;
   end;
-
-  if AKind in [epkSecond, epkBoth] then
-    if EdList.Count>1 then
-    begin
-      Ed:= TATSynEdit(EdList[1]);
-      if Ed.Visible then
-        Ed.Update;
-    end;
 end;
 
 
