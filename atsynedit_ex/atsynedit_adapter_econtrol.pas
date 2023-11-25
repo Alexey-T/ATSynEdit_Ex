@@ -1325,10 +1325,8 @@ end;
 
 
 procedure TATAdapterEControl.UpdateEditors(AKind: TATAdapterProgressKind);
-//const
-//  cStrProgress: array[TATAdapterProgressKind] of string = ('1st', '2nd', 'both');
   //
-  procedure UpdateEditorIndex(AIndex: integer); inline;
+  procedure UpdateEditorIndex(AIndex: integer);
   var
     Ed: TATSynEdit;
   begin
@@ -1340,6 +1338,8 @@ procedure TATAdapterEControl.UpdateEditors(AKind: TATAdapterProgressKind);
     end;
   end;
   //
+//const
+//  cStrProgress: array[TATAdapterProgressKind] of string = ('1st', '2nd', 'both');
 begin
   //Application.MainForm.Caption:= TimeToStr(Now)+', update '+cStrProgress[AKind];
   case AKind of
