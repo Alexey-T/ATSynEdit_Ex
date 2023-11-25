@@ -1327,46 +1327,34 @@ end;
 procedure TATAdapterEControl.UpdateEditors(AKind: TATAdapterProgressKind);
 //const
 //  cStrProgress: array[TATAdapterProgressKind] of string = ('1st', '2nd', 'both');
-var
-  Ed: TATSynEdit;
+  //
+  procedure UpdateEditorIndex(AIndex: integer); inline;
+  var
+    Ed: TATSynEdit;
+  begin
+    if EdList.Count>AIndex then
+    begin
+      Ed:= TATSynEdit(EdList[AIndex]);
+      if Ed.Visible then
+        Ed.Update;
+    end;
+  end;
+  //
 begin
   //Application.MainForm.Caption:= TimeToStr(Now)+', update '+cStrProgress[AKind];
-
-  //check for Ed.Focused don't help to avoid flicker is passive ed.
-  //tofix.
   case AKind of
     epkFirst:
       begin
-        if EdList.Count>0 then
-        begin
-          Ed:= TATSynEdit(EdList[0]);
-          if Ed.Visible then
-            Ed.Update;
-        end;
+        UpdateEditorIndex(0);
       end;
     epkSecond:
       begin
-        if EdList.Count>1 then
-        begin
-          Ed:= TATSynEdit(EdList[1]);
-          if Ed.Visible then
-            Ed.Update;
-        end;
+        UpdateEditorIndex(1);
       end;
     epkBoth:
       begin
-        if EdList.Count>0 then
-        begin
-          Ed:= TATSynEdit(EdList[0]);
-          if Ed.Visible then
-            Ed.Update;
-        end;
-        if EdList.Count>1 then
-        begin
-          Ed:= TATSynEdit(EdList[1]);
-          if Ed.Visible then
-            Ed.Update;
-        end;
+        UpdateEditorIndex(0);
+        UpdateEditorIndex(1);
       end;
   end;
 end;
