@@ -1219,7 +1219,9 @@ begin
       AnClient.OnProgressFirst:= @ProgressFirst;
       AnClient.OnProgressSecond:= @ProgressSecond;
       AnClient.OnProgressBoth:= @ProgressBoth;
-      AnClient.OnBlockReopen:= @HandleBlockReopen;
+
+      ////OnBlockReopen is disabled due to agressive unfolding when it's not needed: https://github.com/Alexey-T/CudaText/issues/5288
+      //AnClient.OnBlockReopen:= @HandleBlockReopen;
     except
       AnClient:= nil;
       raise;
