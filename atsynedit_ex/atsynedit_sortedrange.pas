@@ -175,7 +175,7 @@ begin
     APos.X, APos.Y,
     Pos1.X, Pos1.Y,
     Pos2.X, Pos2.Y
-    ) = cRelateInside;
+    ) = TATPosRelation.Inside;
 end;
 
 function TATSortedRange.IsPosInsideWide(const APos: TPoint): boolean;
@@ -184,7 +184,7 @@ begin
     APos.X, APos.Y,
     Pos1Wide.X, Pos1Wide.Y,
     Pos2Wide.X, Pos2Wide.Y
-    ) = cRelateInside;
+    ) = TATPosRelation.Inside;
 end;
 
 { TATSortedRanges }

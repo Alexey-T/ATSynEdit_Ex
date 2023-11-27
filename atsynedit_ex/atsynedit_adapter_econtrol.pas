@@ -323,7 +323,7 @@ begin
   if IsPosInRange(
     APos.X, APos.Y,
     Token^.Range.PointStart.X, Token^.Range.PointStart.Y,
-    Token^.Range.PointEnd.X, Token^.Range.PointEnd.Y) = cRelateInside then
+    Token^.Range.PointEnd.X, Token^.Range.PointEnd.Y) = TATPosRelation.Inside then
     if Token^.Style<>nil then
       Result:= Token^.Style.BgColor;
 end;
@@ -1129,7 +1129,7 @@ begin
           APosX, APosY,
           Pos1.X, Pos1.Y,
           Pos2.X, Pos2.Y,
-          true) = cRelateInside then
+          true) = TATPosRelation.Inside then
         begin
           Result:= Node;
           Break;
