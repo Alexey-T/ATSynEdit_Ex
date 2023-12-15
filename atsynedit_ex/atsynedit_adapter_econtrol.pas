@@ -1292,21 +1292,28 @@ end;
 
 procedure TATAdapterEControl.UpdateRangesActiveAll;
 var
+  Ed: TATSynEdit;
   i: integer;
 begin
   for i:= 0 to EdList.Count-1 do
-    UpdateRangesActive(TATSynEdit(EdList[i]));
+  begin
+    Ed:= TATSynEdit(EdList[i]);
+    UpdateRangesActive(Ed);
+  end;
 end;
 
 function TATAdapterEControl.EditorRunningCommand: boolean;
 var
+  Ed: TATSynEdit;
   i: integer;
 begin
+  for i:= 0 to EdList.Count-1 do
+  begin
+    Ed:= TATSynEdit(EdList[i]);
+    if Ed.IsRunningCommand then
+      exit(true);
+  end;
   Result:= false;
-  if EdList.Count>0 then
-    for i:= 0 to EdList.Count-1 do
-      if TATSynEdit(EdList[i]).IsRunningCommand then
-        exit(true);
 end;
 
 procedure TATAdapterEControl.ClearFoldIndexers;
