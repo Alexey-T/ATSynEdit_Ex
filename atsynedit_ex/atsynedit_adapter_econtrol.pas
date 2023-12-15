@@ -1264,6 +1264,8 @@ begin
 end;
 
 procedure TATAdapterEControl.UpdateRanges;
+var
+  i: integer;
 begin
   ClearRanges;
 
@@ -1276,8 +1278,8 @@ begin
     AnClient.CriSecForData.Leave;
   end;
 
-  if EdList.Count>0 then
-    TATSynEdit(EdList[0]).Fold.RestorePersistentRanges;
+  for i:= 0 to EdList.Count-1 do
+    TATSynEdit(EdList[i]).Fold.RestorePersistentRanges;
 
   UpdateRangesActiveAll;
 end;
