@@ -547,20 +547,18 @@ end;
 
 procedure TATAdapterEControl.ClearRanges;
 var
-  j: integer;
   Ed: TATSynEdit;
+  i: integer;
 begin
   FRangesColored.Clear;
   FRangesColoredBounds.Clear;
   FRangesSublexer.Clear;
 
-  for j:= 0 to EdList.Count-1 do
+  for i:= 0 to EdList.Count-1 do
   begin
-    Ed:= TATSynEdit(EdList[j]);
-
+    Ed:= TATSynEdit(EdList[i]);
     Ed.Fold.BackupPersistentRanges;
     Ed.Fold.Clear;
-
     //Ed.Strings.ClearSeparators; //separators are not used in this adapter
   end;
 end;
