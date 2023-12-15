@@ -557,7 +557,8 @@ begin
   for i:= 0 to EdList.Count-1 do
   begin
     Ed:= TATSynEdit(EdList[i]);
-    Ed.Fold.BackupPersistentRanges;
+    if Ed.Visible then
+      Ed.Fold.BackupPersistentRanges;
     Ed.Fold.Clear;
     //Ed.Strings.ClearSeparators; //separators are not used in this adapter
   end;
@@ -1265,6 +1266,7 @@ end;
 
 procedure TATAdapterEControl.UpdateRanges;
 var
+  Ed: TATSynEdit;
   i: integer;
 begin
   ClearRanges;
@@ -1279,7 +1281,11 @@ begin
   end;
 
   for i:= 0 to EdList.Count-1 do
-    TATSynEdit(EdList[i]).Fold.RestorePersistentRanges;
+  begin
+    Ed:= TATSynEdit(EdList[i]);
+    if Ed.Visible then
+      Ed.Fold.RestorePersistentRanges;
+  end;
 
   UpdateRangesActiveAll;
 end;
@@ -1311,17 +1317,23 @@ begin
   for i:= 0 to EdList.Count-1 do
   begin
     Ed:= TATSynEdit(EdList[i]);
-    Ed.Fold.ClearLineIndexer(Ed.Strings.Count);
+    if Ed.Visible then
+      Ed.Fold.ClearLineIndexer(Ed.Strings.Count);
   end;
 end;
 
 procedure TATAdapterEControl.DoFoldAdd(AX, AY, AX2, AY2: integer; AStaple: boolean;
   const AHint: string; const ATag: Int64);
 var
+  Ed: TATSynEdit;
   i: integer;
 begin
   for i:= 0 to EdList.Count-1 do
-    TATSynEdit(EdList[i]).Fold.Add(AX, AY, AX2, AY2, AStaple, AHint, ATag);
+  begin
+    Ed:= TATSynEdit(EdList[i]);
+    if Ed.Visible then
+      Ed.Fold.Add(AX, AY, AX2, AY2, AStaple, AHint, ATag);
+  end;
 end;
 
 
