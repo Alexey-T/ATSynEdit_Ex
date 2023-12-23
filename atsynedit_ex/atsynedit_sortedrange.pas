@@ -6,6 +6,7 @@ unit ATSynEdit_SortedRange;
 
 {$mode objfpc}{$H+}
 {$ModeSwitch advancedrecords}
+{$ScopedEnums on}
 
 interface
 
@@ -21,7 +22,7 @@ uses
   ec_syntax_format;
 
 type
-  TATRangeCond = (cCondInside, cCondAtBound, cCondOutside);
+  TATRangeCond = (Inside, AtBound, Outside);
 
 type
   { TATIntegerWithPointer }
@@ -369,11 +370,11 @@ begin
     dif2:= ComparePoints(Pnt, APos2);
 
     case ACond of
-      cCondInside:
+      TATRangeCond.Inside:
         ok:= (dif1>=0) and (dif2<0);
-      cCondOutside:
+      TATRangeCond.Outside:
         ok:= (dif1<0) or (dif2>=0);
-      cCondAtBound:
+      TATRangeCond.AtBound:
         ok:= (dif1=0) or (dif2=0);
       else
         ok:= false;
@@ -402,15 +403,15 @@ begin
         cpAny:
           act:= true;
         cpBound:
-          act:= CheckCaretInRange(Ed, Rng^.Pos1, Rng^.Pos2, cCondAtBound);
+          act:= CheckCaretInRange(Ed, Rng^.Pos1, Rng^.Pos2, TATRangeCond.AtBound);
         cpBoundTag:
           act:= false;//todo
         cpRange:
-          act:= CheckCaretInRange(Ed, Rng^.Pos1, Rng^.Pos2, cCondInside);
+          act:= CheckCaretInRange(Ed, Rng^.Pos1, Rng^.Pos2, TATRangeCond.Inside);
         cpBoundTagBegin:
           act:= false;//todo
         cpOutOfRange:
-          act:= CheckCaretInRange(Ed, Rng^.Pos1, Rng^.Pos2, cCondOutside);
+          act:= CheckCaretInRange(Ed, Rng^.Pos1, Rng^.Pos2, TATRangeCond.Outside);
         else
           act:= false;
       end;
