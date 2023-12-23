@@ -465,11 +465,10 @@ begin
 
   {
   //don't exit, need more work for AColorAfter
-  if nStartIndex<0 then
-    exit;
-    }
+  if nStartIndex<0 then exit;
+  }
 
-  FillChar(part{%H-}, SizeOf(part), 0);
+  part:= Default(TATLinePart);
 
   if nStartIndex>=0 then
   for iToken:= nStartIndex to AnClient.PublicData.Tokens.Count-1 do
