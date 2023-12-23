@@ -170,6 +170,7 @@ procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer;
 var
   OptCodeTreeMaxTimeMessage: string = '>%dms, skipped %s/%s';
   OptFoldingCanExcludeLastLine_MaxLineLen: integer = 50;
+  OptMaxLineLenToUseIndexerToRender: integer = 200;
 
 implementation
 
@@ -438,8 +439,6 @@ var
     Inc(partindex);
   end;
   //
-const
-  cMaxLineLenToUseTokenIndexer = 200;
 var
   tokenStart, tokenEnd, TestPoint: TPoint;
   nLineLen, startindex, mustOffset: integer;
@@ -452,7 +451,7 @@ begin
   partindex:= 0;
 
   nLineLen:= Editor.Strings.LinesLen[ALine];
-  if nLineLen<=cMaxLineLenToUseTokenIndexer then
+  if nLineLen<=OptMaxLineLenToUseIndexerToRender then
   begin
     if ALine<=High(AnClient.PublicData.TokenIndexer) then
       startindex:= AnClient.PublicData.TokenIndexer[ALine]
