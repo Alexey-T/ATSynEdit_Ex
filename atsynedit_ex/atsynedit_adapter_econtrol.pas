@@ -406,16 +406,15 @@ procedure TATAdapterEControl.DoCalcParts(var AParts: TATLineParts; ALine, AX,
   ALen: integer; AColorFont, AColorBG: TColor; var AColorAfter: TColor; AEditorIndex: integer);
 //all calls of this proc must be guarded by CriSecForData.Enter/Leave
 var
-  partIndex: integer = 0;
+  nPartIndex: integer = 0;
   //
   procedure AddMissingPart(AOffset, ALen: integer); inline;
   var
     part: PATLinePart;
   begin
     if ALen<=0 then Exit;
-    part:= @AParts[partIndex];
-    FillChar(part^, SizeOf(TATLinePart), 0);
-
+    part:= @AParts[nPartIndex];
+    part^:= Default(TATLinePart);
     part^.Offset:= AOffset;
     part^.Len:= ALen;
 
@@ -436,7 +435,7 @@ var
       AColorBG,
       AEditorIndex);
 
-    Inc(partIndex);
+    Inc(nPartIndex);
   end;
   //
 var
@@ -507,24 +506,24 @@ begin
       ApplyPartStyleFromEcontrolStyle(part, tokenStyle);
 
     //add missing part
-    if partIndex=0 then
+    if nPartIndex=0 then
       mustOffset:= 0
     else
-      with AParts[partIndex-1] do
+      with AParts[nPartIndex-1] do
         mustOffset:= Offset+Len;
 
     if part.Offset>mustOffset then
     begin
       AddMissingPart(mustOffset, part.Offset-mustOffset);
-      if partIndex>=High(AParts) then Exit;
+      if nPartIndex>=High(AParts) then Exit;
     end;
 
     //add calculated part
     if part.Len>0 then
     begin
-      AParts[partIndex]:= part;
-      Inc(partIndex);
-      if partIndex>=High(AParts) then Exit;
+      AParts[nPartIndex]:= part;
+      Inc(nPartIndex);
+      if nPartIndex>=High(AParts) then Exit;
     end;
   end;
 
