@@ -459,7 +459,7 @@ begin
       nStartIndex:= -1;
   end
   else
-    nStartIndex:= AnClient.PublicData.Tokens.FindAt(
+    nStartIndex:= AnClient.PublicData.Tokens.PriorAt(
       AnClient.Buffer.CaretToStr(Point(AX, ALine))
       );
 
