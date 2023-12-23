@@ -171,6 +171,7 @@ var
   OptCodeTreeMaxTimeMessage: string = '>%dms, skipped %s/%s';
   OptFoldingCanExcludeLastLine_MaxLineLen: integer = 50;
   OptMaxLineLenToUseIndexerToRender: integer = 200;
+  OptMaxLineLenForDynamicHighlight: integer = 500;
 
 implementation
 
@@ -1669,10 +1670,22 @@ end;
 function TATAdapterEControl.IsDynamicHiliteEnabled: boolean;
 var
   Ed: TATSynEdit;
+  St: TATStrings;
+  NCount: integer;
 begin
   Ed:= Editor;
   if Assigned(Ed) then
-    Result:= DynamicHiliteActiveNow(Ed.Strings.Count)
+  begin
+    St:= Ed.Strings;
+    NCount:= St.Count;
+    Result:= DynamicHiliteActiveNow(NCount);
+
+    //disable dynamic HL for long one-liners
+    if Result and (NCount<=3) then
+      if ((NCount>0) and (St.LinesLen[0]>OptMaxLineLenForDynamicHighlight)) or
+         ((NCount>1) and (St.LinesLen[1]>OptMaxLineLenForDynamicHighlight)) then
+        Result:= false;
+  end
   else
     Result:= false;
 end;
