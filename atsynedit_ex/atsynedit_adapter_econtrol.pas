@@ -406,14 +406,14 @@ procedure TATAdapterEControl.DoCalcParts(var AParts: TATLineParts; ALine, AX,
   ALen: integer; AColorFont, AColorBG: TColor; var AColorAfter: TColor; AEditorIndex: integer);
 //all calls of this proc must be guarded by CriSecForData.Enter/Leave
 var
-  partindex: integer;
+  partIndex: integer = 0;
   //
   procedure AddMissingPart(AOffset, ALen: integer); inline;
   var
     part: PATLinePart;
   begin
     if ALen<=0 then Exit;
-    part:= @AParts[partindex];
+    part:= @AParts[partIndex];
     FillChar(part^, SizeOf(TATLinePart), 0);
 
     part^.Offset:= AOffset;
@@ -436,7 +436,7 @@ var
       AColorBG,
       AEditorIndex);
 
-    Inc(partindex);
+    Inc(partIndex);
   end;
   //
 var
@@ -444,13 +444,14 @@ var
   nLineLen, nStartIndex, mustOffset: integer;
   token: PecSyntToken;
   tokenStyle, tokenStyle2: TecSyntaxFormat;
+  Ed: TATSynEdit;
   part: TATLinePart;
   nColor: TColor;
   iToken: integer;
 begin
-  partindex:= 0;
-
-  nLineLen:= Editor.Strings.LinesLen[ALine];
+  Ed:= Editor;
+  if Ed=nil then exit;
+  nLineLen:= Ed.Strings.LinesLen[ALine];
   if nLineLen<=OptMaxLineLenToUseIndexerToRender then
   begin
     if ALine<=High(AnClient.PublicData.TokenIndexer) then
@@ -506,24 +507,24 @@ begin
       ApplyPartStyleFromEcontrolStyle(part, tokenStyle);
 
     //add missing part
-    if partindex=0 then
+    if partIndex=0 then
       mustOffset:= 0
     else
-      with AParts[partindex-1] do
+      with AParts[partIndex-1] do
         mustOffset:= Offset+Len;
 
     if part.Offset>mustOffset then
     begin
       AddMissingPart(mustOffset, part.Offset-mustOffset);
-      if partindex>=High(AParts) then Exit;
+      if partIndex>=High(AParts) then Exit;
     end;
 
     //add calculated part
     if part.Len>0 then
     begin
-      AParts[partindex]:= part;
-      Inc(partindex);
-      if partindex>=High(AParts) then Exit;
+      AParts[partIndex]:= part;
+      Inc(partIndex);
+      if partIndex>=High(AParts) then Exit;
     end;
   end;
 
