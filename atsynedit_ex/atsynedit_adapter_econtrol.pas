@@ -459,7 +459,7 @@ begin
       nStartIndex:= -1;
   end
   else
-    nStartIndex:= AnClient.PublicData.Tokens.PriorAt(
+    nStartIndex:= AnClient.PublicData.Tokens.NextAt( //not FindAt(), to find token after some indent too
       AnClient.Buffer.CaretToStr(Point(AX, ALine))
       );
 
