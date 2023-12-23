@@ -441,12 +441,12 @@ var
   //
 var
   tokenStart, tokenEnd, TestPoint: TPoint;
-  nLineLen, startindex, mustOffset: integer;
+  nLineLen, nStartIndex, mustOffset: integer;
   token: PecSyntToken;
   tokenStyle, tokenStyle2: TecSyntaxFormat;
   part: TATLinePart;
   nColor: TColor;
-  i: integer;
+  iToken: integer;
 begin
   partindex:= 0;
 
@@ -454,35 +454,34 @@ begin
   if nLineLen<=OptMaxLineLenToUseIndexerToRender then
   begin
     if ALine<=High(AnClient.PublicData.TokenIndexer) then
-      startindex:= AnClient.PublicData.TokenIndexer[ALine]
+      nStartIndex:= AnClient.PublicData.TokenIndexer[ALine]
     else
-      startindex:= -1;
+      nStartIndex:= -1;
   end
   else
-    startindex:= AnClient.PublicData.Tokens.FindAt(
+    nStartIndex:= AnClient.PublicData.Tokens.FindAt(
       AnClient.Buffer.CaretToStr(Point(AX, ALine))
       );
 
   {
   //don't exit, need more work for AColorAfter
-  if startindex<0 then
+  if nStartIndex<0 then
     exit;
     }
 
   FillChar(part{%H-}, SizeOf(part), 0);
 
-  if startindex>=0 then
-  for i:= startindex to AnClient.PublicData.Tokens.Count-1 do
+  if nStartIndex>=0 then
+  for iToken:= nStartIndex to AnClient.PublicData.Tokens.Count-1 do
   begin
-    token:= AnClient.PublicData.Tokens._GetItemPtr(i);
+    token:= AnClient.PublicData.Tokens._GetItemPtr(iToken);
     tokenStart:= token^.Range.PointStart;
     tokenEnd:= token^.Range.PointEnd;
 
-    Dec(tokenStart.x, AX);
-    Dec(tokenEnd.x, AX);
-
     if (tokenStart.y>ALine) then Break;
     if (tokenEnd.y<ALine) then Continue;
+    Dec(tokenStart.x, AX);
+    Dec(tokenEnd.x, AX);
     if (tokenEnd.y<=ALine) and (tokenEnd.x<0) then Continue;
     if (tokenStart.y=ALine) and (tokenStart.x>=ALen) then Break;
 
@@ -501,7 +500,7 @@ begin
     part.ColorBG:= GetTokenColorBG_FromColoredRanges(token^.Range.PointStart, AColorBG, AEditorIndex);
 
     tokenStyle:= token^.Style;
-    tokenStyle2:= GetTokenColor_FromBoundRanges(i, AEditorIndex);
+    tokenStyle2:= GetTokenColor_FromBoundRanges(iToken, AEditorIndex);
     if tokenStyle2<>nil then
       tokenStyle:= tokenStyle2;
     if tokenStyle<>nil then
@@ -529,7 +528,7 @@ begin
     end;
   end;
 
-  //application.MainForm.Caption:= 'startindex '+inttostr(startindex)+' count-tokens '+inttostr(count);
+  //application.MainForm.Caption:= 'startindex '+inttostr(nStartIndex)+' count-tokens '+inttostr(count);
 
   //add ending missing part
   //(not only if part.Len>0)
