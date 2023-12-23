@@ -438,9 +438,11 @@ var
     Inc(partindex);
   end;
   //
+const
+  cMaxLineLenToUseTokenIndexer = 200;
 var
   tokenStart, tokenEnd, TestPoint: TPoint;
-  startindex, mustOffset: integer;
+  nLineLen, startindex, mustOffset: integer;
   token: PecSyntToken;
   tokenStyle, tokenStyle2: TecSyntaxFormat;
   part: TATLinePart;
@@ -449,10 +451,18 @@ var
 begin
   partindex:= 0;
 
-  if ALine<=High(AnClient.PublicData.TokenIndexer) then
-    startindex:= AnClient.PublicData.TokenIndexer[ALine]
+  nLineLen:= Editor.Strings.LinesLen[ALine];
+  if nLineLen<=cMaxLineLenToUseTokenIndexer then
+  begin
+    if ALine<=High(AnClient.PublicData.TokenIndexer) then
+      startindex:= AnClient.PublicData.TokenIndexer[ALine]
+    else
+      startindex:= -1;
+  end
   else
-    startindex:= -1;
+    startindex:= AnClient.PublicData.Tokens.FindAt(
+      AnClient.Buffer.CaretToStr(Point(AX, ALine))
+      );
 
   {
   //don't exit, need more work for AColorAfter
@@ -473,9 +483,9 @@ begin
     Dec(tokenEnd.x, AX);
 
     if (tokenStart.y>ALine) then Break;
-    if (tokenStart.y>ALine) or (tokenEnd.y<ALine) then Continue;
+    if (tokenEnd.y<ALine) then Continue;
     if (tokenEnd.y<=ALine) and (tokenEnd.x<0) then Continue;
-    if (tokenStart.y>=ALine) and (tokenStart.x>=ALen) then Continue;
+    if (tokenStart.y=ALine) and (tokenStart.x>=ALen) then Break;
 
     FillChar(part{%H-}, SizeOf(part), 0);
     if (tokenStart.y<ALine) or (tokenStart.x<0) then
