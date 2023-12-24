@@ -444,18 +444,20 @@ var
   //
 var
   tokenStart, tokenEnd, PointAfterEOL: TPoint;
-  nLineLen, nStartIndex, mustOffset: integer;
+  nStartIndex, mustOffset: integer;
   token: PecSyntToken;
   tokenStyle, tokenStyle2: TecSyntaxFormat;
   Ed: TATSynEdit;
+  St: TATStrings;
   part: TATLinePart;
   nColor: TColor;
   iToken: integer;
 begin
   Ed:= Editor;
   if Ed=nil then exit;
-  nLineLen:= Ed.Strings.LinesLen[ALine];
-  if nLineLen<=OptMaxLineLenToUseIndexerToRender then
+  St:= Ed.Strings;
+  if not St.IsIndexValid(ALine) then exit;
+  if St.LinesLen[ALine]<=OptMaxLineLenToUseIndexerToRender then
   begin
     if ALine<=High(AnClient.PublicData.TokenIndexer) then
       nStartIndex:= AnClient.PublicData.TokenIndexer[ALine]
@@ -471,6 +473,8 @@ begin
   //don't exit, need more work for AColorAfter
   if nStartIndex<0 then exit;
   }
+
+  part:= Default(TATLinePart);
 
   if nStartIndex>=0 then
   for iToken:= nStartIndex to AnClient.PublicData.Tokens.Count-1 do
@@ -531,10 +535,6 @@ begin
       Inc(nPartIndex);
       if nPartIndex>=High(AParts) then Exit;
     end;
-  end
-  else
-  begin
-    part:= Default(TATLinePart);
   end;
 
   //Application.MainForm.Caption:= 'startindex '+IntToStr(nStartIndex)+' count-tokens '+IntToStr(count);
