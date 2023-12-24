@@ -443,7 +443,7 @@ var
   end;
   //
 var
-  tokenStart, tokenEnd, TestPoint: TPoint;
+  tokenStart, tokenEnd, PointAfterEOL: TPoint;
   nLineLen, nStartIndex, mustOffset: integer;
   token: PecSyntToken;
   tokenStyle, tokenStyle2: TecSyntaxFormat;
@@ -544,16 +544,16 @@ begin
     AddMissingPart(mustOffset, ALen-mustOffset);
 
   //calc AColorAfter
-  TestPoint:= Point(AX+ALen, ALine);
+  PointAfterEOL:= Point(AX+ALen, ALine);
 
   //a) calc it from colored-ranges
-  nColor:= GetTokenColorBG_FromColoredRanges(TestPoint, clNone, AEditorIndex);
+  nColor:= GetTokenColorBG_FromColoredRanges(PointAfterEOL, clNone, AEditorIndex);
   //if (nColor=clNone) and (ALen>0) then
   //  nColor:= GetTokenColorBG_FromColoredRanges(mustOffset-1, clNone, AEditorIndex);
 
   //b) calc it from multi-line tokens (with bg-color)
   if (nColor=clNone) and AMainText then
-    nColor:= GetTokenColorBG_FromMultiLineTokens(TestPoint, clNone, AEditorIndex);
+    nColor:= GetTokenColorBG_FromMultiLineTokens(PointAfterEOL, clNone, AEditorIndex);
 
   if (nColor<>clNone) then
     AColorAfter:= nColor;
