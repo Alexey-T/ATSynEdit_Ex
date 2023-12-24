@@ -282,7 +282,7 @@ begin
     exit;
   Rng:= FBoundTokensIndexer.FindByInteger(ATokenIndex);
   if Assigned(Rng) then
-    if Rng^.Active[AEditorIndex] then
+    if Rng^.Active[AEditorIndex] and Assigned(Rng^.Rule) then
       Result:= Rng^.Rule.Style;
 end;
 

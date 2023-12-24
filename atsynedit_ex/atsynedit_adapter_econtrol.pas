@@ -67,7 +67,8 @@ type
     procedure DoFoldAdd(AX, AY, AX2, AY2: integer; AStaple: boolean;
       const AHint: string; const ATag: Int64);
     procedure DoCalcParts(var AParts: TATLineParts; ALine, AX, ALen: integer;
-      AColorFont, AColorBG: TColor; var AColorAfter: TColor; AEditorIndex: integer);
+      AColorFont, AColorBG: TColor; var AColorAfter: TColor;
+      AEditorIndex: integer; AMainText: boolean);
     procedure ClearRanges;
     function DoFindToken(APos: TPoint; AExactPos: boolean = false): integer;
     function GetTokenColor_FromBoundRanges(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
@@ -254,7 +255,8 @@ begin
       Ed.Colors.TextFont,
       clNone,
       AColorAfterEol,
-      Ed.EditorIndex);
+      Ed.EditorIndex,
+      AMainText);
   finally
     AnClient.CriSecForData.Leave;
   end;
@@ -404,7 +406,8 @@ end;
 
 
 procedure TATAdapterEControl.DoCalcParts(var AParts: TATLineParts; ALine, AX,
-  ALen: integer; AColorFont, AColorBG: TColor; var AColorAfter: TColor; AEditorIndex: integer);
+  ALen: integer; AColorFont, AColorBG: TColor; var AColorAfter: TColor;
+  AEditorIndex: integer; AMainText: boolean);
 //all calls of this proc must be guarded by CriSecForData.Enter/Leave
 var
   nPartIndex: integer = 0;
@@ -500,9 +503,13 @@ begin
     part.ColorBG:= GetTokenColorBG_FromColoredRanges(token^.Range.PointStart, AColorBG, AEditorIndex);
 
     tokenStyle:= token^.Style;
-    tokenStyle2:= GetTokenColor_FromBoundRanges(iToken, AEditorIndex);
-    if tokenStyle2<>nil then
-      tokenStyle:= tokenStyle2;
+    if AMainText then
+    begin
+      //dynamic highlighting
+      tokenStyle2:= GetTokenColor_FromBoundRanges(iToken, AEditorIndex);
+      if tokenStyle2<>nil then
+        tokenStyle:= tokenStyle2;
+    end;
     if tokenStyle<>nil then
       ApplyPartStyleFromEcontrolStyle(part, tokenStyle);
 
