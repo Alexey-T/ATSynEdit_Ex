@@ -472,8 +472,6 @@ begin
   if nStartIndex<0 then exit;
   }
 
-  part:= Default(TATLinePart);
-
   if nStartIndex>=0 then
   for iToken:= nStartIndex to AnClient.PublicData.Tokens.Count-1 do
   begin
@@ -488,7 +486,7 @@ begin
     if (tokenEnd.y<=ALine) and (tokenEnd.x<0) then Continue;
     if (tokenStart.y=ALine) and (tokenStart.x>=ALen) then Break;
 
-    FillChar(part{%H-}, SizeOf(part), 0);
+    part:= Default(TATLinePart);
     if (tokenStart.y<ALine) or (tokenStart.x<0) then
       part.Offset:= 0
     else
@@ -533,15 +531,22 @@ begin
       Inc(nPartIndex);
       if nPartIndex>=High(AParts) then Exit;
     end;
+  end
+  else
+  begin
+    part:= Default(TATLinePart);
   end;
 
-  //application.MainForm.Caption:= 'startindex '+inttostr(nStartIndex)+' count-tokens '+inttostr(count);
+  //Application.MainForm.Caption:= 'startindex '+IntToStr(nStartIndex)+' count-tokens '+IntToStr(count);
 
-  //add ending missing part
-  //(not only if part.Len>0)
-  mustOffset:= part.Offset+part.Len;
-  if mustOffset<ALen then
-    AddMissingPart(mustOffset, ALen-mustOffset);
+  if nStartIndex>=0 then
+  begin
+    //add ending missing part
+    //(not only if part.Len>0)
+    mustOffset:= part.Offset+part.Len;
+    if mustOffset<ALen then
+      AddMissingPart(mustOffset, ALen-mustOffset);
+  end;
 
   //calc AColorAfter
   PointAfterEOL:= Point(AX+ALen, ALine);
