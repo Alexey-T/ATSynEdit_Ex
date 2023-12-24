@@ -434,13 +434,10 @@ var
     *)
       part^.ColorFont:= AColorFont;
 
-    if AMainText then
-      part^.ColorBG:= GetTokenColorBG_FromColoredRanges(
-        Point(AX+AOffset, ALine),
-        AColorBG,
-        AEditorIndex)
-    else
-      part^.ColorBG:= AColorBG;
+    part^.ColorBG:= GetTokenColorBG_FromColoredRanges(
+      Point(AX+AOffset, ALine),
+      AColorBG,
+      AEditorIndex);
 
     Inc(nPartIndex);
   end;
