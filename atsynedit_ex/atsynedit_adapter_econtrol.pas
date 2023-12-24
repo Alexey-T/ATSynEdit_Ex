@@ -481,71 +481,71 @@ begin
 
   if nStartIndex>=0 then
   begin
-   for iToken:= nStartIndex to TokenList.Count-1 do
-   begin
-    token:= TokenList._GetItemPtr(iToken);
-    tokenStart:= token^.Range.PointStart;
-    tokenEnd:= token^.Range.PointEnd;
-
-    if (tokenStart.y>ALine) then Break;
-    if (tokenEnd.y<ALine) then Continue;
-    Dec(tokenStart.x, AX);
-    Dec(tokenEnd.x, AX);
-    if (tokenEnd.y<=ALine) and (tokenEnd.x<0) then Continue;
-    if (tokenStart.y=ALine) and (tokenStart.x>=ALen) then Break;
-
-    part:= Default(TATLinePart); //2nd initing of part; both are needed
-    if (tokenStart.y<ALine) or (tokenStart.x<0) then
-      part.Offset:= 0
-    else
-      part.Offset:= tokenStart.X;
-
-    if (tokenEnd.y>ALine) or (tokenEnd.x>=ALen) then
-      part.Len:= ALen-part.Offset
-    else
-      part.Len:= tokenEnd.X-part.Offset;
-
-    part.ColorFont:= AColorFont;
-    part.ColorBG:= GetTokenColorBG_FromColoredRanges(token^.Range.PointStart, AColorBG, AEditorIndex);
-
-    tokenStyle:= token^.Style;
-    if AMainText then
+    for iToken:= nStartIndex to TokenList.Count-1 do
     begin
-      //dynamic highlighting
-      tokenStyle2:= GetTokenColor_FromBoundRanges(iToken, AEditorIndex);
-      if tokenStyle2<>nil then
-        tokenStyle:= tokenStyle2;
-    end;
-    if tokenStyle<>nil then
-      ApplyPartStyleFromEcontrolStyle(part, tokenStyle);
+      token:= TokenList._GetItemPtr(iToken);
+      tokenStart:= token^.Range.PointStart;
+      tokenEnd:= token^.Range.PointEnd;
 
-    //add missing part
-    if nPartIndex=0 then
-      mustOffset:= 0
-    else
-      with AParts[nPartIndex-1] do
-        mustOffset:= Offset+Len;
+      if (tokenStart.y>ALine) then Break;
+      if (tokenEnd.y<ALine) then Continue;
+      Dec(tokenStart.x, AX);
+      Dec(tokenEnd.x, AX);
+      if (tokenEnd.y<=ALine) and (tokenEnd.x<0) then Continue;
+      if (tokenStart.y=ALine) and (tokenStart.x>=ALen) then Break;
 
-    if part.Offset>mustOffset then
-    begin
-      AddMissingPart(mustOffset, part.Offset-mustOffset);
-      if nPartIndex>=High(AParts) then Exit;
-    end;
+      part:= Default(TATLinePart); //2nd initing of part; both are needed
+      if (tokenStart.y<ALine) or (tokenStart.x<0) then
+        part.Offset:= 0
+      else
+        part.Offset:= tokenStart.X;
 
-    //add calculated part
-    if part.Len>0 then
-    begin
-      AParts[nPartIndex]:= part;
-      Inc(nPartIndex);
-      if nPartIndex>=High(AParts) then Exit;
-    end;
-   end; //for iToken
+      if (tokenEnd.y>ALine) or (tokenEnd.x>=ALen) then
+        part.Len:= ALen-part.Offset
+      else
+        part.Len:= tokenEnd.X-part.Offset;
 
-   //add ending missing part
-   //(not only if part.Len>0)
-   mustOffset:= part.Offset+part.Len;
-   if mustOffset<ALen then
-     AddMissingPart(mustOffset, ALen-mustOffset);
+      part.ColorFont:= AColorFont;
+      part.ColorBG:= GetTokenColorBG_FromColoredRanges(token^.Range.PointStart, AColorBG, AEditorIndex);
+
+      tokenStyle:= token^.Style;
+      if AMainText then
+      begin
+        //dynamic highlighting
+        tokenStyle2:= GetTokenColor_FromBoundRanges(iToken, AEditorIndex);
+        if tokenStyle2<>nil then
+          tokenStyle:= tokenStyle2;
+      end;
+      if tokenStyle<>nil then
+        ApplyPartStyleFromEcontrolStyle(part, tokenStyle);
+
+      //add missing part
+      if nPartIndex=0 then
+        mustOffset:= 0
+      else
+        with AParts[nPartIndex-1] do
+          mustOffset:= Offset+Len;
+
+      if part.Offset>mustOffset then
+      begin
+        AddMissingPart(mustOffset, part.Offset-mustOffset);
+        if nPartIndex>=High(AParts) then Exit;
+      end;
+
+      //add calculated part
+      if part.Len>0 then
+      begin
+        AParts[nPartIndex]:= part;
+        Inc(nPartIndex);
+        if nPartIndex>=High(AParts) then Exit;
+      end;
+    end; //for iToken
+
+    //add ending missing part
+    //(not only if part.Len>0)
+    mustOffset:= part.Offset+part.Len;
+    if mustOffset<ALen then
+      AddMissingPart(mustOffset, ALen-mustOffset);
   end; //if nStartIndex>=0
 
   //Application.MainForm.Caption:= 'startindex '+IntToStr(nStartIndex)+' count-tokens '+IntToStr(count);
