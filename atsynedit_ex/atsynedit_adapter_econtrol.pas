@@ -555,9 +555,8 @@ begin
   if (nColor=clNone) then
     nColor:= GetTokenColorBG_FromMultiLineTokens(TestPoint, clNone, AEditorIndex);
 
-  if (nColor=clNone) then
-    nColor:= AColorAfter;
-  AColorAfter:= nColor;
+  if (nColor<>clNone) then
+    AColorAfter:= nColor;
 end;
 
 procedure TATAdapterEControl.ClearRanges;
