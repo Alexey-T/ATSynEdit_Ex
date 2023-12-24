@@ -447,6 +447,7 @@ var
   nStartIndex, mustOffset: integer;
   token: PecSyntToken;
   tokenStyle, tokenStyle2: TecSyntaxFormat;
+  TokenList: TecTokenList;
   Ed: TATSynEdit;
   St: TATStrings;
   part: TATLinePart;
@@ -457,6 +458,8 @@ begin
   if Ed=nil then exit;
   St:= Ed.Strings;
   if not St.IsIndexValid(ALine) then exit;
+  TokenList:= AnClient.PublicData.Tokens;
+
   if St.LinesLen[ALine]<=OptMaxLineLenToUseIndexerToRender then
   begin
     if ALine<=High(AnClient.PublicData.TokenIndexer) then
@@ -465,7 +468,7 @@ begin
       nStartIndex:= -1;
   end
   else
-    nStartIndex:= AnClient.PublicData.Tokens.NextAt( //not FindAt(), to find token after some indent too
+    nStartIndex:= TokenList.NextAt( //not FindAt(), to find token after some indent too
       AnClient.Buffer.CaretToStr(Point(AX, ALine))
       );
 
@@ -477,9 +480,9 @@ begin
   part:= Default(TATLinePart);
 
   if nStartIndex>=0 then
-  for iToken:= nStartIndex to AnClient.PublicData.Tokens.Count-1 do
+  for iToken:= nStartIndex to TokenList.Count-1 do
   begin
-    token:= AnClient.PublicData.Tokens._GetItemPtr(iToken);
+    token:= TokenList._GetItemPtr(iToken);
     tokenStart:= token^.Range.PointStart;
     tokenEnd:= token^.Range.PointEnd;
 
