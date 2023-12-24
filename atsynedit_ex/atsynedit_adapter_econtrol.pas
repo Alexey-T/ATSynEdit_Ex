@@ -552,7 +552,7 @@ begin
   //  nColor:= GetTokenColorBG_FromColoredRanges(mustOffset-1, clNone, AEditorIndex);
 
   //b) calc it from multi-line tokens (with bg-color)
-  if (nColor=clNone) then
+  if (nColor=clNone) and AMainText then
     nColor:= GetTokenColorBG_FromMultiLineTokens(TestPoint, clNone, AEditorIndex);
 
   if (nColor<>clNone) then
