@@ -490,7 +490,7 @@ begin
     if (tokenEnd.y<=ALine) and (tokenEnd.x<0) then Continue;
     if (tokenStart.y=ALine) and (tokenStart.x>=ALen) then Break;
 
-    part:= Default(TATLinePart);
+    part:= Default(TATLinePart); //2nd initing of part; both are needed
     if (tokenStart.y<ALine) or (tokenStart.x<0) then
       part.Offset:= 0
     else
