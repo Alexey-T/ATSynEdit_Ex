@@ -468,7 +468,7 @@ begin
       nStartIndex:= -1;
   end
   else
-    nStartIndex:= TokenList.NextAt( //not FindAt(), to find token after some indent too
+    nStartIndex:= TokenList.FindNextAt( //not FindAt(), to find token after some indent too
       AnClient.Buffer.CaretToStr(Point(AX, ALine))
       );
 
@@ -1640,7 +1640,7 @@ begin
   if AExactPos then
     Result:= AnClient.PublicData.Tokens.FindAt(AnClient.Buffer.CaretToStr(APos))
   else
-    Result:= AnClient.PublicData.Tokens.PriorAt(AnClient.Buffer.CaretToStr(APos));
+    Result:= AnClient.PublicData.Tokens.FindPriorAt(AnClient.Buffer.CaretToStr(APos));
 end;
 
 procedure TATAdapterEControl.UpdateBufferFromEvent(Sender: TObject);
