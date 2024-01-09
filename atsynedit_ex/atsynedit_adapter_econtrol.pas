@@ -163,10 +163,10 @@ type
   end;
 
 procedure ApplyPartStyleFromEcontrolStyle(var part: TATLinePart; st: TecSyntaxFormat);
+function FormatIntegerByKilo(N: integer): string;
 
 function CodetreeFindItemForPosition(ATree: TTreeView; APosX, APosY: integer): TTreeNode;
 procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer; out ASelLine: integer);
-function FormatIntegerByKilo(N: integer): string;
 //procedure CodetreeClear(ATree: TTreeView);
 
 var
