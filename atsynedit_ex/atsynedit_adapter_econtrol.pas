@@ -166,6 +166,7 @@ procedure ApplyPartStyleFromEcontrolStyle(var part: TATLinePart; st: TecSyntaxFo
 
 function CodetreeFindItemForPosition(ATree: TTreeView; APosX, APosY: integer): TTreeNode;
 procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer; out ASelLine: integer);
+function FormatIntegerByKilo(N: integer): string;
 //procedure CodetreeClear(ATree: TTreeView);
 
 var
@@ -891,7 +892,7 @@ begin
   end;
 end;
 
-function _FormatIntByKilo(N: integer): string;
+function FormatIntegerByKilo(N: integer): string;
 begin
   if N>=1000 then
     Result:= IntToStr(N div 1000)+'k'
@@ -968,8 +969,8 @@ begin
       begin
         NodeText:= Format(OptCodeTreeMaxTimeMessage, [
             AMaxTime,
-            _FormatIntByKilo(NItemCount-ATree.Items.Count),
-            _FormatIntByKilo(NItemCount)
+            FormatIntegerByKilo(NItemCount-ATree.Items.Count),
+            FormatIntegerByKilo(NItemCount)
             ]);
         NodeParent:= ATree.Items.AddChildObject(nil, NodeText, NodeData);
         Break;
