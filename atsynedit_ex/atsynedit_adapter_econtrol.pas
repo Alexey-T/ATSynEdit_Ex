@@ -894,8 +894,11 @@ end;
 
 function FormatIntegerByKilo(N: integer): string;
 begin
+  if N>=1000*1000 then
+    Result:= IntToStr(N div (1000*1000))+'M'
+  else
   if N>=1000 then
-    Result:= IntToStr(N div 1000)+'k'
+    Result:= IntToStr(N div 1000)+'K'
   else
     Result:= IntToStr(N);
 end;
