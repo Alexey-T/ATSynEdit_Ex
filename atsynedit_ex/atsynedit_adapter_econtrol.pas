@@ -1549,7 +1549,7 @@ begin
     end;
   end;
 
-  //ShowMessage(Ed.Fold.MessageLineIndexer); //debug
+  //WriteLn('FoldLineIndexer:'#10, Ed.Fold.MessageLineIndexer(100000)); //debug
 
   //this list is not sorted so create internal indexer
   FRangesColoredBounds.UpdateBoundIndexer;
