@@ -320,7 +320,9 @@ begin
     except
       on E: Exception do
       begin
-        OnMessageBox(Format('Bad lite lexer "%s": %s', [ExtractFileName(AFilename), E.Message]));
+        if Assigned(FOnMessageBox) then
+          FOnMessageBox(Format('Bad lite lexer "%s": %s', [ExtractFileName(AFilename), E.Message]));
+        LexerName:= '(broken)';
         exit;
       end;
     end;
