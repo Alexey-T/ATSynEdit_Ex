@@ -324,7 +324,7 @@ begin
       on E: Exception do
       begin
         if Assigned(FOnMessageBox) then
-          FOnMessageBox(Format('Bad lite lexer "%s": %s', [ExtractFileName(AFilename), E.Message]));
+          FOnMessageBox(Format('Cannot load lexer: %s: %s', [ExtractFileName(AFilename), E.Message]));
         exit;
       end;
     end;
