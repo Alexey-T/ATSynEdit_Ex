@@ -34,6 +34,7 @@ type
 type
   TATLiteLexer_GetStyleHash = function (const AStyleName: string): integer;
   TATLiteLexer_ApplyStyle = procedure (AStyleHash: integer; var APart: TATLinePart);
+  TATLiteLexer_MessageBox = procedure (const AMsg: string);
 
   TATLinePartsCache = record
     Editor: TATSynEdit;
@@ -55,6 +56,7 @@ type
     FOnApplyStyle: TATLiteLexer_ApplyStyle;
       //calc tokens not from ACharIndex, but from n chars lefter,
       //to hilite comments/strings, partly scrolled to left
+    FOnMessageBox: TATLiteLexer_MessageBox;
     function GetRule(AIndex: integer): TATLiteLexerRule;
     procedure CalcParts(Ed: TATSynEdit; var AParts: TATLineParts;
       ALineIndex, ACharIndex: integer; AMainText: boolean);
@@ -80,6 +82,7 @@ type
       AMainText: boolean); override;
     property OnGetStyleHash: TATLiteLexer_GetStyleHash read FOnGetStyleHash write FOnGetStyleHash;
     property OnApplyStyle: TATLiteLexer_ApplyStyle read FOnApplyStyle write FOnApplyStyle;
+    property OnMessageBox: TATLiteLexer_MessageBox read FOnMessageBox write FOnMessageBox;
   end;
 
 type
@@ -90,6 +93,7 @@ type
     FList: TFPList;
     FOnGetStyleHash: TATLiteLexer_GetStyleHash;
     FOnApplyStyle: TATLiteLexer_ApplyStyle;
+    FOnMessageBox: TATLiteLexer_MessageBox;
     function GetLexer(AIndex: integer): TATLiteLexer;
   public
     constructor Create(AOwner: TComponent); override;
@@ -104,6 +108,7 @@ type
     function FindLexerByName(const AName: string): TATLiteLexer;
     property OnGetStyleHash: TATLiteLexer_GetStyleHash read FOnGetStyleHash write FOnGetStyleHash;
     property OnApplyStyle: TATLiteLexer_ApplyStyle read FOnApplyStyle write FOnApplyStyle;
+    property OnMessageBox: TATLiteLexer_MessageBox read FOnMessageBox write FOnMessageBox;
   end;
 
 var
@@ -148,7 +153,7 @@ begin
   Result:= FindLexerByName(ALexerName)=nil;
   if Result then
   begin
-    Lexer:= TATLiteLexer.Create(nil);
+    Lexer:= TATLiteLexer.Create(Self);
     Lexer.LexerName:= ALexerName;
     Lexer.FileTypes:= AFileTypes;
     Lexer.CommentLine:= ACommentLine;
@@ -209,6 +214,7 @@ begin
       Lexer:= TATLiteLexer.Create(nil);
       Lexer.OnGetStyleHash:= FOnGetStyleHash;
       Lexer.OnApplyStyle:= FOnApplyStyle;
+      Lexer.OnMessageBox:= FOnMessageBox;
       Lexer.LoadFromFile(Files[i]);
       FList.Add(Lexer);
     end;
@@ -313,10 +319,10 @@ begin
       c.Filename:= AFileName;
     except
       on E: Exception do
-        begin
-          ShowMessage('Cannot load JSON lexer file:'#10+ExtractFileName(AFilename)+#10#10+E.Message);
-          exit;
-        end;
+      begin
+        OnMessageBox(Format('Bad lite lexer "%s": %s', [ExtractFileName(AFilename), E.Message]));
+        exit;
+      end;
     end;
 
     LexerName:= ChangeFileExt(ExtractFileName(AFilename), '');
