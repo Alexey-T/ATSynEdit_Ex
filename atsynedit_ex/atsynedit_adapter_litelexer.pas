@@ -72,7 +72,7 @@ type
     destructor Destroy; override;
     function GetLexerName: string; override;
     procedure Clear;
-    procedure LoadFromFile(const AFilename: string);
+    function LoadFromFile(const AFilename: string): boolean;
     function IsFilenameMatch(const AFilename: string): boolean;
     function RuleCount: integer;
     property Rules[AIndex: integer]: TATLiteLexerRule read GetRule;
@@ -215,8 +215,10 @@ begin
       Lexer.OnGetStyleHash:= FOnGetStyleHash;
       Lexer.OnApplyStyle:= FOnApplyStyle;
       Lexer.OnMessageBox:= FOnMessageBox;
-      Lexer.LoadFromFile(Files[i]);
-      FList.Add(Lexer);
+      if Lexer.LoadFromFile(Files[i]) then
+        FList.Add(Lexer)
+      else
+        FreeAndNil(Lexer);
     end;
   finally
     FreeAndNil(Files);
@@ -301,7 +303,7 @@ begin
   Result:= TATLiteLexerRule(FRules[AIndex]);
 end;
 
-procedure TATLiteLexer.LoadFromFile(const AFilename: string);
+function TATLiteLexer.LoadFromFile(const AFilename: string): boolean;
 var
   c: TJSONConfig;
   keys: TStringList;
@@ -309,6 +311,7 @@ var
   s_name, s_regex, s_style: string;
   i: integer;
 begin
+  Result:= false;
   Clear;
   if not FileExists(AFilename) then exit;
 
@@ -322,7 +325,6 @@ begin
       begin
         if Assigned(FOnMessageBox) then
           FOnMessageBox(Format('Bad lite lexer "%s": %s', [ExtractFileName(AFilename), E.Message]));
-        LexerName:= '(broken)';
         exit;
       end;
     end;
@@ -349,6 +351,8 @@ begin
 
       FRules.Add(rule);
     end;
+
+    Result:= true;
   finally
     keys.Free;
     c.Free;
