@@ -590,7 +590,7 @@ end;
 procedure TATAdapterEControl.DoClearRanges_OnlySimple;
 var
   Ed: TATSynEdit;
-  R: TATSynRange;
+  R: TATFoldRange;
   i, j: integer;
 begin
   for j:= 0 to EdList.Count-1 do
