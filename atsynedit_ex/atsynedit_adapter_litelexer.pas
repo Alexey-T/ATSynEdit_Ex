@@ -377,17 +377,6 @@ begin
 end;
 
 
-var
-  TempParts: TATLineParts;
-
-procedure DoPartsDeleteBeginning(var AParts: TATLineParts; ADeleteCount: integer);
-begin
-  FillChar(TempParts, SizeOf(TempParts), 0);
-  Move(AParts[ADeleteCount], TempParts, (High(AParts)+1-ADeleteCount)*SizeOf(TATLinePart));
-  Move(TempParts, AParts, SizeOf(TempParts));
-end;
-
-
 procedure TATLiteLexer.OnEditorCalcHilite(Sender: TObject;
   var AParts: TATLineParts; ALineIndex, ACharIndex, ALineLen: integer;
   var AColorAfterEol: TColor; AMainText: boolean);
