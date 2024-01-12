@@ -79,7 +79,7 @@ type
     procedure ProgressFirst(Sender: TObject);
     procedure ProgressSecond(Sender: TObject);
     procedure ProgressBoth(Sender: TObject);
-    function GetRangeParent(const R: TecTextRange): TecTextRange;
+    function GetRangeParent(R: PecFoldRange): PecFoldRange;
     function GetTokenColorBG_FromColoredRanges(const APos: TPoint; ADefColor: TColor;
       AEditorIndex: integer): TColor;
     function GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
@@ -349,7 +349,7 @@ end;
 function TATAdapterEControl.DebugFoldRanges: string;
 var
   L: TStringList;
-  R: TecTextRange;
+  R: PecFoldRange;
   Idx, i: integer;
 begin
   L := TStringList.Create;
@@ -357,14 +357,14 @@ begin
     L.TextLineBreakStyle:= tlbsLF;
     for i := 0 to AnClient.PublicData.FoldRanges.Count - 1 do
     begin
-      R := TecTextRange(AnClient.PublicData.FoldRanges[i]);
-      if R.Parent<>nil then
-        Idx := R.Parent.Index
+      R := @TecTextRange(AnClient.PublicData.FoldRanges[i]).Data;
+      if R^.Parent<>nil then
+        Idx := R^.Parent^.Index
       else
         Idx := -1;
       L.Add(Format('[%d] StartIdx=%d EndIdx=%d Parent=%d Text="%s"',
-        [R.Index, R.StartIdx, R.EndIdx, Idx,
-        AnClient.PublicData.Tokens[R.StartIdx].GetStr(AnClient.Buffer.FText)]));
+        [R^.Index, R^.StartIdx, R^.EndIdx, Idx,
+        AnClient.PublicData.Tokens[R^.StartIdx].GetStr(AnClient.Buffer.FText)]));
     end;
     Result:= L.Text;
   finally
@@ -833,23 +833,23 @@ begin
 end;
 
 
-function TATAdapterEControl.GetRangeParent(const R: TecTextRange): TecTextRange;
+function TATAdapterEControl.GetRangeParent(R: PecFoldRange): PecFoldRange;
 //cannot use R.Parent!
 //
 //this is called from TreeFill, so calls are guarded by CriticalSection.Enter/Leave
 // https://github.com/Alexey-T/CudaText/issues/3074
 var
-  RTest: TecTextRange;
+  RTest: PecFoldRange;
   NLast, i: integer;
 begin
   Result:= nil;
   NLast:= AnClient.PublicData.FoldRanges.Count - 1;
-  for i:= Min(NLast, R.Index-1) downto 0 do
+  for i:= Min(NLast, R^.Index-1) downto 0 do
   begin
-    RTest:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
-    if (RTest.StartIdx<=R.StartIdx) and
-       (RTest.EndIdx>=R.EndIdx) and
-       (RTest.Level<R.Level) then
+    RTest:= @TecTextRange(AnClient.PublicData.FoldRanges[i]).Data;
+    if (RTest^.StartIdx<=R^.StartIdx) and
+       (RTest^.EndIdx>=R^.EndIdx) and
+       (RTest^.Level<R^.Level) then
       Exit(RTest);
   end;
 end;
@@ -886,23 +886,23 @@ end;
 
 procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer);
   //
-  function ConvertRangeToTreeRange(R: TecTextRange): TATRangeInCodeTree;
+  function ConvertRangeToTreeRange(R: PecFoldRange): TATRangeInCodeTree;
   begin
     Result:= TATRangeInCodeTree.Create;
 
-    if R.StartIdx>=0 then
-      Result.PosBegin:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx)^.Range.PointStart
+    if R^.StartIdx>=0 then
+      Result.PosBegin:= AnClient.PublicData.Tokens._GetItemPtr(R^.StartIdx)^.Range.PointStart
     else
       Result.PosBegin:= Point(-1, -1);
 
-    if R.EndIdx>=0 then
-      Result.PosEnd:= AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx)^.Range.PointEnd
+    if R^.EndIdx>=0 then
+      Result.PosEnd:= AnClient.PublicData.Tokens._GetItemPtr(R^.EndIdx)^.Range.PointEnd
     else
       Result.PosEnd:= Point(-1, -1);
   end;
   //
 var
-  R, RangeParent: TecTextRange;
+  R, RangeParent: PecFoldRange;
   NodeParent, NodeGroup: TTreeNode;
   NodeText, NodeTextGroup, SItem: string;
   NameRule, NameLexer: string;
@@ -930,13 +930,13 @@ begin
       if FStopTreeUpdate then exit;
       if Application.Terminated then exit;
 
-      R:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
-      if R.Rule=nil then Continue;
-      if not R.Rule.DisplayInTree then Continue;
+      R:= @TecTextRange(AnClient.PublicData.FoldRanges[i]).Data;
+      if R^.Rule=nil then Continue;
+      if not R^.Rule.DisplayInTree then Continue;
 
       if not FEnabledSublexerTreeNodes then
       begin
-        NameRule:= R.Rule.SyntOwner.LexerName;
+        NameRule:= R^.Rule.SyntOwner.LexerName;
         //must allow lexer name "PHP_" if main lexer is "PHP"
         if NameRule='PHP_' then
           SetLength(NameRule, Length(NameRule)-1);
@@ -965,7 +965,7 @@ begin
       SDeleteFromEol(NodeTextGroup);
 
       RangeParent:= GetRangeParent(R);
-      while (RangeParent<>nil) and Assigned(RangeParent.Rule) and (not RangeParent.Rule.DisplayInTree) do
+      while (RangeParent<>nil) and Assigned(RangeParent^.Rule) and (not RangeParent^.Rule.DisplayInTree) do
         RangeParent:= GetRangeParent(RangeParent);
       if RangeParent<>nil then
         NodeParent:= ATree.Items.FindNodeWithData(RangeParent);
@@ -984,7 +984,7 @@ begin
             if NodeGroup=nil then
             begin
               NodeGroup:= ATree.Items.AddChild(NodeParent, SItem);
-              NodeGroup.ImageIndex:= R.Rule.TreeGroupImage;
+              NodeGroup.ImageIndex:= R^.Rule.TreeGroupImage;
               NodeGroup.SelectedIndex:= NodeGroup.ImageIndex;
             end;
           end;
@@ -993,7 +993,7 @@ begin
       end;
 
       NodeParent:= ATree.Items.AddChildObject(NodeParent, NodeText, NodeData);
-      NodeParent.ImageIndex:= R.Rule.TreeItemImage;
+      NodeParent.ImageIndex:= R^.Rule.TreeItemImage;
       NodeParent.SelectedIndex:= NodeParent.ImageIndex;
     end;
 
@@ -1003,7 +1003,7 @@ begin
     begin
       NodeParent:= ATree.Items[i];
       if NodeParent.Data=nil then Continue;
-      R:= TecTextRange(NodeParent.Data);
+      R:= PecFoldRange(NodeParent.Data);
       NodeParent.Data:= ConvertRangeToTreeRange(R);
     end;
 
@@ -1384,7 +1384,7 @@ procedure TATAdapterEControl.UpdateRangesFoldAndColored;
 var
   Ed: TATSynEdit;
   St: TATStrings;
-  R: TecTextRange;
+  R: PecFoldRange;
   Pnt1, Pnt2, Pnt1Wide, Pnt2Wide: TPoint;
   Style: TecSyntaxFormat;
   SHint: string;
@@ -1413,15 +1413,15 @@ begin
   begin
     if Application.Terminated then exit;
 
-    R:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
+    R:= @TecTextRange(AnClient.PublicData.FoldRanges[i]).Data;
 
     //R.Rule is nil for AutoFoldComment ranges, we need them
-    if R.Rule=nil then
+    if R^.Rule=nil then
     begin
-      if (R.StartIdx >= 0) and (R.EndIdx >= 0) then //sometimes we get R.EndIdx=-1, CudaText issue #4939
+      if (R^.StartIdx >= 0) and (R^.EndIdx >= 0) then //sometimes we get R.EndIdx=-1, CudaText issue #4939
       begin
-        tokenStart:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx);
-        tokenEnd:= AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx);
+        tokenStart:= AnClient.PublicData.Tokens._GetItemPtr(R^.StartIdx);
+        tokenEnd:= AnClient.PublicData.Tokens._GetItemPtr(R^.EndIdx);
         Pnt1:= tokenStart^.Range.PointStart;
         Pnt2:= tokenEnd^.Range.PointEnd;
         if Pnt1.Y<0 then Continue;
@@ -1431,7 +1431,7 @@ begin
       Continue;
     end;
 
-    if R.Rule.BlockType<>btRangeStart then Continue;
+    if R^.Rule.BlockType<>btRangeStart then Continue;
 
     /////issue: rules in C# with 'parent' set give wrong ranges;
     //rule "function begin", "prop begin";
@@ -1441,18 +1441,18 @@ begin
     if R.Rule.NotParent then Continue;
     {$endif}
 
-    if not AnClient.PublicData.Tokens.IsIndexValid(R.StartIdx) then Continue;
-    if not AnClient.PublicData.Tokens.IsIndexValid(R.EndIdx) then Continue;
+    if not AnClient.PublicData.Tokens.IsIndexValid(R^.StartIdx) then Continue;
+    if not AnClient.PublicData.Tokens.IsIndexValid(R^.EndIdx) then Continue;
 
-    tokenStart:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx);
-    tokenEnd:= AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx);
+    tokenStart:= AnClient.PublicData.Tokens._GetItemPtr(R^.StartIdx);
+    tokenEnd:= AnClient.PublicData.Tokens._GetItemPtr(R^.EndIdx);
     Pnt1:= tokenStart^.Range.PointStart;
     Pnt2:= tokenEnd^.Range.PointEnd;
     if Pnt1.Y<0 then Continue;
     if Pnt2.Y<0 then Continue;
 
     //fill fold ranges
-    if not R.Rule.NotCollapsed then
+    if not R^.Rule.NotCollapsed then
     begin
       SHint:= UTF8Encode(AnClient.GetCollapsedText(R)); //+'/'+R.Rule.GetNamePath;
 
@@ -1469,21 +1469,21 @@ begin
         end;
       end;
 
-      DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.X+1, Pnt2.Y, R.Rule.DrawStaple, SHint, 0);
+      DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.X+1, Pnt2.Y, R^.Rule.DrawStaple, SHint, 0);
     end;
 
     //fill FRangesColored
     //not only if DymamicHilite enabled (e.g. AutoIt has always hilited blocks)
-    if R.Rule.DynHighlight<>dhNone then
+    if R^.Rule.DynHighlight<>dhNone then
     begin
-      Style:= R.Rule.Style;
+      Style:= R^.Rule.Style;
       if Style<>nil then
         if Style.BgColor<>clNone then
         begin
           Pnt1Wide:= Pnt1;
           Pnt2Wide:= Pnt2;
           //support lexer opt "Highlight lines of block"
-          if R.Rule.Highlight then
+          if R^.Rule.Highlight then
           begin
             Pnt1Wide.X:= 0;
             Pnt2Wide.X:= Buffer.LineLength(Pnt2.Y) + 1;
@@ -1495,14 +1495,14 @@ begin
             Pnt2,
             Pnt1Wide,
             Pnt2Wide,
-            R.StartIdx,
-            R.EndIdx,
+            R^.StartIdx,
+            R^.EndIdx,
             Style.BgColor,
-            R.Rule,
-            (R.Rule.HighlightPos=cpAny)
+            R^.Rule,
+            (R^.Rule.HighlightPos=cpAny)
             );
 
-          if R.Rule.DynHighlight=dhBound then
+          if R^.Rule.DynHighlight=dhBound then
             FRangesColoredBounds.Add(ColoredRange)
           else
             FRangesColored.Add(ColoredRange);
