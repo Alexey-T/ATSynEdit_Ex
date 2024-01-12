@@ -1582,7 +1582,7 @@ begin
   if Ed=nil then exit;
   N:= Ed.Fold.FindRangeWithPlusAtLine(ABlockPos.Y);
   if N>=0 then
-    if Ed.Fold[N].Folded then
+    if Ed.Fold.ItemPtr(N)^.Folded then
       Ed.DoRangeUnfold(N);
 end;
 
