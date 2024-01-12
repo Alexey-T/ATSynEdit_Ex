@@ -350,7 +350,8 @@ function TATAdapterEControl.DebugFoldRanges: string;
 var
   L: TStringList;
   R: TecTextRange;
-  Idx, i: integer;
+  //Idx: integer;
+  i: integer;
 begin
   L := TStringList.Create;
   try
@@ -358,12 +359,14 @@ begin
     for i := 0 to AnClient.PublicData.FoldRanges.Count - 1 do
     begin
       R := TecTextRange(AnClient.PublicData.FoldRanges[i]);
+      {
       if R.Parent<>nil then
         Idx := R.Parent.Index
       else
         Idx := -1;
-      L.Add(Format('[%d] StartIdx=%d EndIdx=%d Parent=%d Text="%s"',
-        [R.Index, R.StartIdx, R.EndIdx, Idx,
+      }
+      L.Add(Format('[%d] StartIdx=%d EndIdx=%d Text="%s"',
+        [R.Index, R.StartIdx, R.EndIdx,
         AnClient.PublicData.Tokens[R.StartIdx].GetStr(AnClient.Buffer.FText)]));
     end;
     Result:= L.Text;
