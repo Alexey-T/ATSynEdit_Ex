@@ -586,25 +586,6 @@ begin
   end;
 end;
 
-(*
-procedure TATAdapterEControl.DoClearRanges_OnlySimple;
-var
-  Ed: TATSynEdit;
-  R: TATFoldRange;
-  i, j: integer;
-begin
-  for j:= 0 to EdList.Count-1 do
-  begin
-    Ed:= TATSynEdit(EdList[j]);
-    for i:= Ed.Fold.Count-1 downto 0 do
-    begin
-      R:= Ed.Fold.Items[i];
-      if R.IsSimple then
-        Ed.Fold.Delete(i);
-    end;
-  end;
-end;
-*)
 
 constructor TATAdapterEControl.Create(AOwner: TComponent);
 begin
@@ -1187,26 +1168,6 @@ begin
   end;
 end;
 
-(*
-procedure CodetreeClear(ATree: TTreeView);
-var
-  Node: TTreeNode;
-  D: pointer;
-  i: integer;
-begin
-  for i:= ATree.Items.Count-1 downto 0 do
-  begin
-    Node:= ATree.Items[i];
-    D:= Node.Data;
-    if Assigned(D) then
-    begin
-      TObject(D).Free;
-      Node.Data:= nil;
-    end;
-  end;
-  ATree.Items.Clear;
-end;
-*)
 
 procedure TATAdapterEControl.OnEditorCaretMove(Sender: TObject);
 begin
