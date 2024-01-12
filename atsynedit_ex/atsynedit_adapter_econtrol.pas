@@ -17,13 +17,13 @@ uses
   ATSynEdit_Adapters,
   ATSynEdit_Carets,
   ATSynEdit_Ranges,
-  ATSynEdit_SortedRange,
   ATStringProc,
   ATStringProc_Separator,
   ATStringProc_TextBuffer,
   ATStrings,
   ec_syntax_format,
-  ec_SyntAnal;
+  ec_SyntAnal,
+  ec_proc_SortedRange;
 
 type
   { TATRangeInCodeTree }
