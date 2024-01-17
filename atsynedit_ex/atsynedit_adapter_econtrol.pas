@@ -1523,6 +1523,11 @@ begin
 
   //maybe some blocks were folded before - restore their folded-states
   DoFoldFromLinesHidden;
+  {
+  idea: to speed up, replace it with Ed.BackupFoldedStates/RestoreFoldedStates;
+  but for 400Kb c++ file, with 1400 fold ranges,
+  DoFoldFromLinesHidden works already less than 1ms, fast enough
+  }
 end;
 
 procedure TATAdapterEControl.DebugIntegersWithPointers(L: TATIntegersWithPointers);
