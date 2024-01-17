@@ -1521,7 +1521,7 @@ begin
   FRangesColored.UpdateLineIndexer(Ed.Strings.Count);
   //FRangesColored.DebugLineIndexer;
 
-  //keep folded blks that were folded
+  //maybe some blocks were folded before - restore their folded-states
   DoFoldFromLinesHidden;
 end;
 
