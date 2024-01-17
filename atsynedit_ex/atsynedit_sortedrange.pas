@@ -54,7 +54,7 @@ type
     Color: TColor;
     Rule: TecTagBlockCondition;
     ActiveAlways: boolean;
-    Active: array[0..Pred(TATEditorOptions.MaxStringsClients)] of boolean;
+    Active: array[0..1] of boolean;
     class operator =(const a, b: TATSortedRange): boolean;
     procedure Init(
       const APos1, APos2: TPoint;
