@@ -308,7 +308,7 @@ begin
   if Assigned(AnClient) then
     Result:= AnClient.Owner.LexerName
   else
-    Result:= '-';
+    Result:= '';
 end;
 
 function TATAdapterEControl.GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
