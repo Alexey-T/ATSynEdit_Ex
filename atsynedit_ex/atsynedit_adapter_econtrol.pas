@@ -567,7 +567,19 @@ begin
     nColor:= GetTokenColorBG_FromMultiLineTokens(PointAfterEOL, clNone, AEditorIndex);
 
   if (nColor<>clNone) then
+  begin
     AColorAfter:= nColor;
+
+    //if it is space-only line, we skipped parts filling, do it now;
+    //this is for space-only line inside Markdown fenced block, CudaText issue #5378
+    if nStartIndex<0 then
+      if (AParts[0].Len=0) and (ALen>0) then
+      begin
+        AParts[0].Offset:= 0;
+        AParts[0].Len:= ALen;
+        AParts[0].ColorBG:= AColorAfter;
+      end;
+  end;
 end;
 
 procedure TATAdapterEControl.ClearRanges;
