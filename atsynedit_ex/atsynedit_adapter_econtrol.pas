@@ -577,6 +577,7 @@ begin
       begin
         AParts[0].Offset:= 0;
         AParts[0].Len:= ALen;
+        AParts[0].ColorFont:= AColorFont;
         AParts[0].ColorBG:= AColorAfter;
       end;
   end;
