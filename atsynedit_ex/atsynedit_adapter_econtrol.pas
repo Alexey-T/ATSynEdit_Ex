@@ -477,11 +477,6 @@ begin
       AnClient.Buffer.CaretToStr(Point(AX, ALine))
       );
 
-  {
-  //don't exit, need more work for AColorAfter
-  if nStartIndex<0 then exit;
-  }
-
   part:= Default(TATLinePart);
 
   if nStartIndex>=0 then
