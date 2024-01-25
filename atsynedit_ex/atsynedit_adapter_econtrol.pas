@@ -581,7 +581,7 @@ begin
   begin
     AColorAfter:= nColor;
 
-    //space-only line in Markdown fenced block, CudaText issue #5378
+    //space-only line in Markdown fenced block, missed bg-color; CudaText issue #5378
     if nStartIndex<0 then
       if (AParts[0].Len>0) and (AParts[1].Len=0) then
         AParts[0].ColorBG:= AColorAfter;
