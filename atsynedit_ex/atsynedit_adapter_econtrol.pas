@@ -457,6 +457,7 @@ var
   part: TATLinePart;
   nColor: TColor;
   iToken: integer;
+  bSingleSpacePart: boolean = false;
 begin
   Ed:= Editor;
   if Ed=nil then exit;
@@ -556,6 +557,7 @@ begin
     //space-only line (so nStartIndex<0)
     if (AParts[0].Len=0) and (ALen>0) then
     begin
+      bSingleSpacePart:= true;
       AParts[0].Offset:= 0;
       AParts[0].Len:= ALen;
       AParts[0].ColorFont:= AColorFont;
@@ -582,9 +584,8 @@ begin
     AColorAfter:= nColor;
 
     //space-only line in Markdown fenced block, missed bg-color; CudaText issue #5378
-    if nStartIndex<0 then
-      if (AParts[0].Len>0) and (AParts[1].Len=0) then
-        AParts[0].ColorBG:= AColorAfter;
+    if bSingleSpacePart then
+      AParts[0].ColorBG:= AColorAfter;
   end;
 end;
 
