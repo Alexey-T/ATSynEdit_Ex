@@ -550,7 +550,18 @@ begin
     mustOffset:= part.Offset+part.Len;
     if mustOffset<ALen then
       AddMissingPart(mustOffset, ALen-mustOffset);
-  end; //if nStartIndex>=0
+  end //if nStartIndex>=0
+  else
+  begin
+    //space-only line (so nStartIndex<0)
+    if (AParts[0].Len=0) and (ALen>0) then
+    begin
+      AParts[0].Offset:= 0;
+      AParts[0].Len:= ALen;
+      AParts[0].ColorFont:= AColorFont;
+      AParts[0].ColorBG:= AColorBG;
+    end;
+  end;
 
   //Application.MainForm.Caption:= 'startindex '+IntToStr(nStartIndex)+' count-tokens '+IntToStr(count);
 
@@ -570,16 +581,10 @@ begin
   begin
     AColorAfter:= nColor;
 
-    //if it is space-only line, we skipped parts filling, do it now;
-    //this is for space-only line inside Markdown fenced block, CudaText issue #5378
+    //space-only line in Markdown fenced block, CudaText issue #5378
     if nStartIndex<0 then
-      if (AParts[0].Len=0) and (ALen>0) then
-      begin
-        AParts[0].Offset:= 0;
-        AParts[0].Len:= ALen;
-        AParts[0].ColorFont:= AColorFont;
+      if (AParts[0].Len>0) and (AParts[1].Len=0) then
         AParts[0].ColorBG:= AColorAfter;
-      end;
   end;
 end;
 
