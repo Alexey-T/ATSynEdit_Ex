@@ -155,6 +155,7 @@ type
     function GetLexerName: string; override;
     function IsDataReady: boolean; override;
     function IsDataReadyPartially: boolean; override;
+    function IsIndentBasedFolding: boolean; override;
 
   published
     property OnLexerChange: TATEditorEvent read FOnLexerChange write FOnLexerChange;
@@ -1772,6 +1773,11 @@ begin
              AnClient.PublicData.FinishedPartially
   else
     Result:= true;
+end;
+
+function TATAdapterEControl.IsIndentBasedFolding: boolean;
+begin
+  Result:= Assigned(AnClient) and Assigned(AnClient.Owner) and AnClient.Owner.IndentBasedFolding;
 end;
 
 end.
