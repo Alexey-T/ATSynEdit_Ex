@@ -14,12 +14,19 @@
  **********************************************************************}
 {$mode objfpc}
 {$h+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit at__jsonparser;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
 uses
-  Classes, SysUtils, at__fpJSON, at__jsonscanner, at__jsonreader;
+  System.Classes, System.SysUtils, FpJson.Data, FpJson.Scanner, FpJson.Reader;
+{$ELSE FPC_DOTTEDUNITS}
+uses
+  Classes, SysUtils, fpJSON, jsonscanner, jsonreader;
+{$ENDIF FPC_DOTTEDUNITS}
   
 Type
 
@@ -53,7 +60,7 @@ Type
     function Parse: TJSONData;
   end;
   
-  EJSONParser = at__jsonReader.EJSONParser;
+  EJSONParser = {$IFDEF FPC_DOTTEDUNITS}at__FpJson.Reader{$ELSE}at__jsonReader{$ENDIF}.EJSONParser;
   
 implementation
 
