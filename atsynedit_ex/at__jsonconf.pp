@@ -31,10 +31,10 @@ interface
 
 {$IFDEF FPC_DOTTEDUNITS}
 uses
-  System.SysUtils, System.Classes, FpJson.Data, FpJson.Scanner, FpJson.Parser;
+  System.SysUtils, System.Classes, at__FpJson.Data, at__FpJson.Scanner, at__FpJson.Parser;
 {$ELSE FPC_DOTTEDUNITS}
 uses
-  SysUtils, Classes, fpjson, jsonscanner, jsonparser;
+  SysUtils, Classes, at__fpjson, at__jsonscanner, at__jsonparser;
 {$ENDIF FPC_DOTTEDUNITS}
 
 Const

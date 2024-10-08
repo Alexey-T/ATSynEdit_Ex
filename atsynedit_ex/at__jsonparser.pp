@@ -22,10 +22,10 @@ interface
 
 {$IFDEF FPC_DOTTEDUNITS}
 uses
-  System.Classes, System.SysUtils, FpJson.Data, FpJson.Scanner, FpJson.Reader;
+  System.Classes, System.SysUtils, at__FpJson.Data, at__FpJson.Scanner, at__FpJson.Reader;
 {$ELSE FPC_DOTTEDUNITS}
 uses
-  Classes, SysUtils, fpJSON, jsonscanner, jsonreader;
+  Classes, SysUtils, at__fpJSON, at__jsonscanner, at__jsonreader;
 {$ENDIF FPC_DOTTEDUNITS}
   
 Type
