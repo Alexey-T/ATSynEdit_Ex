@@ -23,12 +23,19 @@
 {$H+}
 {$ENDIF}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit at__jsonConf;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
 uses
-  SysUtils, Classes, at__fpjson, at__jsonscanner, at__jsonparser;
+  System.SysUtils, System.Classes, FpJson.Data, FpJson.Scanner, FpJson.Parser;
+{$ELSE FPC_DOTTEDUNITS}
+uses
+  SysUtils, Classes, fpjson, jsonscanner, jsonparser;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Const
   DefaultJSONOptions = [joUTF8,joComments,joIgnoreTrailingComma,joBOMCheck];
@@ -168,70 +175,31 @@ procedure TJSONConfig.Flush;
 Var
   F : TFileStream;
   S : TJSONStringType;
-
-begin
-  if Modified then
-    begin
-    try
-      F:=TFileStream.Create(FileName,fmCreate);
-      Try
-        if Formatted then
-          S:=FJSON.FormatJSON(Formatoptions,FormatIndentSize)
-        else
-          S:=FJSON.AsJSON;
-        if S<>'' then
-        begin
-          F.WriteBuffer(S[1],Length(S));
-          FileFlush(F.Handle);
-        end;
-      Finally
-        F.Free;
-      end;
-    except
-      // Alexey: added try-except to avoid crash when app tries to write to Program Files dir
-    end;
-    FModified := False;
-    end;
-end;
-
-(*
-procedure TJSONConfig.Flush;
-
-Var
-  F : TFileStream;
-  S : TJSONStringType;
-  TempName: string;
   
 begin
   if Modified then
     begin
-    try
-      TempName := FileName + '.tmp';
-      F:=TFileStream.Create(TempName,fmCreate);
-      Try
-        if Formatted then
-          S:=FJSON.FormatJSON(Formatoptions,FormatIndentSize)
-        else
-          S:=FJSON.AsJSON;
-        if S<>'' then
-        begin
-          F.WriteBuffer(S[1],Length(S));
-        end;
-      Finally
-        F.Free;
+    Try
+     F:=TFileStream.Create(FileName,fmCreate);
+     Try
+      if Formatted then
+        S:=FJSON.FormatJSON(Formatoptions,FormatIndentSize)
+      else
+        S:=FJSON.AsJSON;
+      if S>'' then
+      begin
+        F.WriteBuffer(S[1],Length(S));
+        FileFlush(F.Handle); // Alexey
       end;
-
-      // Alexey: renaming of file is recommended at https://gitlab.com/freepascal.org/fpc/source/-/issues/39619
-      if FileExists(FileName) then
-        DeleteFile(FileName);
-      RenameFile(TempName, FileName);
-    except
+     Finally
+      F.Free;
+     end;
+    Except
       // Alexey: added try-except to avoid crash when app tries to write to Program Files dir
     end;
     FModified := False;
     end;
 end;
-*)
 
 
 function TJSONConfig.FindObject(const APath: UnicodeString; AllowCreate: Boolean
