@@ -12,14 +12,28 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
-{$mode objfpc}
-{$h+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit at__jsonreader;
+{$ENDIF FPC_DOTTEDUNITS}
+
+{$mode objfpc}{$H+}
+{$if defined(fpc) or defined(NodeJS)}
+  {$define HasFileWriter}
+{$endif}
+
+{$IF FPC_FULLVERSION>30100}
+  {$warn 6058 off} // cannot inline
+{$ENDIF}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, at__FpJson.Data, at__FpJson.Scanner;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, at__fpJSON, at__jsonscanner;
+{$ENDIF FPC_DOTTEDUNITS}
   
 Type
 
@@ -63,6 +77,7 @@ Type
     Constructor Create(Const Source : RawByteString; AUseUTF8 : Boolean = True); overload;deprecated 'use options form instead';
     constructor Create(Source: TStream; AOptions: TJSONOptions); overload;
     constructor Create(const Source: RawByteString; AOptions: TJSONOptions); overload;
+    constructor Create(const Source: UnicodeString; AOptions: TJSONOptions); overload;
     destructor Destroy();override;
     // Parsing options
     Property Options : TJSONOptions Read GetOptions Write SetOptions;
@@ -180,17 +195,17 @@ Resourcestring
   SErrNoScanner = 'No scanner. No source specified ?';
   SErrorAt = 'Error at line %d, Pos %d: ';
   SErrGarbageFound = 'Expected EOF, but got %s';
-  
+
 { TBaseJSONReader }
 
 
-Procedure TBaseJSONReader.DoExecute;
+procedure TBaseJSONReader.DoExecute;
 
 begin
   if (FScanner=Nil) then
     DoError(SErrNoScanner);
   DoParse(False,True);
-  if joStrict in Options then
+  if (joStrict in Options) and not (joSingle in Options) then
     begin
     Repeat
        GetNextToken;
@@ -338,7 +353,7 @@ end;
 
 
 // Current token is {, on exit current token is }
-Procedure TBaseJSONReader.ParseObject;
+procedure TBaseJSONReader.ParseObject;
 
 Var
   T : TJSONtoken;
@@ -375,7 +390,7 @@ begin
 end;
 
 // Current token is [, on exit current token is ]
-Procedure TBaseJSONReader.ParseArray;
+procedure TBaseJSONReader.ParseArray;
 
 Var
   T : TJSONtoken;
@@ -446,6 +461,13 @@ end;
 constructor TBaseJSONReader.Create(const Source: RawByteString; AOptions: TJSONOptions);
 begin
   FScanner:=TJSONScanner.Create(Source,AOptions);
+end;
+
+constructor TBaseJSONReader.Create(const Source: UnicodeString;
+  AOptions: TJSONOptions);
+begin
+  Include(aOptions,joUTF8);
+  Create(UTF8Encode(Source),aOptions);
 end;
 
 destructor TBaseJSONReader.Destroy();
