@@ -1,10 +1,15 @@
-unit appjsonconfig;
+{
+Wrapper for JsonConf unit
+Copyright (c) Alexey Torgashin
+License: MIT or modified LGPL
+}
+unit AppJsonConfig;
 {$mode OBJFPC}{$H+}
 
 interface
 
 uses
-  sysutils, classes,
+  SysUtils, Classes,
   at__jsonconf;
 
 type
