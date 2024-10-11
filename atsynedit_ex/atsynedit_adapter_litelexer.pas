@@ -15,7 +15,6 @@ uses
   ATSynEdit_LineParts,
   Masks,
   FileUtil,
-  at__jsonConf,
   ec_RegExpr;
 
 type
@@ -115,6 +114,9 @@ var
   ATLiteLexerMaxLineLength: integer = 4000;
 
 implementation
+
+uses
+  appjsonconfig;
 
 { TATLiteLexers }
 
@@ -305,7 +307,7 @@ end;
 
 function TATLiteLexer.LoadFromFile(const AFilename: string): boolean;
 var
-  c: TJSONConfig;
+  c: TAppJSONConfig;
   keys: TStringList;
   rule: TATLiteLexerRule;
   s_name, s_regex, s_style: string;
@@ -315,7 +317,7 @@ begin
   Clear;
   if not FileExists(AFilename) then exit;
 
-  c:= TJSONConfig.Create(nil);
+  c:= TAppJsonConfig.Create(nil);
   keys:= TStringList.Create;
   try
     try

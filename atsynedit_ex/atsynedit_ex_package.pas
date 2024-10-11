@@ -8,8 +8,9 @@ unit atsynedit_ex_package;
 interface
 
 uses
-  ATSynEdit_Adapter_EControl, ATSynEdit_Adapter_LiteLexer, at__jsonConf, at__jsonparser, 
-  ATSynEdit_Adapter_Simple, ATSynEdit_SortedRange;
+  ATSynEdit_Adapter_EControl, ATSynEdit_Adapter_LiteLexer, at__jsonConf, 
+  at__jsonparser, ATSynEdit_Adapter_Simple, ATSynEdit_SortedRange, 
+  appjsonconfig;
 
 implementation
 

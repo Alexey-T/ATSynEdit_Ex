@@ -38,7 +38,7 @@ uses
 {$ENDIF FPC_DOTTEDUNITS}
 
 Const
-  DefaultJSONOptions = [joUTF8,joComments,joIgnoreTrailingComma,joBOMCheck];
+  DefaultJSONOptions = [joUTF8,joComments,joBOMCheck];
 
 type
   EJSONConfigError = class(Exception);
@@ -89,7 +89,7 @@ type
     destructor Destroy; override;
     Procedure Reload;
     procedure Clear;
-    procedure Flush;    // Writes the JSON file
+    procedure Flush; virtual;    // Writes the JSON file
     procedure OpenKey(const aPath: UnicodeString; AllowCreate : Boolean);
     procedure CloseKey;
     procedure ResetKey;
@@ -179,23 +179,19 @@ Var
 begin
   if Modified then
     begin
+    F:=TFileStream.Create(FileName,fmCreate);
     Try
-     F:=TFileStream.Create(FileName,fmCreate);
-     Try
       if Formatted then
         S:=FJSON.FormatJSON(Formatoptions,FormatIndentSize)
       else
         S:=FJSON.AsJSON;
       if S>'' then
-      begin
-        F.WriteBuffer(S[1],Length(S));
-        FileFlush(F.Handle); // Alexey
-      end;
-     Finally
+        begin
+        F.WriteBuffer(S[1],Length(S));  
+        FileFlush(F.Handle);
+        end;
+    Finally
       F.Free;
-     end;
-    Except
-      // Alexey: added try-except to avoid crash when app tries to write to Program Files dir
     end;
     FModified := False;
     end;

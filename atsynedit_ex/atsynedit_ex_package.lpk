@@ -23,8 +23,8 @@
 
 Requires packages: ATSynEdit, EControl."/>
     <License Value="MPL 2.0 or LGPL"/>
-    <Version Major="2" Minor="1" Release="1"/>
-    <Files Count="6">
+    <Version Major="2" Minor="2"/>
+    <Files Count="7">
       <Item1>
         <Filename Value="atsynedit_adapter_econtrol.pas"/>
         <UnitName Value="ATSynEdit_Adapter_EControl"/>
@@ -49,6 +49,10 @@ Requires packages: ATSynEdit, EControl."/>
         <Filename Value="atsynedit_sortedrange.pas"/>
         <UnitName Value="ATSynEdit_SortedRange"/>
       </Item6>
+      <Item7>
+        <Filename Value="appjsonconfig.pp"/>
+        <UnitName Value="appjsonconfig"/>
+      </Item7>
     </Files>
     <CompatibilityMode Value="True"/>
     <RequiredPkgs Count="3">
