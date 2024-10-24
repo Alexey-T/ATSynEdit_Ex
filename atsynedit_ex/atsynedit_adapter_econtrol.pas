@@ -172,7 +172,6 @@ procedure CodetreeSelectItemForPosition(ATree: TTreeView; APosX, APosY: integer;
 
 var
   OptCodeTreeMaxTimeMessage: string = '>%dms, skipped %s/%s';
-  OptFoldingCanExcludeLastLine_MaxLineLen: integer = 50;
   OptMaxLineLenToUseIndexerToRender: integer = 200;
   OptMaxLineLenForDynamicHighlight: integer = 500;
 
@@ -1408,8 +1407,6 @@ var
   SHint: string;
   tokenStart, tokenEnd: PecSyntToken;
   ColoredRange: TATSortedRange;
-  bCanExcludeLastLine: boolean;
-  NLineLen: SizeInt;
   i: integer;
 begin
   if AnClient=nil then Exit;
@@ -1422,10 +1419,6 @@ begin
 
   //init Ed.Fold.LineIndexer's
   ClearFoldIndexers;
-
-  bCanExcludeLastLine:=
-    Assigned(AnClient.Owner) and
-    AnClient.Owner.FoldingExcludesLastLine;
 
   for i:= 0 to AnClient.PublicData.FoldRanges.Count-1 do
   begin
@@ -1474,13 +1467,12 @@ begin
     begin
       SHint:= UTF8Encode(AnClient.GetCollapsedText(R)); //+'/'+R.Rule.GetNamePath;
 
-      //exclude last line if it ends with '{'
-      //to allow user to fold that block {...}
-      if bCanExcludeLastLine and St.IsIndexValid(Pnt2.Y) then
+      //if after block's end-token we have more tokens on the _same_ line,
+      //then decrement block's ending Y (ie exclude that line from folding)
+      if St.IsIndexValid(Pnt2.Y) then
       begin
-        NLineLen:= St.LinesLen[Pnt2.Y];
-        if (NLineLen>0) and (NLineLen<=OptFoldingCanExcludeLastLine_MaxLineLen) and
-          (St.LineCharAt(Pnt2.Y, NLineLen)='{') then
+        if AnClient.PublicData.Tokens.IsIndexValid(R.EndIdx+1) and
+          (AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx+1)^.Range.PointStart.Y = Pnt2.Y) then
         begin
           Dec(Pnt2.Y);
           if Pnt1.Y>=Pnt2.Y then Continue;
