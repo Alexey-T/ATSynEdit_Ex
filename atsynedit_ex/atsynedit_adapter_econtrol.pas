@@ -1401,6 +1401,7 @@ procedure TATAdapterEControl.UpdateRangesFoldAndColored;
 var
   Ed: TATSynEdit;
   St: TATStrings;
+  TokensObject: TecTokenList;
   R: TecTextRange;
   Pnt1, Pnt2, Pnt1Wide, Pnt2Wide: TPoint;
   Style: TecSyntaxFormat;
@@ -1416,6 +1417,7 @@ begin
   if Ed=nil then exit;
   if not Ed.OptFoldEnabled then exit;
   St:= Ed.Strings;
+  TokensObject:= AnClient.PublicData.Tokens;
 
   //init Ed.Fold.LineIndexer's
   ClearFoldIndexers;
@@ -1431,8 +1433,8 @@ begin
     begin
       if (R.StartIdx >= 0) and (R.EndIdx >= 0) then //sometimes we get R.EndIdx=-1, CudaText issue #4939
       begin
-        tokenStart:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx);
-        tokenEnd:= AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx);
+        tokenStart:= TokensObject._GetItemPtr(R.StartIdx);
+        tokenEnd:= TokensObject._GetItemPtr(R.EndIdx);
         Pnt1:= tokenStart^.Range.PointStart;
         Pnt2:= tokenEnd^.Range.PointEnd;
         if Pnt1.Y<0 then Continue;
@@ -1452,11 +1454,11 @@ begin
     if R.Rule.NotParent then Continue;
     {$endif}
 
-    if not AnClient.PublicData.Tokens.IsIndexValid(R.StartIdx) then Continue;
-    if not AnClient.PublicData.Tokens.IsIndexValid(R.EndIdx) then Continue;
+    if not TokensObject.IsIndexValid(R.StartIdx) then Continue;
+    if not TokensObject.IsIndexValid(R.EndIdx) then Continue;
 
-    tokenStart:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx);
-    tokenEnd:= AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx);
+    tokenStart:= TokensObject._GetItemPtr(R.StartIdx);
+    tokenEnd:= TokensObject._GetItemPtr(R.EndIdx);
     Pnt1:= tokenStart^.Range.PointStart;
     Pnt2:= tokenEnd^.Range.PointEnd;
     if Pnt1.Y<0 then Continue;
@@ -1471,8 +1473,8 @@ begin
       //then decrement block's ending Y (ie exclude that line from folding)
       if St.IsIndexValid(Pnt2.Y) then
       begin
-        if AnClient.PublicData.Tokens.IsIndexValid(R.EndIdx+1) and
-          (AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx+1)^.Range.PointStart.Y = Pnt2.Y) then
+        if TokensObject.IsIndexValid(R.EndIdx+1) and
+          (TokensObject._GetItemPtr(R.EndIdx+1)^.Range.PointStart.Y = Pnt2.Y) then
         begin
           Dec(Pnt2.Y);
           if Pnt1.Y>=Pnt2.Y then Continue;
