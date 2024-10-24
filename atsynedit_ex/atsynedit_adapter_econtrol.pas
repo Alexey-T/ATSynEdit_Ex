@@ -1399,9 +1399,25 @@ end;
 procedure TATAdapterEControl.UpdateRangesFoldAndColored;
 //all calls of this procedure must be guarded with CriSecForData.Enter/Leave
 var
-  Ed: TATSynEdit;
-  St: TATStrings;
   TokensObject: TecTokenList;
+  //
+  function BlockHasNextTokensOnSameLine(AEndTokenIdx, ALine: integer): boolean;
+  var
+    tokenA, tokenNext: PecSyntToken;
+  begin
+    Result:= false;
+    if not TokensObject.IsIndexValid(AEndTokenIdx+2) then exit; //require 2 next tokens
+    tokenA:= TokensObject._GetItemPtr(AEndTokenIdx+1);
+    if tokenA^.Range.PointStart.Y <> ALine then exit;
+    if tokenA^.Range.PointEnd.Y <> ALine then exit(true);
+    if tokenA^.Range.PointEnd.X - tokenA^.Range.PointStart.X <> 1 then exit(true); //ignore tokenA only if length=1, for ';' and ','
+    tokenNext:= TokensObject._GetItemPtr(AEndTokenIdx+2);
+    if tokenNext^.Range.PointStart.Y <> ALine then exit;
+    Result:= true;
+  end;
+  //
+var
+  Ed: TATSynEdit;
   R: TecTextRange;
   Pnt1, Pnt2, Pnt1Wide, Pnt2Wide: TPoint;
   Style: TecSyntaxFormat;
@@ -1416,7 +1432,6 @@ begin
   Ed:= Editor;
   if Ed=nil then exit;
   if not Ed.OptFoldEnabled then exit;
-  St:= Ed.Strings;
   TokensObject:= AnClient.PublicData.Tokens;
 
   //init Ed.Fold.LineIndexer's
@@ -1471,14 +1486,10 @@ begin
 
       //if after block's end-token we have more tokens on the _same_ line,
       //then decrement block's ending Y (ie exclude that line from folding)
-      if St.IsIndexValid(Pnt2.Y) then
+      if BlockHasNextTokensOnSameLine(R.EndIdx, Pnt2.Y) then
       begin
-        if TokensObject.IsIndexValid(R.EndIdx+1) and
-          (TokensObject._GetItemPtr(R.EndIdx+1)^.Range.PointStart.Y = Pnt2.Y) then
-        begin
-          Dec(Pnt2.Y);
-          if Pnt1.Y>=Pnt2.Y then Continue;
-        end;
+        Dec(Pnt2.Y);
+        if Pnt1.Y>=Pnt2.Y then Continue;
       end;
 
       DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.X+1, Pnt2.Y, R.Rule.DrawStaple, SHint, 0);
