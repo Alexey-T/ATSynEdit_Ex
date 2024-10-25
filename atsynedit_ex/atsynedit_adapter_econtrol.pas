@@ -1489,6 +1489,8 @@ begin
       begin
         Dec(Pnt2.Y);
         if Pnt1.Y>=Pnt2.Y then Continue;
+        if (SHint<>'') and (SHint[Length(SHint)]='}') then
+          SetLength(SHint, Length(SHint)-1);
       end;
 
       DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.X+1, Pnt2.Y, R.Rule.DrawStaple, SHint, 0);
