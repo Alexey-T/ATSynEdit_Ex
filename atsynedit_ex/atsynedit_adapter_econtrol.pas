@@ -1414,7 +1414,7 @@ var
     //ignore tokenA if length=1, mainly for ';' and ','
     if tokenA^.Range.Length <> 1 then exit(true);
     ch:= Ed.Strings.LineCharAt(tokenA^.Range.PointStart.Y, tokenA^.Range.PointStart.X+1);
-    if ch='{' then exit(true);
+    if (ch='{') or (ch='(') or (ch='[') then exit(true);
     tokenNext:= TokensObject._GetItemPtr(AEndTokenIdx+2);
     Result:= tokenNext^.Range.PointStart.Y = ALine;
   end;
