@@ -1409,8 +1409,8 @@ var
     if not TokensObject.IsIndexValid(AEndTokenIdx+2) then exit; //require 2 next tokens
     tokenA:= TokensObject._GetItemPtr(AEndTokenIdx+1);
     if tokenA^.Range.PointStart.Y <> ALine then exit;
-    if tokenA^.Range.PointEnd.Y <> ALine then exit(true);
-    if tokenA^.Range.PointEnd.X - tokenA^.Range.PointStart.X <> 1 then exit(true); //ignore tokenA only if length=1, for ';' and ','
+    //ignore tokenA if length=1, mainly for ';' and ','
+    if tokenA^.Range.EndPos - tokenA^.Range.StartPos <> 1 then exit(true);
     tokenNext:= TokensObject._GetItemPtr(AEndTokenIdx+2);
     if tokenNext^.Range.PointStart.Y <> ALine then exit;
     Result:= true;
