@@ -1399,12 +1399,12 @@ end;
 procedure TATAdapterEControl.UpdateRangesFoldAndColored;
 //all calls of this procedure must be guarded with CriSecForData.Enter/Leave
 var
-  Ed: TATSynEdit;
   TokensObject: TecTokenList;
   //
   function BlockHasNextTokensOnSameLine(AEndTokenIdx, ALine: integer): boolean;
   var
     tokenA, tokenNext: PecSyntToken;
+    N: integer;
     ch: WideChar;
   begin
     Result:= false;
@@ -1413,13 +1413,18 @@ var
     if tokenA^.Range.PointStart.Y <> ALine then exit;
     //ignore tokenA if length=1, mainly for ';' and ','
     if tokenA^.Range.Length <> 1 then exit(true);
-    ch:= Ed.Strings.LineCharAt(tokenA^.Range.PointStart.Y, tokenA^.Range.PointStart.X+1);
+    N:= tokenA^.Range.StartPos+1;
+    if N<=Length(Buffer.FText) then
+      ch:= Buffer.FText[N]
+    else
+      ch:= #0;
     if (ch='{') or (ch='(') or (ch='[') then exit(true);
     tokenNext:= TokensObject._GetItemPtr(AEndTokenIdx+2);
     Result:= tokenNext^.Range.PointStart.Y = ALine;
   end;
   //
 var
+  Ed: TATSynEdit;
   R: TecTextRange;
   Pnt1, Pnt2, Pnt1Wide, Pnt2Wide: TPoint;
   Style: TecSyntaxFormat;
