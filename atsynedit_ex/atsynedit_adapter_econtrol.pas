@@ -1412,8 +1412,7 @@ var
     //ignore tokenA if length=1, mainly for ';' and ','
     if tokenA^.Range.Length <> 1 then exit(true);
     tokenNext:= TokensObject._GetItemPtr(AEndTokenIdx+2);
-    if tokenNext^.Range.PointStart.Y <> ALine then exit;
-    Result:= true;
+    Result:= tokenNext^.Range.PointStart.Y = ALine;
   end;
   //
 var
