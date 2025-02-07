@@ -66,9 +66,12 @@ type
     procedure ClearFoldIndexers;
     procedure DoFoldAdd(AX, AY, AX2, AY2: integer; AStaple: boolean;
       const AHint: string; const ATag: Int64);
-    procedure DoCalcParts(var AParts: TATLineParts; ALine, AX, ALen: integer;
-      AColorFont, AColorBG: TColor; var AColorAfter: TColor;
-      AEditorIndex: integer; AMainText: boolean);
+    procedure CalcParts(Ed: TATSynEdit;
+      var AParts: TATLineParts;
+      ALine, AX, ALen: integer;
+      AColorFont, AColorBG: TColor;
+      var AColorAfter: TColor;
+      AMainText: boolean);
     procedure ClearRanges;
     function DoFindToken(APos: TPoint; AExactPos: boolean = false): integer;
     function GetTokenColor_FromBoundRanges(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
@@ -267,11 +270,12 @@ begin
   Ed:= TATSynEdit(Sender);
 
   AColorAfterEol:= clNone;
-  DoCalcParts(AParts, ALineIndex, ACharIndex-1, ALineLen,
+  CalcParts(Ed,
+    AParts,
+    ALineIndex, ACharIndex-1, ALineLen,
     Ed.Colors.TextFont,
     clNone,
     AColorAfterEol,
-    Ed.EditorIndex,
     AMainText);
 end;
 
@@ -421,9 +425,12 @@ begin
 end;
 
 
-procedure TATAdapterEControl.DoCalcParts(var AParts: TATLineParts; ALine, AX,
-  ALen: integer; AColorFont, AColorBG: TColor; var AColorAfter: TColor;
-  AEditorIndex: integer; AMainText: boolean);
+procedure TATAdapterEControl.CalcParts(Ed: TATSynEdit;
+  var AParts: TATLineParts;
+  ALine, AX, ALen: integer;
+  AColorFont, AColorBG: TColor;
+  var AColorAfter: TColor;
+  AMainText: boolean);
 //all calls of this proc must be guarded by CriSecForData.Enter/Leave
 var
   nPartIndex: integer = 0;
@@ -453,7 +460,7 @@ var
     part^.ColorBG:= GetTokenColorBG_FromColoredRanges(
       Point(AX+AOffset, ALine),
       AColorBG,
-      AEditorIndex);
+      Ed.EditorIndex);
 
     Inc(nPartIndex);
   end;
@@ -464,15 +471,12 @@ var
   token: PecSyntToken;
   tokenStyle, tokenStyle2: TecSyntaxFormat;
   TokenList: TecTokenList;
-  Ed: TATSynEdit;
   St: TATStrings;
   part: TATLinePart;
   nColor: TColor;
   iToken: integer;
   bSingleSpacePart: boolean = false;
 begin
-  Ed:= Editor;
-  if Ed=nil then exit;
   St:= Ed.Strings;
   if not St.IsIndexValid(ALine) then exit;
   TokenList:= AnClient.PublicData.Tokens;
@@ -518,13 +522,13 @@ begin
         part.Len:= tokenEnd.X-part.Offset;
 
       part.ColorFont:= AColorFont;
-      part.ColorBG:= GetTokenColorBG_FromColoredRanges(token^.Range.PointStart, AColorBG, AEditorIndex);
+      part.ColorBG:= GetTokenColorBG_FromColoredRanges(token^.Range.PointStart, AColorBG, Ed.EditorIndex);
 
       tokenStyle:= token^.Style;
       if AMainText then
       begin
         //dynamic highlighting
-        tokenStyle2:= GetTokenColor_FromBoundRanges(iToken, AEditorIndex);
+        tokenStyle2:= GetTokenColor_FromBoundRanges(iToken, Ed.EditorIndex);
         if tokenStyle2<>nil then
           tokenStyle:= tokenStyle2;
       end;
@@ -578,13 +582,13 @@ begin
   PointAfterEOL:= Point(AX+ALen, ALine);
 
   //a) calc it from colored-ranges
-  nColor:= GetTokenColorBG_FromColoredRanges(PointAfterEOL, clNone, AEditorIndex);
+  nColor:= GetTokenColorBG_FromColoredRanges(PointAfterEOL, clNone, Ed.EditorIndex);
   //if (nColor=clNone) and (ALen>0) then
   //  nColor:= GetTokenColorBG_FromColoredRanges(mustOffset-1, clNone, AEditorIndex);
 
   //b) calc it from multi-line tokens (with bg-color)
   if (nColor=clNone) and AMainText then
-    nColor:= GetTokenColorBG_FromMultiLineTokens(PointAfterEOL, clNone, AEditorIndex);
+    nColor:= GetTokenColorBG_FromMultiLineTokens(PointAfterEOL, clNone, Ed.EditorIndex);
 
   if (nColor<>clNone) then
   begin
