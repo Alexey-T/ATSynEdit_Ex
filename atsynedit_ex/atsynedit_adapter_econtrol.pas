@@ -70,7 +70,7 @@ type
       var AParts: TATLineParts;
       ALine, AX, ALen: integer;
       AColorFont, AColorBG: TColor;
-      var AColorAfter: TColor;
+      var AColorAfterEol: TColor;
       AMainText: boolean);
     procedure ClearRanges;
     function DoFindToken(APos: TPoint; AExactPos: boolean = false): integer;
@@ -429,7 +429,7 @@ procedure TATAdapterEControl.CalcParts(Ed: TATSynEdit;
   var AParts: TATLineParts;
   ALine, AX, ALen: integer;
   AColorFont, AColorBG: TColor;
-  var AColorAfter: TColor;
+  var AColorAfterEol: TColor;
   AMainText: boolean);
 //all calls of this proc must be guarded by CriSecForData.Enter/Leave
 var
@@ -578,7 +578,7 @@ begin
 
   //Application.MainForm.Caption:= 'startindex '+IntToStr(nStartIndex)+' count-tokens '+IntToStr(count);
 
-  //calc AColorAfter
+  //calc AColorAfterEol
   PointAfterEOL:= Point(AX+ALen, ALine);
 
   //a) calc it from colored-ranges
@@ -592,11 +592,11 @@ begin
 
   if (nColor<>clNone) then
   begin
-    AColorAfter:= nColor;
+    AColorAfterEol:= nColor;
 
     //space-only line in Markdown fenced block, missed bg-color; CudaText issue #5378
     if bSingleSpacePart then
-      AParts[0].ColorBG:= AColorAfter;
+      AParts[0].ColorBG:= AColorAfterEol;
   end;
 end;
 
