@@ -141,8 +141,8 @@ type
     procedure OnEditorScroll(Sender: TObject); override;
     procedure OnEditorCaretMove(Sender: TObject); override;
     procedure OnEditorChangeEx(Sender: TObject; AChange: TATLineChangeKind; ALine, AItemCount: integer); override;
-    procedure OnEditorBeforeCalcHilite(Sender: TObject); override;
-    procedure OnEditorAfterCalcHilite(Sender: TObject); override;
+    procedure OnEditorBeforeCalcHilite(Sender: TObject; AMainText: boolean); override;
+    procedure OnEditorAfterCalcHilite(Sender: TObject; AMainText: boolean); override;
     procedure OnEditorCalcHilite(Sender: TObject;
       var AParts: TATLineParts;
       ALineIndex, ACharIndex, ALineLen: integer;
@@ -241,13 +241,13 @@ begin
     raise Exception.Create('Adapter: Empty editor list');
 end;
 
-procedure TATAdapterEControl.OnEditorBeforeCalcHilite(Sender: TObject);
+procedure TATAdapterEControl.OnEditorBeforeCalcHilite(Sender: TObject; AMainText: boolean);
 begin
   if Assigned(AnClient) then
     AnClient.CriSecForData.Enter;
 end;
 
-procedure TATAdapterEControl.OnEditorAfterCalcHilite(Sender: TObject);
+procedure TATAdapterEControl.OnEditorAfterCalcHilite(Sender: TObject; AMainText: boolean);
 begin
   if Assigned(AnClient) then
     AnClient.CriSecForData.Leave;
@@ -279,8 +279,7 @@ end;
 procedure TATAdapterEControl.OnEditorCalcPosColor(Sender: TObject; AX,
   AY: integer; var AColor: TColor; AMainText: boolean);
 {
-use CriSecForData only for minimap painting, ie if AMainText=false.
-for AMainText=true, CriSec is already entered in surrounding calls.
+CriSecForData is not used here, it's called in BeforeCalcHilite / AfterCalcHilite
 }
 var
   Ed: TATSynEdit;
@@ -297,20 +296,16 @@ begin
     exit;
   end;
 
-  if not AMainText then
-    AnClient.CriSecForData.Enter;
-  try
-    //this is for multi-line tokens with BG color
-    //example: code-blocks in Markdown/reStructuredText lexer
-    NColor:= GetTokenColorBG_FromMultiLineTokens(Point(AX, AY), clNone, Ed.EditorIndex);
-    if NColor<>clNone then
-    begin
-      AColor:= NColor;
-      exit;
-    end;
-  finally
-    if not AMainText then
-      AnClient.CriSecForData.Leave;
+  {
+  the following block must be guarded by CriSecForData.Enter / .Leave, in surrounding calls
+  }
+  //this is for multi-line tokens with BG color
+  //example: code-blocks in Markdown/reStructuredText lexer
+  NColor:= GetTokenColorBG_FromMultiLineTokens(Point(AX, AY), clNone, Ed.EditorIndex);
+  if NColor<>clNone then
+  begin
+    AColor:= NColor;
+    exit;
   end;
 end;
 
