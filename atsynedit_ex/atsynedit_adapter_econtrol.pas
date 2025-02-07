@@ -142,6 +142,8 @@ type
     procedure OnEditorScroll(Sender: TObject); override;
     procedure OnEditorCaretMove(Sender: TObject); override;
     procedure OnEditorChangeEx(Sender: TObject; AChange: TATLineChangeKind; ALine, AItemCount: integer); override;
+    procedure OnEditorBeforeCalcHilite(Sender: TObject); override;
+    procedure OnEditorAfterCalcHilite(Sender: TObject); override;
     procedure OnEditorCalcHilite(Sender: TObject;
       var AParts: TATLineParts;
       ALineIndex, ACharIndex, ALineLen: integer;
@@ -239,9 +241,24 @@ begin
     raise Exception.Create('Adapter: Empty editor list');
 end;
 
+procedure TATAdapterEControl.OnEditorBeforeCalcHilite(Sender: TObject);
+begin
+  if Assigned(AnClient) then
+    AnClient.CriSecForData.Enter;
+end;
+
+procedure TATAdapterEControl.OnEditorAfterCalcHilite(Sender: TObject);
+begin
+  if Assigned(AnClient) then
+    AnClient.CriSecForData.Leave;
+end;
+
 procedure TATAdapterEControl.OnEditorCalcHilite(Sender: TObject;
   var AParts: TATLineParts; ALineIndex, ACharIndex, ALineLen: integer;
   var AColorAfterEol: TColor; AMainText: boolean);
+{
+CriSecForData.Enter / .Leave are not needed here, they are called in BeforeCalcHilite / AfterCalcHilite
+}
 var
   Ed: TATSynEdit;
 begin
@@ -249,18 +266,13 @@ begin
   DoCheckEditorList;
   Ed:= TATSynEdit(Sender);
 
-  AnClient.CriSecForData.Enter;
-  try
-    AColorAfterEol:= clNone;
-    DoCalcParts(AParts, ALineIndex, ACharIndex-1, ALineLen,
-      Ed.Colors.TextFont,
-      clNone,
-      AColorAfterEol,
-      Ed.EditorIndex,
-      AMainText);
-  finally
-    AnClient.CriSecForData.Leave;
-  end;
+  AColorAfterEol:= clNone;
+  DoCalcParts(AParts, ALineIndex, ACharIndex-1, ALineLen,
+    Ed.Colors.TextFont,
+    clNone,
+    AColorAfterEol,
+    Ed.EditorIndex,
+    AMainText);
 end;
 
 procedure TATAdapterEControl.OnEditorCalcPosColor(Sender: TObject; AX,
