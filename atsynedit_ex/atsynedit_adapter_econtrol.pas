@@ -149,7 +149,8 @@ type
       var AColorAfterEol: TColor;
       AMainText: boolean); override;
     procedure OnEditorCalcPosColor(Sender: TObject;
-      AX, AY: integer; var AColor: TColor); override;
+      AX, AY: integer; var AColor: TColor;
+      AMainText: boolean); override;
     procedure OnEditorCalcPosForeground(Sender: TObject;
       AX, AY: integer; var AColor: TColor; var AFontStyles: TFontStyles); override;
     function IsParsedAtLeastPartially: boolean; override;
@@ -276,7 +277,7 @@ begin
 end;
 
 procedure TATAdapterEControl.OnEditorCalcPosColor(Sender: TObject; AX,
-  AY: integer; var AColor: TColor);
+  AY: integer; var AColor: TColor; AMainText: boolean);
 var
   Ed: TATSynEdit;
   NColor: TColor;
@@ -292,7 +293,8 @@ begin
     exit;
   end;
 
-  AnClient.CriSecForData.Enter;
+  if not AMainText then
+    AnClient.CriSecForData.Enter;
   try
     //this is for multi-line tokens with BG color
     //example: code-blocks in Markdown/reStructuredText lexer
@@ -303,7 +305,8 @@ begin
       exit;
     end;
   finally
-    AnClient.CriSecForData.Leave;
+    if not AMainText then
+      AnClient.CriSecForData.Leave;
   end;
 end;
 
