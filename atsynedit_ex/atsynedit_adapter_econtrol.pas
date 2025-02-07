@@ -257,7 +257,7 @@ procedure TATAdapterEControl.OnEditorCalcHilite(Sender: TObject;
   var AParts: TATLineParts; ALineIndex, ACharIndex, ALineLen: integer;
   var AColorAfterEol: TColor; AMainText: boolean);
 {
-CriSecForData.Enter / .Leave are not needed here, they are called in BeforeCalcHilite / AfterCalcHilite
+CriSecForData usage is not needed here, this is done in BeforeCalcHilite / AfterCalcHilite
 }
 var
   Ed: TATSynEdit;
@@ -278,6 +278,10 @@ end;
 
 procedure TATAdapterEControl.OnEditorCalcPosColor(Sender: TObject; AX,
   AY: integer; var AColor: TColor; AMainText: boolean);
+{
+use CriSecForData only for minimap painting, ie if AMainText=false.
+for AMainText=true, CriSec is already entered in surrounding calls.
+}
 var
   Ed: TATSynEdit;
   NColor: TColor;
@@ -328,7 +332,9 @@ end;
 
 function TATAdapterEControl.GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
   ADefColor: TColor; AEditorIndex: integer): TColor;
-//all calls of this func must be guarded by CriSecForData.Enter/Leave
+{
+all calls of this func must be guarded by CriSecForData.Enter/Leave
+}
 var
   Token: PecSyntToken;
   NToken: integer;
@@ -430,7 +436,9 @@ procedure TATAdapterEControl.CalcParts(Ed: TATSynEdit;
   AColorFont, AColorBG: TColor;
   var AColorAfterEol: TColor;
   AMainText: boolean);
-//all calls of this proc must be guarded by CriSecForData.Enter/Leave
+{
+all calls of this proc must be guarded by CriSecForData.Enter/Leave
+}
 var
   nPartIndex: integer = 0;
   //
@@ -1003,7 +1011,9 @@ end;
 
 function TATAdapterEControl.SublexerRangeProps(AIndex: integer;
   out AStart, AEnd: TPoint; out ALexerName: string): boolean;
-//this func must be guarded with CriSecForData.Enter/Leave
+{
+this func must be guarded with CriSecForData.Enter/Leave
+}
 var
   Sub: PecSubLexerRange;
 begin
@@ -1358,7 +1368,9 @@ end;
 
 
 procedure TATAdapterEControl.UpdateRangesFoldAndColored;
-//all calls of this procedure must be guarded with CriSecForData.Enter/Leave
+{
+all calls of this procedure must be guarded with CriSecForData.Enter/Leave
+}
 var
   TokensObject: TecTokenList;
   //
@@ -1546,7 +1558,9 @@ begin
 end;
 
 procedure TATAdapterEControl.UpdateRangesSublex;
-//all calls of this proc must be guarded by CriSecForData.Enter/Leave
+{
+all calls of this procedure must be guarded by CriSecForData.Enter/Leave
+}
 var
   Ed: TATSynEdit;
   Sub: PecSubLexerRange;
