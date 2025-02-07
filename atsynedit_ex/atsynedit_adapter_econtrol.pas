@@ -295,7 +295,7 @@ begin
   AnClient.CriSecForData.Enter;
   try
     //this is for multi-line tokens with BG color
-    //example: code-blocks in reST lexer
+    //example: code-blocks in Markdown/reStructuredText lexer
     NColor:= GetTokenColorBG_FromMultiLineTokens(Point(AX, AY), clNone, Ed.EditorIndex);
     if NColor<>clNone then
     begin
