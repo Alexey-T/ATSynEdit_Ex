@@ -267,7 +267,7 @@ var
 begin
   if AnClient=nil then Exit;
   DoCheckEditorList;
-  Ed:= TATSynEdit(Sender);
+  Ed:= Sender as TATSynEdit;
 
   AColorAfterEol:= clNone;
   CalcParts(Ed,
