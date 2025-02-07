@@ -122,10 +122,6 @@ type
     procedure UpdateRangesFoldAndColored;
 
     //tokens
-    procedure __GetTokenWithIndex(AIndex: integer; out APntFrom, APntTo: TPoint;
-      out ATokenString, ATokenStyle: string; out ATokenKind: TATTokenKind);
-    procedure __GetTokenAtPos(APos: TPoint; out APntFrom, APntTo: TPoint;
-      out ATokenString, ATokenStyle: string; out ATokenKind: TATTokenKind);
     function GetTokenStyleAtPos(APos: TPoint): TecSyntaxFormat;
     function GetTokenKindAtPos(APos: TPoint; ADocCommentIsAlsoComment: boolean=true): TATTokenKind;
     function GetTokenString(const token: PecSyntToken): string;
@@ -753,60 +749,6 @@ begin
     ATokenKind:= TATTokenKind.Other;
   end;
 end;
-
-//function is not used in CudaText
-procedure TATAdapterEControl.__GetTokenWithIndex(AIndex: integer;
-  out APntFrom, APntTo: TPoint;
-  out ATokenString, ATokenStyle: string;
-  out ATokenKind: TATTokenKind);
-begin
-  APntFrom:= Point(-1, -1);
-  APntTo:= Point(-1, -1);
-  ATokenString:= '';
-  ATokenStyle:= '';
-  ATokenKind:= TATTokenKind.Other;
-
-  if AnClient=nil then exit;
-  if Buffer=nil then exit;
-
-  if AnClient.PublicData.Tokens.IsIndexValid(AIndex) then
-    GetTokenProps(
-      AnClient.PublicData.Tokens._GetItemPtr(AIndex),
-      APntFrom,
-      APntTo,
-      ATokenString,
-      ATokenStyle,
-      ATokenKind);
-end;
-
-//function is not used in CudaText
-procedure TATAdapterEControl.__GetTokenAtPos(APos: TPoint;
-  out APntFrom, APntTo: TPoint;
-  out ATokenString, ATokenStyle: string;
-  out ATokenKind: TATTokenKind);
-var
-  n: integer;
-begin
-  APntFrom:= Point(-1, -1);
-  APntTo:= Point(-1, -1);
-  ATokenString:= '';
-  ATokenStyle:= '';
-  ATokenKind:= TATTokenKind.Other;
-
-  if AnClient=nil then exit;
-  if Buffer=nil then exit;
-
-  n:= DoFindToken(APos);
-  if n>=0 then
-    GetTokenProps(
-      AnClient.PublicData.Tokens._GetItemPtr(n),
-      APntFrom,
-      APntTo,
-      ATokenString,
-      ATokenStyle,
-      ATokenKind);
-end;
-
 
 function TATAdapterEControl.GetTokenStyleAtPos(APos: TPoint): TecSyntaxFormat;
 var
