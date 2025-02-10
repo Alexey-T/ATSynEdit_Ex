@@ -865,6 +865,18 @@ begin
     Result:= IntToStr(N);
 end;
 
+procedure SCompressSpaces(var S: string);
+var
+  i: integer;
+begin
+  S:= StringReplace(S, #10, ' ', [rfReplaceAll]);
+  repeat
+    S:= StringReplace(S, '  ', ' ', [rfReplaceAll], i);
+  until i=0;
+  S:= Trim(S);
+end;
+
+
 procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer);
   //
   function ConvertRangeToTreeRange(R: TecTextRange): TATRangeInCodeTree;
@@ -941,9 +953,10 @@ begin
         Break;
       end;
 
-      //strip tree items from #10
-      SDeleteFromEol(NodeText);
-      SDeleteFromEol(NodeTextGroup);
+      //was before 2025.02: strip tree items from #10
+      //now: compress spaces/EOLs in tree items
+      SCompressSpaces(NodeText);
+      SCompressSpaces(NodeTextGroup);
 
       RangeParent:= GetRangeParent(R);
       while (RangeParent<>nil) and Assigned(RangeParent.Rule) and (not RangeParent.Rule.DisplayInTree) do
