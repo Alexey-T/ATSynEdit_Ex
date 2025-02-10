@@ -867,13 +867,14 @@ end;
 
 procedure SCompressSpaces(var S: string);
 var
-  i: integer;
+  N: integer;
 begin
   S:= StringReplace(S, #10, ' ', [rfReplaceAll]);
   repeat
-    S:= StringReplace(S, '  ', ' ', [rfReplaceAll], i);
-  until i=0;
-  S:= Trim(S);
+    S:= StringReplace(S, '    ', ' ', [rfReplaceAll]);
+    S:= StringReplace(S, '   ', ' ', [rfReplaceAll]);
+    S:= StringReplace(S, '  ', ' ', [rfReplaceAll], N);
+  until N=0;
 end;
 
 
