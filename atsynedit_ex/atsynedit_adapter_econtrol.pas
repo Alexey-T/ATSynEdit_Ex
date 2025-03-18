@@ -1316,13 +1316,31 @@ procedure TATAdapterEControl.DoFoldAdd(AX, AY, AX2, AY2: integer; AStaple: boole
   const AHint: string; const ATag: Int64);
 var
   Ed: TATSynEdit;
-  i: integer;
+  PrevRange: PATFoldRange;
+  NCount, i: integer;
 begin
   for i:= 0 to EdList.Count-1 do
   begin
     Ed:= TATSynEdit(EdList[i]);
     if Ed.Visible then
+    begin
+      (*
+      sometimes, lexer gives 2 consecutive blocks starting at the same line +
+      ending at the same line. example in JS, blocks (...) and func_anon:
+        (function() {
+          return;
+        })();
+      let's ignore 2nd block in this case.
+      *)
+      NCount:= Ed.Fold.Count;
+      if NCount>0 then
+      begin
+        PrevRange:= Ed.Fold.ItemPtr(NCount-1);
+        if (PrevRange^.Y=AY) and (PrevRange^.Y2=AY2) then exit;
+      end;
+
       Ed.Fold.Add(AX, AY, AX2, AY2, AStaple, AHint, ATag);
+    end;
   end;
 end;
 
