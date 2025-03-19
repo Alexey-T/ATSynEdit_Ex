@@ -1327,16 +1327,26 @@ begin
       (*
       sometimes, lexer gives 2 consecutive blocks starting at the same line +
       ending at the same line. example in JS, blocks (...) and func_anon:
+
         (function() {
           return;
         })();
-      let's ignore 2nd block in this case.
+
+      let's ignore previous block in this case.
       *)
       NCount:= Ed.Fold.Count;
       if NCount>0 then
       begin
         PrevRange:= Ed.Fold.ItemPtr(NCount-1);
-        if (PrevRange^.Y=AY) and (PrevRange^.Y2=AY2) then exit;
+        if (PrevRange^.Y=AY) and (PrevRange^.Y2=AY2) then
+        begin
+          PrevRange^.X:= AX;
+          PrevRange^.X2:= AX2;
+          PrevRange^.Staple:= AStaple;
+          PrevRange^.Hint:= AHint;
+          PrevRange^.Tag:= ATag;
+          Exit;
+        end;
       end;
 
       Ed.Fold.Add(AX, AY, AX2, AY2, AStaple, AHint, ATag);
