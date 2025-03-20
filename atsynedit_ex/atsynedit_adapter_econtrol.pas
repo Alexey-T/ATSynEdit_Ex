@@ -1338,7 +1338,8 @@ begin
       if NCount>0 then
       begin
         PrevRange:= Ed.Fold.ItemPtr(NCount-1);
-        if (PrevRange^.Y=AY) and (PrevRange^.Y2=AY2) then
+        if (PrevRange^.Y=AY) and
+          (PrevRange^.Y2=AY2) then
         begin
           PrevRange^.X:= AX;
           PrevRange^.X2:= AX2;
