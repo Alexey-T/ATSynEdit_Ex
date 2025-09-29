@@ -902,8 +902,9 @@ var
   NameRule, NameLexer: string;
   NodeData: pointer;
   Sep: TATStringSeparator;
+  ListOfExpandedNodes: TStringList;
   NTick: QWord;
-  NItemCount, i: integer;
+  NItemCount, NItemFound, i: integer;
 begin
   if AnClient=nil then exit;
   AnClient.CriSecForData.Enter;
@@ -913,7 +914,18 @@ begin
 
   //ATree.Items.BeginUpdate;
 
+  ListOfExpandedNodes:= TStringList.Create;
   try
+    ListOfExpandedNodes.UseLocale:= false; //sort list faster
+    ListOfExpandedNodes.Sorted:= true;
+
+    for i:= 0 to ATree.Items.Count-1 do
+    begin
+      NodeParent:= ATree.Items[i];
+      if NodeParent.HasChildren and NodeParent.Expanded then
+        ListOfExpandedNodes.Add(NodeParent.Text);
+    end;
+
     ATree.Items.Clear;
 
     NameLexer:= AnClient.Owner.LexerName;
@@ -997,12 +1009,18 @@ begin
     for i:= 0 to ATree.Items.Count-1 do
     begin
       NodeParent:= ATree.Items[i];
+      //restore 'expanded' state of node
+      if NodeParent.HasChildren and not NodeParent.Expanded then
+        if ListOfExpandedNodes.Find(NodeParent.Text, NItemFound) then
+          NodeParent.Expand(false);
+      //attach data to node
       if NodeParent.Data=nil then Continue;
       R:= TecTextRange(NodeParent.Data);
       NodeParent.Data:= ConvertRangeToTreeRange(R);
     end;
 
   finally
+    FreeAndNil(ListOfExpandedNodes);
     //ATree.Items.EndUpdate;
     ATree.Invalidate;
     FBusyTreeUpdate:= false;
