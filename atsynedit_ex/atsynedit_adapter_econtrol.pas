@@ -1020,9 +1020,11 @@ begin
           if ListOfExpandedNodes.Find(NodeParent.Text, NItemFound) then
             NodeParent.Expand(false);
       //attach data to node
-      if NodeParent.Data=nil then Continue;
-      R:= TecTextRange(NodeParent.Data);
-      NodeParent.Data:= ConvertRangeToTreeRange(R);
+      if NodeParent.Data<>nil then
+      begin
+        R:= TecTextRange(NodeParent.Data);
+        NodeParent.Data:= ConvertRangeToTreeRange(R);
+      end;
     end;
 
   finally
