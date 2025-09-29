@@ -130,7 +130,7 @@ type
 
     //support for syntax-tree
     property TreeBusy: boolean read FBusyTreeUpdate;
-    procedure TreeFill(ATree: TTreeView; AMaxTime: integer);
+    procedure TreeFill(ATree: TTreeView; AMaxTime: integer; AKeepNodesFolding: boolean);
 
     //sublexers
     function SublexerRangeCount: integer;
@@ -878,7 +878,7 @@ begin
 end;
 
 
-procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer);
+procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer; AKeepNodesFolding: boolean);
   //
   function ConvertRangeToTreeRange(R: TecTextRange): TATRangeInCodeTree;
   begin
@@ -897,12 +897,12 @@ procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer);
   //
 var
   R, RangeParent: TecTextRange;
+  ListOfExpandedNodes: TStringList;
   NodeParent, NodeGroup: TTreeNode;
   NodeText, NodeTextGroup, SItem: string;
   NameRule, NameLexer: string;
   NodeData: pointer;
   Sep: TATStringSeparator;
-  ListOfExpandedNodes: TStringList;
   NTick: QWord;
   NItemCount, NItemFound, i: integer;
 begin
@@ -914,17 +914,22 @@ begin
 
   //ATree.Items.BeginUpdate;
 
-  ListOfExpandedNodes:= TStringList.Create;
   try
-    ListOfExpandedNodes.UseLocale:= false; //sort list faster
-    ListOfExpandedNodes.Sorted:= true;
-
-    for i:= 0 to ATree.Items.Count-1 do
+    if AKeepNodesFolding then
     begin
-      NodeParent:= ATree.Items[i];
-      if NodeParent.HasChildren and NodeParent.Expanded then
-        ListOfExpandedNodes.Add(NodeParent.Text);
-    end;
+      ListOfExpandedNodes:= TStringList.Create;
+      ListOfExpandedNodes.UseLocale:= false; //sort list faster
+      ListOfExpandedNodes.Sorted:= true;
+
+      for i:= 0 to ATree.Items.Count-1 do
+      begin
+        NodeParent:= ATree.Items[i];
+        if NodeParent.HasChildren and NodeParent.Expanded then
+          ListOfExpandedNodes.Add(NodeParent.Text);
+      end;
+    end
+    else
+      ListOfExpandedNodes:= nil;
 
     ATree.Items.Clear;
 
@@ -1010,9 +1015,10 @@ begin
     begin
       NodeParent:= ATree.Items[i];
       //restore 'expanded' state of node
-      if NodeParent.HasChildren and not NodeParent.Expanded then
-        if ListOfExpandedNodes.Find(NodeParent.Text, NItemFound) then
-          NodeParent.Expand(false);
+      if Assigned(ListOfExpandedNodes) then
+        if NodeParent.HasChildren and not NodeParent.Expanded then
+          if ListOfExpandedNodes.Find(NodeParent.Text, NItemFound) then
+            NodeParent.Expand(false);
       //attach data to node
       if NodeParent.Data=nil then Continue;
       R:= TecTextRange(NodeParent.Data);
