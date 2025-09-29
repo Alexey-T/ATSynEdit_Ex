@@ -960,6 +960,7 @@ begin
       NodeParent:= nil;
       NodeGroup:= nil;
 
+      //filling is too long? add info-node and stop
       if GetTickCount64-NTick>AMaxTime then
       begin
         NodeText:= Format(OptCodeTreeMaxTimeMessage, [
