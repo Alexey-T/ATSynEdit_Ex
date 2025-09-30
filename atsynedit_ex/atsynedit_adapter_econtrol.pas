@@ -897,7 +897,7 @@ procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer; AKeep
   //
 var
   R, RangeParent: TecTextRange;
-  ListOfExpandedNodes: TStringList;
+  ListOfExpandedNodes: TStringList = nil;
   NodeParent, NodeGroup: TTreeNode;
   NodeText, NodeTextGroup, SItem: string;
   NameRule, NameLexer: string;
@@ -927,9 +927,7 @@ begin
         if NodeParent.HasChildren and NodeParent.Expanded then
           ListOfExpandedNodes.Add(NodeParent.Text);
       end;
-    end
-    else
-      ListOfExpandedNodes:= nil;
+    end;
 
     ATree.Items.Clear;
 
