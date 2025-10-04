@@ -132,7 +132,7 @@ type
     //support for syntax-tree
     property TreeBusy: boolean read FBusyTreeUpdate;
     procedure TreeFill(ATree: TTreeView; AMaxTime: integer;
-      AKeepNodesFolding: boolean; AErrorProcedure: TATEditorStringProcedure);
+      AKeepNodesFolding: boolean; AOnDuplicateNode: TATEditorStringProcedure);
 
     //sublexers
     function SublexerRangeCount: integer;
@@ -881,7 +881,7 @@ end;
 
 
 procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer;
-  AKeepNodesFolding: boolean; AErrorProcedure: TATEditorStringProcedure);
+  AKeepNodesFolding: boolean; AOnDuplicateNode: TATEditorStringProcedure);
   //
   function ConvertRangeToTreeRange(R: TecTextRange): TATRangeInCodeTree;
   begin
@@ -933,7 +933,7 @@ begin
           ListOfExpandedNodes.Add(NodeParent.Text);
         except
           on EStringListError do
-            AErrorProcedure('NOTE: Duplicate code-tree caption, cannot restore its folding: '+NodeParent.Text)
+            AOnDuplicateNode(NodeParent.Text)
           else
             raise;
         end;
