@@ -38,6 +38,7 @@ type
 
 type
   TATEditorEvent = procedure(Sender: TATSynEdit) of object;
+  TATEditorStringProcedure = procedure(const S: string);
 
 type
   { TATAdapterEControl }
@@ -130,7 +131,8 @@ type
 
     //support for syntax-tree
     property TreeBusy: boolean read FBusyTreeUpdate;
-    procedure TreeFill(ATree: TTreeView; AMaxTime: integer; AKeepNodesFolding: boolean);
+    procedure TreeFill(ATree: TTreeView; AMaxTime: integer;
+      AKeepNodesFolding: boolean; AErrorProcedure: TATEditorStringProcedure);
 
     //sublexers
     function SublexerRangeCount: integer;
@@ -878,7 +880,8 @@ begin
 end;
 
 
-procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer; AKeepNodesFolding: boolean);
+procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer;
+  AKeepNodesFolding: boolean; AErrorProcedure: TATEditorStringProcedure);
   //
   function ConvertRangeToTreeRange(R: TecTextRange): TATRangeInCodeTree;
   begin
@@ -920,12 +923,20 @@ begin
       ListOfExpandedNodes:= TStringList.Create;
       ListOfExpandedNodes.UseLocale:= false; //sort list faster
       ListOfExpandedNodes.Sorted:= true;
+      ListOfExpandedNodes.Duplicates:= dupError;
 
       for i:= 0 to ATree.Items.Count-1 do
       begin
         NodeParent:= ATree.Items[i];
         if NodeParent.HasChildren and NodeParent.Expanded then
+        try
           ListOfExpandedNodes.Add(NodeParent.Text);
+        except
+          on EStringListError do
+            AErrorProcedure('NOTE: Duplicate code-tree caption, cannot restore its folding: '+NodeParent.Text)
+          else
+            raise;
+        end;
       end;
     end;
 
