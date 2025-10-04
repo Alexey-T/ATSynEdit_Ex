@@ -38,7 +38,7 @@ type
 
 type
   TATEditorEvent = procedure(Sender: TATSynEdit) of object;
-  TATEditorStringProcedure = procedure(const S: string);
+  TATEditorStringProcedure = procedure(ANode: TTreeNode);
 
 type
   { TATAdapterEControl }
@@ -933,7 +933,7 @@ begin
           ListOfExpandedNodes.Add(NodeParent.Text);
         except
           on EStringListError do
-            AOnDuplicateNode(NodeParent.Text)
+            AOnDuplicateNode(NodeParent)
           else
             raise;
         end;
