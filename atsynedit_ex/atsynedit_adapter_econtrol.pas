@@ -38,7 +38,7 @@ type
 
 type
   TATEditorEvent = procedure(Sender: TATSynEdit) of object;
-  TATEditorStringProcedure = procedure(ANode: TTreeNode);
+  TATEditorTreeNodeProcedure = procedure(ANode: TTreeNode);
 
 type
   { TATAdapterEControl }
@@ -132,7 +132,7 @@ type
     //support for syntax-tree
     property TreeBusy: boolean read FBusyTreeUpdate;
     procedure TreeFill(ATree: TTreeView; AMaxTime: integer;
-      AKeepNodesFolding: boolean; AOnDuplicateNode: TATEditorStringProcedure);
+      AKeepNodesFolding: boolean; AOnDuplicateNode: TATEditorTreeNodeProcedure);
 
     //sublexers
     function SublexerRangeCount: integer;
@@ -881,7 +881,7 @@ end;
 
 
 procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer;
-  AKeepNodesFolding: boolean; AOnDuplicateNode: TATEditorStringProcedure);
+  AKeepNodesFolding: boolean; AOnDuplicateNode: TATEditorTreeNodeProcedure);
   //
   function ConvertRangeToTreeRange(R: TecTextRange): TATRangeInCodeTree;
   begin
