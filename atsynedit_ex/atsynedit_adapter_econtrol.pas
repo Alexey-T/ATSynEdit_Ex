@@ -38,7 +38,7 @@ type
 
 type
   TATEditorEvent = procedure(Sender: TATSynEdit) of object;
-  TATEditorTreeNodeProcedure = procedure(ANode: TTreeNode);
+  TATEditorTreeNodeProcedure = procedure(ANode: TTreeNode; const AFileName: string);
 
 type
   { TATAdapterEControl }
@@ -132,7 +132,8 @@ type
     //support for syntax-tree
     property TreeBusy: boolean read FBusyTreeUpdate;
     procedure TreeFill(ATree: TTreeView; AMaxTime: integer;
-      AKeepNodesFolding: boolean; AOnDuplicateNode: TATEditorTreeNodeProcedure);
+      AKeepNodesFolding: boolean; const AFileName: string;
+      AOnDuplicateNode: TATEditorTreeNodeProcedure);
 
     //sublexers
     function SublexerRangeCount: integer;
@@ -881,7 +882,8 @@ end;
 
 
 procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer;
-  AKeepNodesFolding: boolean; AOnDuplicateNode: TATEditorTreeNodeProcedure);
+  AKeepNodesFolding: boolean; const AFileName: string;
+  AOnDuplicateNode: TATEditorTreeNodeProcedure);
   //
   function ConvertRangeToTreeRange(R: TecTextRange): TATRangeInCodeTree;
   begin
@@ -933,7 +935,7 @@ begin
           ListOfExpandedNodes.Add(NodeParent.Text);
         except
           on EStringListError do
-            AOnDuplicateNode(NodeParent)
+            AOnDuplicateNode(NodeParent, AFileName)
           else
             raise;
         end;
