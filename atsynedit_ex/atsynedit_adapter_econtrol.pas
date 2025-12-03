@@ -66,7 +66,7 @@ type
     procedure DoCheckEditorList; inline;
     procedure ClearFoldIndexers;
     procedure DoFoldAdd(AX, AY, AX2, AY2: integer; AStaple: boolean;
-      const AHint: string; const ATag: Int64);
+      const AHint: string; ATag: byte);
     procedure CalcParts(Ed: TATSynEdit;
       var AParts: TATLineParts;
       ALine, AX, ALen: integer;
@@ -1351,7 +1351,7 @@ begin
 end;
 
 procedure TATAdapterEControl.DoFoldAdd(AX, AY, AX2, AY2: integer; AStaple: boolean;
-  const AHint: string; const ATag: Int64);
+  const AHint: string; ATag: byte);
 var
   Ed: TATSynEdit;
   PrevRange: PATFoldRange;
