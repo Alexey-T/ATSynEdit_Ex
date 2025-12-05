@@ -97,17 +97,17 @@ type
     Procedure EnumValues(Const APath : UnicodeString; List : TStrings);
 
     function  GetValue(const APath: UnicodeString; const ADefault: UnicodeString): UnicodeString; overload;
-    function  GetValue(const APath: RawByteString; const ADefault: RawByteString): UnicodeString; overload;
+    //function  GetValue(const APath: RawByteString; const ADefault: RawByteString): UnicodeString; overload;
     function  GetValue(const APath: UnicodeString; ADefault: Integer): Integer; overload;
-    function  GetValue(const APath: RawByteString; ADefault: Integer): Integer; overload;
+    //function  GetValue(const APath: RawByteString; ADefault: Integer): Integer; overload;
     function  GetValue(const APath: UnicodeString; ADefault: Int64): Int64; overload;
-    function  GetValue(const APath: RawByteString; ADefault: Int64): Int64; overload;
+    //function  GetValue(const APath: RawByteString; ADefault: Int64): Int64; overload;
     function  GetValue(const APath: UnicodeString; ADefault: Boolean): Boolean; overload;
-    function  GetValue(const APath: RawByteString; ADefault: Boolean): Boolean; overload;
+    //function  GetValue(const APath: RawByteString; ADefault: Boolean): Boolean; overload;
     function  GetValue(const APath: UnicodeString; ADefault: Double): Double; overload;
-    function  GetValue(const APath: RawByteString; ADefault: Double): Double; overload;
+    //function  GetValue(const APath: RawByteString; ADefault: Double): Double; overload;
     Function GetValue(const APath: UnicodeString; AValue: TStrings; Const ADefault: String) : Boolean; overload;
-    Function GetValue(const APath: RawByteString; AValue: TStrings; Const ADefault: String) : Boolean; overload;
+    //Function GetValue(const APath: RawByteString; AValue: TStrings; Const ADefault: String) : Boolean; overload;
     Function GetValue(const APath: UnicodeString; AValue: TStrings; Const ADefault: TStrings): Boolean; overload;
 
     procedure SetValue(const APath: UnicodeString; const AValue: UnicodeString); overload;
@@ -306,12 +306,13 @@ begin
 //  Writeln('Find ',aPath,' in "',FJSON.AsJSOn,'" : ',Elname,' : ',Result<>NIl);
 end;
 
-
+(*
 function TJSONConfig.GetValue(const APath: RawByteString; const ADefault: RawByteString): UnicodeString;
 
 begin
   Result:=GetValue(UTF8Decode(aPath),UTF8Decode(ADefault));
 end;
+*)
 
 function TJSONConfig.GetValue(const APath: UnicodeString; const ADefault: UnicodeString): UnicodeString;
 
@@ -326,11 +327,13 @@ begin
     Result:=ADefault;
 end;
 
+(*
 function TJSONConfig.GetValue(const APath: RawByteString; ADefault: Integer): Integer;
 
 begin
   Result:=GetValue(UTF8Decode(aPath),ADefault);
 end;
+*)
 
 function TJSONConfig.GetValue(const APath: UnicodeString; ADefault: Integer): Integer;
 var
@@ -346,11 +349,13 @@ begin
     Result:=StrToIntDef(El.AsString,ADefault);
 end;
 
+(*
 function TJSONConfig.GetValue(const APath: RawByteString; ADefault: Int64): Int64;
 
 begin
   Result:=GetValue(UTF8Decode(aPath),ADefault);
 end;
+*)
 
 function TJSONConfig.GetValue(const APath: UnicodeString; ADefault: Int64): Int64;
 var
@@ -366,11 +371,13 @@ begin
     Result:=StrToInt64Def(El.AsString,ADefault);
 end;
 
+(*
 function TJSONConfig.GetValue(const APath: RawByteString; ADefault: Boolean): Boolean;
 
 begin
   Result:=GetValue(UTF8Decode(aPath),ADefault);
 end;
+*)
 
 function TJSONConfig.GetValue(const APath: UnicodeString; ADefault: Boolean): Boolean;
 
@@ -387,11 +394,13 @@ begin
     Result:=StrToBoolDef(El.AsString,ADefault);
 end;
 
+(*
 function TJSONConfig.GetValue(const APath: RawByteString; ADefault: Double): Double;
 
 begin
   Result:=GetValue(UTF8Decode(aPath),ADefault);
 end;
+*)
 
 function TJSONConfig.GetValue(const APath: UnicodeString; ADefault: Double): Double;
 
@@ -408,13 +417,14 @@ begin
     Result:=StrToFloatDef(El.AsString,ADefault);
 end;
 
+(*
 function TJSONConfig.GetValue(const APath: RawByteString; AValue: TStrings;
   const ADefault: String): Boolean;
 
 begin
   Result:=GetValue(UTF8Decode(aPath),AValue, ADefault);
 end;
-
+*)
 
 function TJSONConfig.GetValue(const APath: UnicodeString; AValue: TStrings;
   const ADefault: String): Boolean;
