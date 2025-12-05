@@ -55,11 +55,9 @@ type
     FEnabledSublexerTreeNodes: boolean;
     FBusyTreeUpdate: boolean;
     FStopTreeUpdate: boolean;
-    FTimeParseBegin: QWORD;
-    FTimeParseElapsed: integer;
     FOnLexerChange: TATEditorEvent;
     FOnParseBegin: TNotifyEvent;
-    FOnParseDone: TNotifyEvent;
+    FOnParseDone: TecParseDoneEvent;
     procedure HandleBlockReopen(Sender: TObject; ABlockPos: TPoint);
     procedure DebugIntegersWithPointers(L: TATIntegersWithPointers);
     procedure DebugRangesColored;
@@ -79,7 +77,7 @@ type
     procedure DoFoldFromLinesHidden;
     procedure DoChangeLog(Sender: TObject; ALine: SizeInt);
     procedure ParseBegin;
-    procedure ParseDone(Sender: TObject);
+    procedure ParseDone(Sender: TObject; ATime: integer);
     procedure ProgressFirst(Sender: TObject);
     procedure ProgressSecond(Sender: TObject);
     procedure ProgressBoth(Sender: TObject);
@@ -110,7 +108,6 @@ type
     //
     procedure AddEditor(AEditor: TComponent);
     property Lexer: TecSyntAnalyzer read GetLexer write SetLexer;
-    property LexerParsingElapsed: integer read FTimeParseElapsed;
     function LexerAtPos(Pnt: TPoint): TecSyntAnalyzer;
     property EnabledSublexerTreeNodes: boolean read FEnabledSublexerTreeNodes write FEnabledSublexerTreeNodes default false;
     procedure ParseFromLine(ALine: integer; AWait: boolean);
@@ -165,7 +162,7 @@ type
   published
     property OnLexerChange: TATEditorEvent read FOnLexerChange write FOnLexerChange;
     property OnParseBegin: TNotifyEvent read FOnParseBegin write FOnParseBegin;
-    property OnParseDone: TNotifyEvent read FOnParseDone write FOnParseDone;
+    property OnParseDone: TecParseDoneEvent read FOnParseDone write FOnParseDone;
   end;
 
 procedure ApplyPartStyleFromEcontrolStyle(var part: TATLinePart; st: TecSyntaxFormat);
@@ -1761,19 +1758,16 @@ begin
   if Assigned(FOnParseBegin) then
     FOnParseBegin(Self);
   FStopTreeUpdate:= false;
-  FTimeParseBegin:= GetTickCount64;
 end;
 
-procedure TATAdapterEControl.ParseDone(Sender: TObject);
+procedure TATAdapterEControl.ParseDone(Sender: TObject; ATime: integer);
 begin
   //UpdateRanges call needed for small files, which are parsed to end by one IdleAppend call,
   //and timer didn't tick
   UpdateRanges;
 
-  FTimeParseElapsed:= GetTickCount64-FTimeParseBegin;
-
   if Assigned(FOnParseDone) then
-    FOnParseDone(Self);
+    FOnParseDone(Self, ATime);
 
   UpdateEditors(epkBoth);
 end;
