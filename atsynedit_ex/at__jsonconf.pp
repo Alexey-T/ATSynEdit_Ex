@@ -44,12 +44,12 @@ type
   EJSONConfigError = class(Exception);
 
 (* ********************************************************************
-   "APath" is the path and name of a value: A JSON configuration file 
-   is hierachical. "/" is the path delimiter, the part after the last 
-   "/" is the name of the value. The path components will be mapped 
-   to nested JSON objects, with the name equal to the part. In practice 
+   "APath" is the path and name of a value: A JSON configuration file
+   is hierarchical. "/" is the path delimiter, the part after the last
+   "/" is the name of the value. The path components will be mapped
+   to nested JSON objects, with the name equal to the part. In practice
    this means that "/my/path/value" will be written as:
-   { 
+   {
      "my" : {
        "path" : {
          "value" : Value
@@ -175,7 +175,7 @@ procedure TJSONConfig.Flush;
 Var
   F : TFileStream;
   S : TJSONStringType;
-  
+
 begin
   if Modified then
     begin
@@ -215,7 +215,7 @@ Var
   S,El : UnicodeString;
   P,I : Integer;
   T : TJSonObject;
-  
+
 begin
 //  Writeln('Looking for : ', APath);
   S:=APath;
@@ -280,7 +280,7 @@ function TJSONConfig.FindElement(const APath: UnicodeString; CreateParent: Boole
 Var
   O : TJSONObject;
   ElName : UnicodeString;
-  
+
 begin
   Result:=FindElement(APath,CreateParent,O,ElName,AllowObject);
 end;
@@ -318,7 +318,7 @@ function TJSONConfig.GetValue(const APath: UnicodeString; const ADefault: Unicod
 
 var
   El : TJSONData;
-  
+
 begin
   El:=FindElement(StripSlash(APath),False);
   If Assigned(El) then
@@ -338,7 +338,7 @@ end;
 function TJSONConfig.GetValue(const APath: UnicodeString; ADefault: Integer): Integer;
 var
   El : TJSONData;
-  
+
 begin
   El:=FindElement(StripSlash(APath),False);
   If Not Assigned(el) then
@@ -383,7 +383,7 @@ function TJSONConfig.GetValue(const APath: UnicodeString; ADefault: Boolean): Bo
 
 var
   El : TJSONData;
-  
+
 begin
   El:=FindElement(StripSlash(APath),False);
   If Not Assigned(el) then
@@ -425,6 +425,7 @@ begin
   Result:=GetValue(UTF8Decode(aPath),AValue, ADefault);
 end;
 *)
+
 
 function TJSONConfig.GetValue(const APath: UnicodeString; AValue: TStrings;
   const ADefault: String): Boolean;
@@ -471,7 +472,7 @@ var
   El : TJSONData;
   ElName : UnicodeString;
   O : TJSONObject;
-  
+
 begin
   El:=FindNodeForValue(aPath,TJSONString,O,elName);
   If Not Assigned(el) then
@@ -651,7 +652,7 @@ Var
   L : integer;
   Node : TJSONObject;
   ElName : UnicodeString;
-  
+
 begin
   P:=StripSlash(APath);
   L:=Length(P);
@@ -665,7 +666,7 @@ begin
         Node.Delete(L);
       end;
     end;
-  FModified:=True;  
+  FModified:=True;
 end;
 
 procedure TJSONConfig.DeleteValue(const APath: UnicodeString);
@@ -704,11 +705,11 @@ end;
 
 function TJSONConfig.FindPath(const APath: UnicodeString; AllowCreate: Boolean
   ): TJSONObject;
-  
+
 Var
   P : UnicodeString;
   L : Integer;
-  
+
 begin
   P:=APath;
   L:=Length(P);
@@ -812,7 +813,7 @@ procedure TJSONConfig.OpenKey(const aPath: UnicodeString; AllowCreate: Boolean);
 Var
   P : UnicodeString;
   L : Integer;
-  
+
 begin
   P:=APath;
   L:=Length(P);
@@ -838,7 +839,7 @@ procedure TJSONConfig.EnumSubKeys(const APath: UnicodeString; List: TStrings);
 Var
   AKey : TJSONObject;
   I : Integer;
-  
+
 begin
   AKey:=FindPath(APath,False);
   If Assigned(AKey) then
