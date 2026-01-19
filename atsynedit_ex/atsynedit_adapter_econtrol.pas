@@ -1539,7 +1539,8 @@ begin
 
       //if after block's end-token we have more tokens on the _same_ line,
       //then decrement block's ending Y (ie exclude that line from folding)
-      if BlockHasNextTokensOnSameLine(R.EndIdx, Pnt2.Y) then
+      if AnClient.Owner.DecrementFolding and
+        BlockHasNextTokensOnSameLine(R.EndIdx, Pnt2.Y) then
       begin
         Dec(Pnt2.Y);
         if Pnt1.Y>=Pnt2.Y then Continue;
