@@ -1477,7 +1477,7 @@ var
   SHint: string;
   tokenStart, tokenEnd: PecSyntToken;
   ColoredRange: TATSortedRange;
-  i: integer;
+  NFoldRangesCount, i: integer;
 begin
   if AnClient=nil then Exit;
 
@@ -1486,11 +1486,18 @@ begin
   if Ed=nil then exit;
   if not Ed.OptFoldEnabled then exit;
   TokensObject:= AnClient.PublicData.Tokens;
+  NFoldRangesCount:= AnClient.PublicData.FoldRanges.Count;
 
   //init Ed.Fold.LineIndexer's
-  ClearFoldIndexers;
+  if NFoldRangesCount>0 then
+    ClearFoldIndexers
+  else
+  begin
+    for i:= 0 to EdList.Count-1 do
+      TATSynEdit(EdList[i]).Fold.ClearLineIndexer(0);
+  end;
 
-  for i:= 0 to AnClient.PublicData.FoldRanges.Count-1 do
+  for i:= 0 to NFoldRangesCount-1 do
   begin
     if Application.Terminated then exit;
 
