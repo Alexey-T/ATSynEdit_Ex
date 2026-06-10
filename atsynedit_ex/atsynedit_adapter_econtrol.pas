@@ -1494,7 +1494,7 @@ begin
   else
   begin
     for i:= 0 to EdList.Count-1 do
-      TATSynEdit(EdList[i]).Fold.ClearLineIndexer(0);
+      TATSynEdit(EdList[i]).Fold.ClearLineIndexer(0, true);
   end;
 
   for i:= 0 to NFoldRangesCount-1 do
