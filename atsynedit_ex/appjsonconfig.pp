@@ -20,6 +20,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     procedure Flush; override;
+    procedure ClearModifiedFlag;
   end;
 
 implementation
@@ -45,6 +46,11 @@ begin
     inherited Flush;
   except
   end;
+end;
+
+procedure TAppJsonConfig.ClearModifiedFlag;
+begin
+  FModified:= false;
 end;
 
 end.
