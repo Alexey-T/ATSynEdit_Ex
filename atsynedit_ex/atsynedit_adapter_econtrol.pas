@@ -1772,7 +1772,8 @@ procedure TATAdapterEControl.ParseDone(Sender: TObject; ATime: integer);
 begin
   //UpdateRanges call needed for small files, which are parsed to end by one IdleAppend call,
   //and timer didn't tick
-  UpdateRanges;
+  if not HasTreeHelper then
+    UpdateRanges;
 
   if Assigned(FOnParseDone) then
     FOnParseDone(Self, ATime);
