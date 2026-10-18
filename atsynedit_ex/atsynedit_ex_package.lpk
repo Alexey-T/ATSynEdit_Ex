@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
-  <Package Version="5">
+  <Package Version="6">
     <Name Value="atsynedit_ex_package"/>
     <Type Value="RunTimeOnly"/>
     <Author Value="Alexey Torgashin"/>
     <CompilerOptions>
       <Version Value="11"/>
       <SearchPaths>
-        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)/$(LCLWidgetType)"/>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)-$(LCLWidgetType)-$(FPCVer)"/>
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
@@ -28,47 +28,46 @@
 Requires packages: ATSynEdit, EControl."/>
     <License Value="MPL 2.0 or LGPL"/>
     <Version Major="2" Minor="2" Release="2"/>
-    <Files Count="7">
-      <Item1>
+    <Files>
+      <Item>
         <Filename Value="atsynedit_adapter_econtrol.pas"/>
         <UnitName Value="ATSynEdit_Adapter_EControl"/>
-      </Item1>
-      <Item2>
+      </Item>
+      <Item>
         <Filename Value="atsynedit_adapter_litelexer.pas"/>
         <UnitName Value="ATSynEdit_Adapter_LiteLexer"/>
-      </Item2>
-      <Item3>
+      </Item>
+      <Item>
         <Filename Value="at__jsonconf.pp"/>
         <UnitName Value="at__jsonConf"/>
-      </Item3>
-      <Item4>
+      </Item>
+      <Item>
         <Filename Value="at__jsonparser.pp"/>
         <UnitName Value="at__jsonparser"/>
-      </Item4>
-      <Item5>
+      </Item>
+      <Item>
         <Filename Value="atsynedit_adapter_simple.pas"/>
         <UnitName Value="ATSynEdit_Adapter_Simple"/>
-      </Item5>
-      <Item6>
+      </Item>
+      <Item>
         <Filename Value="atsynedit_sortedrange.pas"/>
         <UnitName Value="ATSynEdit_SortedRange"/>
-      </Item6>
-      <Item7>
+      </Item>
+      <Item>
         <Filename Value="appjsonconfig.pp"/>
-        <UnitName Value="appjsonconfig"/>
-      </Item7>
+        <UnitName Value="AppJsonConfig"/>
+      </Item>
     </Files>
-    <CompatibilityMode Value="True"/>
-    <RequiredPkgs Count="3">
-      <Item1>
+    <RequiredPkgs>
+      <Item>
         <PackageName Value="econtrol_package"/>
-      </Item1>
-      <Item2>
+      </Item>
+      <Item>
         <PackageName Value="atsynedit_package"/>
-      </Item2>
-      <Item3>
+      </Item>
+      <Item>
         <PackageName Value="FCL"/>
-      </Item3>
+      </Item>
     </RequiredPkgs>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)"/>
