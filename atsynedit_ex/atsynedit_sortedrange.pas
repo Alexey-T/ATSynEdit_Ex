@@ -258,6 +258,7 @@ var
   NLine, iItem, iRange: integer;
 begin
   Result:= -1;
+  if Count=0 then exit;
 
   NLine:= APos.Y;
   if NLine>High(FLineIndexer) then exit;
