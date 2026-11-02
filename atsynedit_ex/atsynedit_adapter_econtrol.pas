@@ -73,7 +73,6 @@ type
       AMainText: boolean);
     procedure ClearRanges;
     function DoFindToken(APos: TPoint; AExactPos: boolean = false): integer;
-    function GetTokenColor_FromBoundRanges(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
     procedure DoFoldFromLinesHidden;
     procedure DoChangeLog(Sender: TObject; ALine: SizeInt);
     procedure ParseBegin;
@@ -81,7 +80,7 @@ type
     procedure ProgressFirst(Sender: TObject);
     procedure ProgressSecond(Sender: TObject);
     procedure ProgressBoth(Sender: TObject);
-    function GetRangeParent(const R: TecTextRange): TecTextRange;
+    function GetRangeParent(const R: TecTextRange): integer;
     function GetTokenColorBG_FromColoredRanges(const APos: TPoint; ADefColor: TColor;
       AEditorIndex: integer): TColor;
     function GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
@@ -436,6 +435,7 @@ all calls of this proc must be guarded by CriSecForData.Enter/Leave
 }
 var
   nPartIndex: integer = 0;
+  nEditorIndex: integer;
   //
   procedure AddMissingPart(AOffset, ALen: integer); inline;
   var
@@ -462,7 +462,7 @@ var
     part^.ColorBG:= GetTokenColorBG_FromColoredRanges(
       Point(AX+AOffset, ALine),
       AColorBG,
-      Ed.EditorIndex);
+      nEditorIndex);
 
     Inc(nPartIndex);
   end;
@@ -478,10 +478,14 @@ var
   nColor: TColor;
   iToken: integer;
   bSingleSpacePart: boolean = false;
+  bDynamicHilite: boolean;
 begin
   St:= Ed.Strings;
   if not St.IsIndexValid(ALine) then exit;
   TokenList:= AnClient.PublicData.Tokens;
+  nEditorIndex:= Ed.EditorIndex;
+  //calc it once per line, not per token
+  bDynamicHilite:= AMainText and IsDynamicHiliteEnabled;
 
   if St.LinesLen[ALine]<=OptMaxLineLenToUseIndexerToRender then
   begin
@@ -524,13 +528,14 @@ begin
         part.Len:= tokenEnd.X-part.Offset;
 
       part.ColorFont:= AColorFont;
-      part.ColorBG:= GetTokenColorBG_FromColoredRanges(token^.Range.PointStart, AColorBG, Ed.EditorIndex);
+      part.ColorBG:= GetTokenColorBG_FromColoredRanges(token^.Range.PointStart, AColorBG, nEditorIndex);
 
       tokenStyle:= token^.Style;
-      if AMainText then
+      if bDynamicHilite then
       begin
-        //dynamic highlighting
-        tokenStyle2:= GetTokenColor_FromBoundRanges(iToken, Ed.EditorIndex);
+        //Cannot use FRangesColoredBounds.Find, because it has overlapping ranges,
+        //so Find will miss some tokens
+        tokenStyle2:= FRangesColoredBounds.FindStyleByTokenIndex(iToken, nEditorIndex);
         if tokenStyle2<>nil then
           tokenStyle:= tokenStyle2;
       end;
@@ -584,13 +589,13 @@ begin
   PointAfterEOL:= Point(AX+ALen, ALine);
 
   //a) calc it from colored-ranges
-  nColor:= GetTokenColorBG_FromColoredRanges(PointAfterEOL, clNone, Ed.EditorIndex);
+  nColor:= GetTokenColorBG_FromColoredRanges(PointAfterEOL, clNone, nEditorIndex);
   //if (nColor=clNone) and (ALen>0) then
   //  nColor:= GetTokenColorBG_FromColoredRanges(mustOffset-1, clNone, AEditorIndex);
 
   //b) calc it from multi-line tokens (with bg-color)
   if (nColor=clNone) and AMainText then
-    nColor:= GetTokenColorBG_FromMultiLineTokens(PointAfterEOL, clNone, Ed.EditorIndex);
+    nColor:= GetTokenColorBG_FromMultiLineTokens(PointAfterEOL, clNone, nEditorIndex);
 
   if (nColor<>clNone) then
   begin
@@ -814,24 +819,29 @@ begin
 end;
 
 
-function TATAdapterEControl.GetRangeParent(const R: TecTextRange): TecTextRange;
+function TATAdapterEControl.GetRangeParent(const R: TecTextRange): integer;
 //cannot use R.Parent!
+//returns index in FoldRanges, or -1
 //
 //this is called from TreeFill, so calls are guarded by CriticalSection.Enter/Leave
 // https://github.com/Alexey-T/CudaText/issues/3074
 var
   RTest: TecTextRange;
-  NLast, i: integer;
+  NLast, NLevel, i: integer;
 begin
-  Result:= nil;
+  Result:= -1;
+  //Level is calculated by walking the parent chain, so get it once;
+  //Level is never negative, so top-level range has no parent, avoid the full scan
+  NLevel:= R.Level;
+  if NLevel=0 then exit;
   NLast:= AnClient.PublicData.FoldRanges.Count - 1;
   for i:= Min(NLast, R.Index-1) downto 0 do
   begin
     RTest:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
     if (RTest.StartIdx<=R.StartIdx) and
        (RTest.EndIdx>=R.EndIdx) and
-       (RTest.Level<R.Level) then
-      Exit(RTest);
+       (RTest.Level<NLevel) then
+      Exit(i);
   end;
 end;
 
@@ -866,15 +876,33 @@ begin
 end;
 
 procedure SCompressSpaces(var S: string);
+//replace #10 with space, then collapse runs of spaces to single space; single pass
 var
-  N: integer;
+  NLen, iSrc, iDest: integer;
+  ch: char;
+  bPrevSpace: boolean;
 begin
-  S:= StringReplace(S, #10, ' ', [rfReplaceAll]);
-  repeat
-    S:= StringReplace(S, '    ', ' ', [rfReplaceAll]);
-    S:= StringReplace(S, '   ', ' ', [rfReplaceAll]);
-    S:= StringReplace(S, '  ', ' ', [rfReplaceAll], N);
-  until N=0;
+  if (Pos(#10, S)=0) and (Pos('  ', S)=0) then exit;
+  NLen:= Length(S);
+  UniqueString(S);
+  iDest:= 0;
+  bPrevSpace:= false;
+  for iSrc:= 1 to NLen do
+  begin
+    ch:= S[iSrc];
+    if ch=#10 then
+      ch:= ' ';
+    if ch=' ' then
+    begin
+      if bPrevSpace then Continue;
+      bPrevSpace:= true;
+    end
+    else
+      bPrevSpace:= false;
+    Inc(iDest);
+    S[iDest]:= ch;
+  end;
+  SetLength(S, iDest);
 end;
 
 
@@ -899,6 +927,7 @@ procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer;
   //
 var
   R, RangeParent: TecTextRange;
+  NodesOfRanges: array of TTreeNode; //tree node for each FoldRanges item, to avoid slow FindNodeWithData
   ListOfExpandedNodes: TStringList = nil;
   NodeParent, NodeGroup: TTreeNode;
   NodeText, NodeTextGroup, SItem: string;
@@ -906,7 +935,7 @@ var
   NodeData: pointer;
   Sep: TATStringSeparator;
   NTick: QWord;
-  NItemCount, NItemFound, i: integer;
+  NItemCount, NItemFound, NParent, i: integer;
 begin
   if AnClient=nil then exit;
   AnClient.CriSecForData.Enter;
@@ -943,6 +972,7 @@ begin
 
     NameLexer:= AnClient.Owner.LexerName;
     NItemCount:= AnClient.PublicData.FoldRanges.Count;
+    SetLength(NodesOfRanges{%H-}, NItemCount); //filled with nil
 
     for i:= 0 to NItemCount-1 do
     begin
@@ -985,11 +1015,15 @@ begin
       SCompressSpaces(NodeText);
       SCompressSpaces(NodeTextGroup);
 
-      RangeParent:= GetRangeParent(R);
-      while (RangeParent<>nil) and Assigned(RangeParent.Rule) and (not RangeParent.Rule.DisplayInTree) do
-        RangeParent:= GetRangeParent(RangeParent);
-      if RangeParent<>nil then
-        NodeParent:= ATree.Items.FindNodeWithData(RangeParent);
+      NParent:= GetRangeParent(R);
+      while NParent>=0 do
+      begin
+        RangeParent:= TecTextRange(AnClient.PublicData.FoldRanges[NParent]);
+        if not (Assigned(RangeParent.Rule) and (not RangeParent.Rule.DisplayInTree)) then Break;
+        NParent:= GetRangeParent(RangeParent);
+      end;
+      if NParent>=0 then
+        NodeParent:= NodesOfRanges[NParent];
 
       if NodeTextGroup<>'' then
       begin
@@ -1014,6 +1048,7 @@ begin
       end;
 
       NodeParent:= ATree.Items.AddChildObject(NodeParent, NodeText, NodeData);
+      NodesOfRanges[i]:= NodeParent;
       NodeParent.ImageIndex:= R.Rule.TreeItemImage;
       NodeParent.SelectedIndex:= NodeParent.ImageIndex;
     end;
@@ -1721,16 +1756,6 @@ begin
   AnClient.Stop;
   UpdatePublicDataNeedTo;
   AnClient.TextChangedOnLine(ALine);
-end;
-
-function TATAdapterEControl.GetTokenColor_FromBoundRanges(ATokenIndex, AEditorIndex: integer): TecSyntaxFormat;
-begin
-  Result:= nil;
-  if not IsDynamicHiliteEnabled then exit;
-
-  //Cannot use FRangesColoredBounds.Find, because it has overlapping ranges,
-  //so Find will miss some tokens
-  Result:= FRangesColoredBounds.FindStyleByTokenIndex(ATokenIndex, AEditorIndex);
 end;
 
 function TATAdapterEControl.GetLexerSuportsDynamicHilite: boolean;
