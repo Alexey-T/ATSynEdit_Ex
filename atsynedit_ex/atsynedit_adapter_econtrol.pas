@@ -180,7 +180,7 @@ implementation
 
 uses
   Math,
-  ATSynEdit_Ec_ParentCache;
+  ATSynEdit_Adapter_EControl_ParentCache;
 
 const
   cBorderEc: array[TecBorderLineType] of TATLineStyle = (
@@ -1889,4 +1889,3 @@ begin
 end;
 
 end.
-

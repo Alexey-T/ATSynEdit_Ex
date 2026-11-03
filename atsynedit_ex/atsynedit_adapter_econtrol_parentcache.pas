@@ -2,7 +2,7 @@
 Copyright (C) Alexey Torgashin, uvviewsoft.com
 License: MPL 2.0 or LGPL
 }
-unit ATSynEdit_Ec_ParentCache;
+unit ATSynEdit_Adapter_EControl_ParentCache;
 
 {
 Helper class for TATAdapterEControl.TreeFill.
