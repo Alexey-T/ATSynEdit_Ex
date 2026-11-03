@@ -54,6 +54,10 @@ Requires packages: ATSynEdit, EControl."/>
         <UnitName Value="ATSynEdit_SortedRange"/>
       </Item>
       <Item>
+        <Filename Value="atsynedit_ec_parentcache.pas"/>
+        <UnitName Value="ATSynEdit_Ec_ParentCache"/>
+      </Item>
+      <Item>
         <Filename Value="appjsonconfig.pp"/>
         <UnitName Value="AppJsonConfig"/>
       </Item>
