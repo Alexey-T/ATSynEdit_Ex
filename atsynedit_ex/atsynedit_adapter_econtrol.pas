@@ -80,7 +80,7 @@ type
     procedure ProgressFirst(Sender: TObject);
     procedure ProgressSecond(Sender: TObject);
     procedure ProgressBoth(Sender: TObject);
-    function GetRangeParent(const R: TecTextRange): integer;
+    function GetRangeLevelByPos(APos: integer): integer;
     function GetTokenColorBG_FromColoredRanges(const APos: TPoint; ADefColor: TColor;
       AEditorIndex: integer): TColor;
     function GetTokenColorBG_FromMultiLineTokens(APos: TPoint;
@@ -178,7 +178,9 @@ var
 
 implementation
 
-uses Math;
+uses
+  Math,
+  ATSynEdit_Ec_ParentCache;
 
 const
   cBorderEc: array[TecBorderLineType] of TATLineStyle = (
@@ -819,30 +821,11 @@ begin
 end;
 
 
-function TATAdapterEControl.GetRangeParent(const R: TecTextRange): integer;
-//cannot use R.Parent!
-//returns index in FoldRanges, or -1
-//
-//this is called from TreeFill, so calls are guarded by CriticalSection.Enter/Leave
-// https://github.com/Alexey-T/CudaText/issues/3074
-var
-  RTest: TecTextRange;
-  NLast, NLevel, i: integer;
+function TATAdapterEControl.GetRangeLevelByPos(APos: integer): integer;
+//event for TATEcParentCache.Build: it's used only for items with
+//duplicated/broken R.Index, and gives the exact old value of TecTextRange.Level
 begin
-  Result:= -1;
-  //Level is calculated by walking the parent chain, so get it once;
-  //Level is never negative, so top-level range has no parent, avoid the full scan
-  NLevel:= R.Level;
-  if NLevel=0 then exit;
-  NLast:= AnClient.PublicData.FoldRanges.Count - 1;
-  for i:= Min(NLast, R.Index-1) downto 0 do
-  begin
-    RTest:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
-    if (RTest.StartIdx<=R.StartIdx) and
-       (RTest.EndIdx>=R.EndIdx) and
-       (RTest.Level<NLevel) then
-      Exit(i);
-  end;
+  Result:= TecTextRange(AnClient.PublicData.FoldRanges[APos]).Level;
 end;
 
 function TreeFindNode(ATree: TTreeView; ANode: TTreeNode; const ANodeText: string): TTreeNode;
@@ -928,6 +911,7 @@ procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer;
 var
   R, RangeParent: TecTextRange;
   NodesOfRanges: array of TTreeNode; //tree node for each FoldRanges item, to avoid slow FindNodeWithData
+  ParentCache: TATEcParentCache; //fast replacement of old GetRangeParent scan
   ListOfExpandedNodes: TStringList = nil;
   NodeParent, NodeGroup: TTreeNode;
   NodeText, NodeTextGroup, SItem: string;
@@ -945,6 +929,7 @@ begin
 
   //ATree.Items.BeginUpdate;
 
+  ParentCache:= TATEcParentCache.Create;
   try
     if AKeepNodesFolding then
     begin
@@ -953,9 +938,9 @@ begin
       ListOfExpandedNodes.Sorted:= true;
       ListOfExpandedNodes.Duplicates:= dupError;
 
-      for i:= 0 to ATree.Items.Count-1 do
+      NodeParent:= ATree.Items.GetFirstNode;
+      while NodeParent<>nil do
       begin
-        NodeParent:= ATree.Items[i];
         if NodeParent.HasChildren and NodeParent.Expanded then
         try
           ListOfExpandedNodes.Add(NodeParent.Text);
@@ -965,6 +950,7 @@ begin
           else
             raise;
         end;
+        NodeParent:= NodeParent.GetNext;
       end;
     end;
 
@@ -973,6 +959,19 @@ begin
     NameLexer:= AnClient.Owner.LexerName;
     NItemCount:= AnClient.PublicData.FoldRanges.Count;
     SetLength(NodesOfRanges{%H-}, NItemCount); //filled with nil
+
+    //cache all FoldRanges item fields, to find parent ranges fast;
+    //this replaces the old slow linear scan of GetRangeParent,
+    //which was O(Count) per item and made TreeFill hang on huge files
+    for i:= 0 to NItemCount-1 do
+    begin
+      R:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
+      if R.Parent=nil then
+        ParentCache.AddItem(R.StartIdx, R.EndIdx, R.Index, -1)
+      else
+        ParentCache.AddItem(R.StartIdx, R.EndIdx, R.Index, R.Parent.Index);
+    end;
+    ParentCache.Build(@GetRangeLevelByPos);
 
     for i:= 0 to NItemCount-1 do
     begin
@@ -1015,12 +1014,12 @@ begin
       SCompressSpaces(NodeText);
       SCompressSpaces(NodeTextGroup);
 
-      NParent:= GetRangeParent(R);
+      NParent:= ParentCache.GetParentPos(i);
       while NParent>=0 do
       begin
         RangeParent:= TecTextRange(AnClient.PublicData.FoldRanges[NParent]);
         if not (Assigned(RangeParent.Rule) and (not RangeParent.Rule.DisplayInTree)) then Break;
-        NParent:= GetRangeParent(RangeParent);
+        NParent:= ParentCache.GetParentPos(NParent);
       end;
       if NParent>=0 then
         NodeParent:= NodesOfRanges[NParent];
@@ -1055,9 +1054,9 @@ begin
 
     //tree filled with Data as TecTextRange
     //now replace all Data to TATRangeInCodetree
-    for i:= 0 to ATree.Items.Count-1 do
+    NodeParent:= ATree.Items.GetFirstNode;
+    while NodeParent<>nil do
     begin
-      NodeParent:= ATree.Items[i];
       //restore 'expanded' state of node
       if Assigned(ListOfExpandedNodes) then
         if NodeParent.HasChildren and not NodeParent.Expanded then
@@ -1069,9 +1068,11 @@ begin
         R:= TecTextRange(NodeParent.Data);
         NodeParent.Data:= ConvertRangeToTreeRange(R);
       end;
+      NodeParent:= NodeParent.GetNext;
     end;
 
   finally
+    FreeAndNil(ParentCache);
     FreeAndNil(ListOfExpandedNodes);
     //ATree.Items.EndUpdate;
     ATree.Invalidate;
@@ -1172,16 +1173,30 @@ var
   Node, NodeNear: TTreeNode;
   Range: TATRangeInCodeTree;
   Pos1, Pos2: TPoint;
+  Nodes: array of TTreeNode;
   i: integer;
 begin
   Result:= nil;
   NodeNear:= nil;
 
+  //collect all nodes in the order of ATree.Items[] indexes,
+  //then scan them backward (GetFirstNode/GetNext walk is faster
+  //than indexed ATree.Items[i] access)
+  SetLength(Nodes, ATree.Items.Count);
+  i:= 0;
+  Node:= ATree.Items.GetFirstNode;
+  while Node<>nil do
+  begin
+    Nodes[i]:= Node;
+    Inc(i);
+    Node:= Node.GetNext;
+  end;
+
   //ranges are sorted only by start position, but are nested, cannot use binary search
   //we find _last_ range which includes APos
-  for i:= ATree.Items.Count-1 downto 0 do
+  for i:= High(Nodes) downto 0 do
   begin
-    Node:= ATree.Items[i];
+    Node:= Nodes[i];
     if Node.Data<>nil then
       if TObject(Node.Data) is TATRangeInCodeTree then
       begin
@@ -1416,7 +1431,7 @@ begin
           PrevRange^.Staple:= AStaple;
           PrevRange^.Hint:= AHint;
           PrevRange^.Tag:= ATag;
-          Exit;
+          Continue; //not Exit: other editors must handle this range too
         end;
       end;
 
