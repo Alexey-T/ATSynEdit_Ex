@@ -10,7 +10,7 @@ interface
 uses
   ATSynEdit_Adapter_EControl, ATSynEdit_Adapter_LiteLexer, at__jsonConf, 
   at__jsonparser, ATSynEdit_Adapter_Simple, ATSynEdit_SortedRange, 
-  appjsonconfig;
+  ATSynEdit_Ec_ParentCache, AppJsonConfig;
 
 implementation
 
