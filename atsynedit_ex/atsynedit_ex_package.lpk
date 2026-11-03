@@ -21,13 +21,13 @@
       </Linking>
     </CompilerOptions>
     <Description Value="Package, additional to ATSynEdit. It has the following parts:
-- Adapter for EControl lexers
-- Adapter for CudaText lite lexers
-- Adapter to simply highlight lines by regex
+- Adapter for CudaText&apos;s EControl lexers
+- Adapter for CudaText&apos;s lite lexers
+- Adapter to simply highlight whole lines by RegEx
 
 Requires packages: ATSynEdit, EControl."/>
     <License Value="MPL 2.0 or LGPL"/>
-    <Version Major="2" Minor="2" Release="2"/>
+    <Version Major="2" Minor="3"/>
     <Files>
       <Item>
         <Filename Value="atsynedit_adapter_econtrol.pas"/>
