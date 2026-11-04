@@ -1259,6 +1259,13 @@ end;
 
 procedure TATAdapterEControl.SetLexer(AAnalizer: TecSyntAnalyzer);
 begin
+  //cancel the running parsing instead of waiting for it to finish:
+  //AnClient is freed below anyway, so all parsed data is dropped.
+  //fixes hang on setting lexer while huge file is still parsing,
+  //e.g. on session switching; also keeps fix of CudaText issue #5052
+  if Assigned(AnClient) then
+    AnClient.Stop;
+
   while IsParsingBusy do
   begin
     Sleep(50);
