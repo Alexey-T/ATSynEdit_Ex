@@ -18,11 +18,13 @@ which was too slow for big files (e.g. 9MB .js file took ~20 sec).
 
 This class gives exactly the same results:
 - all item fields are copied to flat integer arrays (no object dereferences);
-- Level[] is precalculated: Level[p] = Level[position-of-Parent]+1, items are
-  processed in creation order (R.Index grows when a parent is created before
+- AParentIndex is now the direct position of the parent item in the
+  FoldRanges array (snapshot records store Parent as such an index),
+  so Level[p] = Level[position-of-Parent]+1, items are processed in
+  creation order (R.Index grows when a parent is created before
   children, this is guaranteed by TecClientSyntAnalyzer.AddRange);
   if some item has broken/duplicated R.Index, AOnLevel callback is used
-  (it must call the old slow TecTextRange.GetLevel, which is always exact);
+  (it must call FoldRangeLevel, which is always exact);
 - items which pass the EndIdx test are located by a segment tree
   (max-EndIdx tree), so a query is O(log(Count)) for normal data;
   for the rare cases when too many candidates are rejected
@@ -54,7 +56,7 @@ type
     FSegTree: array of integer;
     function SegQueryPrevAtLeast(AK, AEndMin: integer): integer;
   public
-    procedure AddItem(AStartIdx, AEndIdx, AIndex, AParentIndex: integer);
+    procedure AddItem(AStartIdx, AEndIdx, AIndex, AParentPos: integer);
     procedure Build(AOnLevel: TATEcLevelEvent);
     function GetParentPos(APos: integer): integer;
     function GetLevel(APos: integer): integer;
@@ -73,7 +75,7 @@ const
 
 { TATEcParentCache }
 
-procedure TATEcParentCache.AddItem(AStartIdx, AEndIdx, AIndex, AParentIndex: integer);
+procedure TATEcParentCache.AddItem(AStartIdx, AEndIdx, AIndex, AParentPos: integer);
 var
   N: integer;
 begin
@@ -92,7 +94,7 @@ begin
   FStart[FCount] := AStartIdx;
   FEnd[FCount] := AEndIdx;
   FIndex[FCount] := AIndex;
-  FParentIndex[FCount] := AParentIndex;
+  FParentIndex[FCount] := AParentPos;
   FLevel[FCount] := -1;
 
   if AIndex > FMaxIndex then
@@ -129,7 +131,9 @@ begin
   end;
 
   //calc levels: process items in creation order, so that
-  //the parent item (created earlier, its Index is smaller) is already calc-ed
+  //the parent item (created earlier, its Index is smaller) is already calc-ed;
+  //FParentIndex[] holds positions in this cache, they come from the
+  //snapshot's Parent field (exact), not from fragile creation indexes
   for p := 0 to FCount - 1 do
     FLevel[p] := -2;
 
@@ -142,9 +146,9 @@ begin
     if pi < 0 then
       FLevel[p] := 0
     else
-    if (pi <= FMaxIndex) and (pi < idx) and (FPosOfIndex[pi] >= 0) then
+    if (pi < FCount) and (pi <> p) then
     begin
-      pl := FLevel[FPosOfIndex[pi]];
+      pl := FLevel[pi];
       if pl >= 0 then
         FLevel[p] := pl + 1;
     end;

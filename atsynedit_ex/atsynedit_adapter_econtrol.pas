@@ -366,25 +366,25 @@ end;
 function TATAdapterEControl.DebugFoldRanges: string;
 var
   L: TStringList;
-  R: TecTextRange;
+  R: PecPublicDataFoldRange;
   //Idx: integer;
   i: integer;
 begin
   L := TStringList.Create;
   try
     L.TextLineBreakStyle:= tlbsLF;
-    for i := 0 to AnClient.PublicData.FoldRanges.Count - 1 do
+    for i := 0 to High(AnClient.PublicData.FoldRanges) do
     begin
-      R := TecTextRange(AnClient.PublicData.FoldRanges[i]);
+      R := @AnClient.PublicData.FoldRanges[i];
       {
-      if R.Parent<>nil then
-        Idx := R.Parent.Index
+      if R^.Parent>=0 then
+        Idx := R^.Parent //index of the parent item in FoldRanges
       else
         Idx := -1;
       }
       L.Add(Format('[%d] StartIdx=%d EndIdx=%d Text="%s"',
-        [R.Index, R.StartIdx, R.EndIdx,
-        AnClient.PublicData.Tokens[R.StartIdx].GetStr(AnClient.Buffer.FText)]));
+        [R^.Index, R^.StartIdx, R^.EndIdx,
+        AnClient.PublicData.Tokens[R^.StartIdx].GetStr(AnClient.Buffer.FText)]));
     end;
     Result:= L.Text;
   finally
@@ -823,9 +823,10 @@ end;
 
 function TATAdapterEControl.GetRangeLevelByPos(APos: integer): integer;
 //event for TATEcParentCache.Build: it's used only for items with
-//duplicated/broken R.Index, and gives the exact old value of TecTextRange.Level
+//duplicated/broken R.Index, and gives the exact old value of TecTextRange.Level;
+//FoldRangeLevel() walks the snapshot's Parent indexes, no live objects
 begin
-  Result:= TecTextRange(AnClient.PublicData.FoldRanges[APos]).Level;
+  Result:= FoldRangeLevel(AnClient.PublicData.FoldRanges, APos);
 end;
 
 function TreeFindNode(ATree: TTreeView; ANode: TTreeNode; const ANodeText: string): TTreeNode;
@@ -893,23 +894,24 @@ procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer;
   AKeepNodesFolding: boolean; const AFileName: string;
   AOnDuplicateNode: TATEditorTreeNodeProcedure);
   //
-  function ConvertRangeToTreeRange(R: TecTextRange): TATRangeInCodeTree;
+  function ConvertRangeToTreeRange(R: PecPublicDataFoldRange): TATRangeInCodeTree;
   begin
     Result:= TATRangeInCodeTree.Create;
 
-    if R.StartIdx>=0 then
-      Result.PosBegin:= AnClient.PublicData.Tokens._GetItemPtr(R.StartIdx)^.Range.PointStart
+    if R^.StartIdx>=0 then
+      Result.PosBegin:= AnClient.PublicData.Tokens._GetItemPtr(R^.StartIdx)^.Range.PointStart
     else
       Result.PosBegin:= Point(-1, -1);
 
-    if R.EndIdx>=0 then
-      Result.PosEnd:= AnClient.PublicData.Tokens._GetItemPtr(R.EndIdx)^.Range.PointEnd
+    if R^.EndIdx>=0 then
+      Result.PosEnd:= AnClient.PublicData.Tokens._GetItemPtr(R^.EndIdx)^.Range.PointEnd
     else
       Result.PosEnd:= Point(-1, -1);
   end;
   //
 var
-  R, RangeParent: TecTextRange;
+  R, RangeParent: PecPublicDataFoldRange;
+  FR: TecPublicDataFoldRanges; //snapshot of PublicData.FoldRanges, stable while CriSecForData is held
   NodesOfRanges: array of TTreeNode; //tree node for each FoldRanges item, to avoid slow FindNodeWithData
   ParentCache: TATEcParentCache; //fast replacement of old GetRangeParent scan
   ListOfExpandedNodes: TStringList = nil;
@@ -957,7 +959,8 @@ begin
     ATree.Items.Clear;
 
     NameLexer:= AnClient.Owner.LexerName;
-    NItemCount:= AnClient.PublicData.FoldRanges.Count;
+    FR:= AnClient.PublicData.FoldRanges;
+    NItemCount:= Length(FR);
     SetLength(NodesOfRanges{%H-}, NItemCount); //filled with nil
 
     //cache all FoldRanges item fields, to find parent ranges fast;
@@ -965,11 +968,10 @@ begin
     //which was O(Count) per item and made TreeFill hang on huge files
     for i:= 0 to NItemCount-1 do
     begin
-      R:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
-      if R.Parent=nil then
-        ParentCache.AddItem(R.StartIdx, R.EndIdx, R.Index, -1)
-      else
-        ParentCache.AddItem(R.StartIdx, R.EndIdx, R.Index, R.Parent.Index);
+      R:= @FR[i];
+      //R^.Parent is already an index in FR (position of the parent item),
+      //-1 for top-level items: no live TecTextRange objects are touched
+      ParentCache.AddItem(R^.StartIdx, R^.EndIdx, R^.Index, R^.Parent);
     end;
     ParentCache.Build(@GetRangeLevelByPos);
 
@@ -978,21 +980,21 @@ begin
       if FStopTreeUpdate then exit;
       if Application.Terminated then exit;
 
-      R:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
-      if R.Rule=nil then Continue;
-      if not R.Rule.DisplayInTree then Continue;
+      R:= @FR[i];
+      if R^.Rule=nil then Continue;
+      if not R^.Rule.DisplayInTree then Continue;
 
       if not FEnabledSublexerTreeNodes then
       begin
-        NameRule:= R.Rule.SyntOwner.LexerName;
+        NameRule:= R^.Rule.SyntOwner.LexerName;
         //must allow lexer name "PHP_" if main lexer is "PHP"
         if NameRule='PHP_' then
           SetLength(NameRule, Length(NameRule)-1);
         if NameRule<>NameLexer then Continue;
       end;
 
-      NodeText:= Trim(Utf8Encode(AnClient.GetRangeName(R, AnClient.PublicData.Tokens)));
-      NodeTextGroup:= Trim(Utf8Encode(AnClient.GetRangeGroup(R)));
+      NodeText:= Trim(Utf8Encode(AnClient.GetRangeName(i)));
+      NodeTextGroup:= Trim(Utf8Encode(AnClient.GetRangeGroup(i)));
       NodeData:= R;
       NodeParent:= nil;
       NodeGroup:= nil;
@@ -1017,8 +1019,8 @@ begin
       NParent:= ParentCache.GetParentPos(i);
       while NParent>=0 do
       begin
-        RangeParent:= TecTextRange(AnClient.PublicData.FoldRanges[NParent]);
-        if not (Assigned(RangeParent.Rule) and (not RangeParent.Rule.DisplayInTree)) then Break;
+        RangeParent:= @FR[NParent];
+        if not (Assigned(RangeParent^.Rule) and (not RangeParent^.Rule.DisplayInTree)) then Break;
         NParent:= ParentCache.GetParentPos(NParent);
       end;
       if NParent>=0 then
@@ -1038,7 +1040,7 @@ begin
             if NodeGroup=nil then
             begin
               NodeGroup:= ATree.Items.AddChild(NodeParent, SItem);
-              NodeGroup.ImageIndex:= R.Rule.TreeGroupImage;
+              NodeGroup.ImageIndex:= R^.Rule.TreeGroupImage;
               NodeGroup.SelectedIndex:= NodeGroup.ImageIndex;
             end;
           end;
@@ -1048,11 +1050,11 @@ begin
 
       NodeParent:= ATree.Items.AddChildObject(NodeParent, NodeText, NodeData);
       NodesOfRanges[i]:= NodeParent;
-      NodeParent.ImageIndex:= R.Rule.TreeItemImage;
+      NodeParent.ImageIndex:= R^.Rule.TreeItemImage;
       NodeParent.SelectedIndex:= NodeParent.ImageIndex;
     end;
 
-    //tree filled with Data as TecTextRange
+    //tree filled with Data as PecPublicDataFoldRange (record items of PublicData.FoldRanges)
     //now replace all Data to TATRangeInCodetree
     NodeParent:= ATree.Items.GetFirstNode;
     while NodeParent<>nil do
@@ -1065,7 +1067,7 @@ begin
       //attach data to node
       if NodeParent.Data<>nil then
       begin
-        R:= TecTextRange(NodeParent.Data);
+        R:= PecPublicDataFoldRange(NodeParent.Data);
         NodeParent.Data:= ConvertRangeToTreeRange(R);
       end;
       NodeParent:= NodeParent.GetNext;
@@ -1528,7 +1530,8 @@ var
   //
 var
   Ed: TATSynEdit;
-  R: TecTextRange;
+  R: PecPublicDataFoldRange;
+  FR: TecPublicDataFoldRanges; //snapshot of PublicData.FoldRanges, stable while CriSecForData is held
   Pnt1, Pnt2, Pnt1Wide, Pnt2Wide: TPoint;
   Style: TecSyntaxFormat;
   SHint: string;
@@ -1543,7 +1546,8 @@ begin
   if Ed=nil then exit;
   if not Ed.OptFoldEnabled then exit;
   TokensObject:= AnClient.PublicData.Tokens;
-  NFoldRangesCount:= AnClient.PublicData.FoldRanges.Count;
+  FR:= AnClient.PublicData.FoldRanges;
+  NFoldRangesCount:= Length(FR);
 
   //init Ed.Fold.LineIndexer's
   if NFoldRangesCount>0 then
@@ -1558,15 +1562,15 @@ begin
   begin
     if Application.Terminated then exit;
 
-    R:= TecTextRange(AnClient.PublicData.FoldRanges[i]);
+    R:= @FR[i];
 
-    //R.Rule is nil for AutoFoldComment ranges, we need them
-    if R.Rule=nil then
+    //R^.Rule is nil for AutoFoldComment ranges, we need them
+    if R^.Rule=nil then
     begin
-      if (R.StartIdx >= 0) and (R.EndIdx >= 0) then //sometimes we get R.EndIdx=-1, CudaText issue #4939
+      if (R^.StartIdx >= 0) and (R^.EndIdx >= 0) then //sometimes we get R^.EndIdx=-1, CudaText issue #4939
       begin
-        tokenStart:= TokensObject._GetItemPtr(R.StartIdx);
-        tokenEnd:= TokensObject._GetItemPtr(R.EndIdx);
+        tokenStart:= TokensObject._GetItemPtr(R^.StartIdx);
+        tokenEnd:= TokensObject._GetItemPtr(R^.EndIdx);
         Pnt1:= tokenStart^.Range.PointStart;
         Pnt2:= tokenEnd^.Range.PointEnd;
         if Pnt1.Y<0 then Continue;
@@ -1576,35 +1580,35 @@ begin
       Continue;
     end;
 
-    if R.Rule.BlockType<>btRangeStart then Continue;
+    if R^.Rule.BlockType<>btRangeStart then Continue;
 
     /////issue: rules in C# with 'parent' set give wrong ranges;
     //rule "function begin", "prop begin";
     //e.g. range from } bracket to some token before "else"
     //temp workard: skip rule with 'parent'
     {$ifdef skip_some_rules}
-    if R.Rule.NotParent then Continue;
+    if R^.Rule.NotParent then Continue;
     {$endif}
 
-    if not TokensObject.IsIndexValid(R.StartIdx) then Continue;
-    if not TokensObject.IsIndexValid(R.EndIdx) then Continue;
+    if not TokensObject.IsIndexValid(R^.StartIdx) then Continue;
+    if not TokensObject.IsIndexValid(R^.EndIdx) then Continue;
 
-    tokenStart:= TokensObject._GetItemPtr(R.StartIdx);
-    tokenEnd:= TokensObject._GetItemPtr(R.EndIdx);
+    tokenStart:= TokensObject._GetItemPtr(R^.StartIdx);
+    tokenEnd:= TokensObject._GetItemPtr(R^.EndIdx);
     Pnt1:= tokenStart^.Range.PointStart;
     Pnt2:= tokenEnd^.Range.PointEnd;
     if Pnt1.Y<0 then Continue;
     if Pnt2.Y<0 then Continue;
 
     //fill fold ranges
-    if not R.Rule.NotCollapsed then
+    if not R^.Rule.NotCollapsed then
     begin
-      SHint:= UTF8Encode(AnClient.GetCollapsedText(R)); //+'/'+R.Rule.GetNamePath;
+      SHint:= UTF8Encode(AnClient.GetCollapsedText(i)); //+'/'+R^.Rule.GetNamePath;
 
       //if after block's end-token we have more tokens on the _same_ line,
       //then decrement block's ending Y (ie exclude that line from folding)
       if AnClient.Owner.FoldingExcludeLastLine and
-        BlockHasNextTokensOnSameLine(R.EndIdx, Pnt2.Y) then
+        BlockHasNextTokensOnSameLine(R^.EndIdx, Pnt2.Y) then
       begin
         Dec(Pnt2.Y);
         if Pnt1.Y>=Pnt2.Y then Continue;
@@ -1612,21 +1616,21 @@ begin
           SetLength(SHint, Length(SHint)-1);
       end;
 
-      DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.X+1, Pnt2.Y, R.Rule.DrawStaple, SHint, 0);
+      DoFoldAdd(Pnt1.X+1, Pnt1.Y, Pnt2.X+1, Pnt2.Y, R^.Rule.DrawStaple, SHint, 0);
     end;
 
     //fill FRangesColored
     //not only if DymamicHilite enabled (e.g. AutoIt has always hilited blocks)
-    if R.Rule.DynHighlight<>dhNone then
+    if R^.Rule.DynHighlight<>dhNone then
     begin
-      Style:= R.Rule.Style;
+      Style:= R^.Rule.Style;
       if Style<>nil then
         if Style.BgColor<>clNone then
         begin
           Pnt1Wide:= Pnt1;
           Pnt2Wide:= Pnt2;
           //support lexer opt "Highlight lines of block"
-          if R.Rule.Highlight then
+          if R^.Rule.Highlight then
           begin
             Pnt1Wide.X:= 0;
             Pnt2Wide.X:= Buffer.LineLength(Pnt2.Y) + 1;
@@ -1638,14 +1642,14 @@ begin
             Pnt2,
             Pnt1Wide,
             Pnt2Wide,
-            R.StartIdx,
-            R.EndIdx,
+            R^.StartIdx,
+            R^.EndIdx,
             Style.BgColor,
-            R.Rule,
-            (R.Rule.HighlightPos=cpAny)
+            R^.Rule,
+            (R^.Rule.HighlightPos=cpAny)
             );
 
-          if R.Rule.DynHighlight=dhBound then
+          if R^.Rule.DynHighlight=dhBound then
             FRangesColoredBounds.Add(ColoredRange)
           else
             FRangesColored.Add(ColoredRange);
