@@ -859,36 +859,6 @@ begin
     Result:= IntToStr(N);
 end;
 
-procedure SCompressSpaces(var S: string);
-//replace #10 with space, then collapse runs of spaces to single space; single pass
-var
-  NLen, iSrc, iDest: integer;
-  ch: char;
-  bPrevSpace: boolean;
-begin
-  if (Pos(#10, S)=0) and (Pos('  ', S)=0) then exit;
-  NLen:= Length(S);
-  UniqueString(S);
-  iDest:= 0;
-  bPrevSpace:= false;
-  for iSrc:= 1 to NLen do
-  begin
-    ch:= S[iSrc];
-    if ch=#10 then
-      ch:= ' ';
-    if ch=' ' then
-    begin
-      if bPrevSpace then Continue;
-      bPrevSpace:= true;
-    end
-    else
-      bPrevSpace:= false;
-    Inc(iDest);
-    S[iDest]:= ch;
-  end;
-  SetLength(S, iDest);
-end;
-
 
 procedure TATAdapterEControl.TreeFill(ATree: TTreeView; AMaxTime: integer;
   AKeepNodesFolding: boolean; const AFileName: string;
@@ -1013,8 +983,8 @@ begin
 
       //was before 2025.02: strip tree items from #10
       //now: compress spaces/EOLs in tree items
-      SCompressSpaces(NodeText);
-      SCompressSpaces(NodeTextGroup);
+      SCompressRepeatingSpacesAndEols(NodeText);
+      SCompressRepeatingSpacesAndEols(NodeTextGroup);
 
       NParent:= ParentCache.GetParentPos(i);
       while NParent>=0 do
