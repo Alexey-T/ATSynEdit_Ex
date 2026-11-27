@@ -1785,6 +1785,7 @@ begin
 
   //try the fast way first: parse only the changed line, without the thread
   if TryFastParse(ALine) then Exit;
+  if FFastParseFailReason='' then ; //debug
 
   AnClient.Stop;
   UpdatePublicDataNeedTo;
