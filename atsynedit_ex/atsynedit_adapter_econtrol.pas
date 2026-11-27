@@ -193,7 +193,7 @@ var
   OptMaxLineLenForDynamicHighlight: integer = 500;
 
   //enable 'fast parsing way', inside main thread; it is used when editing a single line
-  OptFastParsing: boolean;
+  OptFastParsing: boolean = true;
 
   //if the distance from the caret to the end of its line is bigger,
   //the line is parsed in the old way, in the parser thread
