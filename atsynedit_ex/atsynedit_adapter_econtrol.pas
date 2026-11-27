@@ -75,6 +75,15 @@ type
     function DoFindToken(APos: TPoint; AExactPos: boolean = false): integer;
     procedure DoFoldFromLinesHidden;
     procedure DoChangeLog(Sender: TObject; ALine: SizeInt);
+  private
+    //parser instance without thread, for the fast re-parse of an edited line
+    FFragmentClientAnalyzer: TecClientSyntAnalyzer;
+    FFragmentBuffer: TATStringBuffer;
+    FFastParseOkCount,
+    FFastParseFailCount: integer;
+    FFastParseFailReason: string;
+    function TryFastParse(ALine: SizeInt): boolean;
+  private
     procedure ParseBegin;
     procedure ParseDone(Sender: TObject; ATime: integer);
     procedure ProgressFirst(Sender: TObject);
@@ -114,6 +123,13 @@ type
     function Editor: TATSynEdit;
     procedure StopTreeUpdate;
     function IsParsingBusy: boolean;
+    //stats of the fast single-line re-parse of edited lines: count of edits
+    //which were spliced fast, count of edits which fell back to the parser
+    //thread, and the reason of the last fallback (0 = the last call was
+    //fast, 1..8 = the failed check)
+    property FastParseOkCount: integer read FFastParseOkCount;
+    property FastParseFailCount: integer read FFastParseFailCount;
+    property FastParseFailReason: string read FFastParseFailReason;
     function DebugString: string;
     function DebugFoldRanges: string;
     procedure UpdateRangesFoldAndColored;
@@ -175,6 +191,13 @@ var
   OptCodeTreeMaxTimeMessage: string = '>%dms, skipped %s/%s';
   OptMaxLineLenToUseIndexerToRender: integer = 200;
   OptMaxLineLenForDynamicHighlight: integer = 500;
+
+  //enable 'fast parsing way', inside main thread; it is used when editing a single line
+  OptFastParsing: boolean;
+
+  //if the distance from the caret to the end of its line is bigger,
+  //the line is parsed in the old way, in the parser thread
+  OptFastParsing_MaxDistanceToLineEnd: integer = 400;
 
 implementation
 
@@ -647,6 +670,11 @@ end;
 destructor TATAdapterEControl.Destroy;
 begin
   AddEditor(nil);
+
+  if Assigned(FFragmentClientAnalyzer) then
+    FreeAndNil(FFragmentClientAnalyzer);
+  if Assigned(FFragmentBuffer) then
+    FreeAndNil(FFragmentBuffer);
 
   if Assigned(AnClient) then
     FreeAndNil(AnClient);
@@ -1246,6 +1274,11 @@ begin
 
   ClearRanges;
 
+  if Assigned(FFragmentClientAnalyzer) then
+    FreeAndNil(FFragmentClientAnalyzer);
+  if Assigned(FFragmentBuffer) then
+    FreeAndNil(FFragmentBuffer);
+
   if Assigned(AnClient) then
     FreeAndNil(AnClient);
 
@@ -1749,9 +1782,142 @@ end;
 procedure TATAdapterEControl.DoChangeLog(Sender: TObject; ALine: SizeInt);
 begin
   if AnClient=nil then Exit;
+
+  //try the fast way first: parse only the changed line, without the thread
+  if TryFastParse(ALine) then Exit;
+
   AnClient.Stop;
   UpdatePublicDataNeedTo;
   AnClient.TextChangedOnLine(ALine);
+end;
+
+function TATAdapterEControl.TryFastParse(ALine: SizeInt): boolean;
+var
+  Ed: TATSynEdit;
+  SLine: UnicodeString;
+  SParserReason: string;
+  Lens: array of integer;
+  NCountIndexer, NCountLines, NCaretCol, i: integer;
+begin
+  Result:= false;
+  //count the call as a fallback from the start, it is corrected at the
+  //end: every Exit below means "edit goes the old way", FastParseFailReason
+  //tells which check failed (for the fast-edit debugging/testing)
+  Inc(FFastParseFailCount);
+  FFastParseFailReason:= '';
+
+  if not OptFastParsing then
+  begin
+    FFastParseFailReason:= 'disabled';
+    Exit;
+  end;
+
+  Ed:= Editor;
+  if (Ed=nil) or (AnClient=nil) or (Lexer=nil) then
+  begin
+    FFastParseFailReason:= 'nil_objects';
+    Exit;
+  end;
+
+  //the parser thread must be idle, and its data must cover the whole text
+  if IsParsingBusy or not AnClient.DataComplete then
+  begin
+    FFastParseFailReason:= 'parsing_busy';
+    Exit;
+  end;
+
+  //multi-caret edits change several lines at once: the fast way handles
+  //only the first reported line
+  if Ed.Carets.Count>1 then
+  begin
+    FFastParseFailReason:= 'mul_carets';
+    Exit;
+  end;
+
+  //LastCommand=0 means: non-command editing was made,
+  //LastCommand=-1 means: editing was made by CudaText plugins API
+  if Ed.LastCommand<=0 then
+  begin
+    FFastParseFailReason:= 'not_ed_command';
+    Exit;
+  end;
+
+  //why check (Ed.Carets.Count>1) was not enough?
+  //carets were on N adjacent lines and command "delete line" runs ->
+  //makes one caret, but need "old path"
+  if (Ed.LastCommand>0) and Ed.LastCommandMultiCarets then
+  begin
+    FFastParseFailReason:= 'mul_carets_before';
+    Exit;
+  end;
+
+  //a selection of several lines changes several lines at once too
+  if (Ed.Carets.Count=1) and Ed.Carets[0].IsMultilineSelection then
+  begin
+    FFastParseFailReason:= 'mul_line_sel';
+    Exit;
+  end;
+
+  //only for edits which don't change the count of lines
+  NCountIndexer:= Length(AnClient.PublicData.TokenIndexer);
+  NCountLines:= Ed.Strings.Count;
+  if (NCountIndexer<>NCountLines) and (NCountIndexer<>NCountLines+1) then
+  begin
+    FFastParseFailReason:= 'line_cnt_changed';
+    Exit;
+  end;
+
+  if not Ed.Strings.IsIndexValid(ALine) then
+  begin
+    FFastParseFailReason:= 'bad_line_index';
+    Exit;
+  end;
+
+  //text of the changed line
+  SLine:= Ed.Strings.Lines[ALine];
+
+  //too long distance from the caret to the end of the line
+  NCaretCol:= 0;
+  if Ed.Carets.Count>0 then
+    if Ed.Carets[0].PosY=ALine then
+      NCaretCol:= Ed.Carets[0].PosX;
+  if Length(SLine)-NCaretCol>OptFastParsing_MaxDistanceToLineEnd then
+  begin
+    FFastParseFailReason:= 'caret_far_from_end';
+    Exit;
+  end;
+
+  //separate parser instance (without thread): the main PublicData
+  //is not touched until the fragment is parsed and checked
+  if FFragmentClientAnalyzer=nil then
+  begin
+    FFragmentBuffer:= TATStringBuffer.Create;
+    FFragmentClientAnalyzer:= TecClientSyntAnalyzer.Create(Lexer, FFragmentBuffer, false);
+  end;
+
+  if not AnClient.SpliceLineFragment(FFragmentClientAnalyzer, ALine, SLine, SParserReason) then
+  begin
+    FFastParseFailReason:= 'parser:'+SParserReason;
+    Exit;
+  end;
+
+  Dec(FFastParseFailCount);
+  Inc(FFastParseOkCount);
+  FFastParseFailReason:= '';
+
+  //the buffer must know the new text: token strings are taken from it
+  SetLength(Lens{%H-}, Ed.Strings.Count);
+  for i:= 0 to High(Lens) do
+    Lens[i]:= Ed.Strings.LinesLen[i];
+  AnClient.Buffer.Setup(Ed.Strings.TextString_Unicode(0), Lens);
+  AnClient.Buffer.Valid:= true;
+
+  //the same as after the parsing in the thread
+  UpdateRanges;
+  if Assigned(FOnParseDone) then
+    FOnParseDone(Self, 0);
+  UpdateEditors(epkBoth);
+  Result:= true;
 end;
 
 function TATAdapterEControl.GetLexerSuportsDynamicHilite: boolean;
