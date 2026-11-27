@@ -123,10 +123,6 @@ type
     function Editor: TATSynEdit;
     procedure StopTreeUpdate;
     function IsParsingBusy: boolean;
-    //stats of the fast single-line re-parse of edited lines: count of edits
-    //which were spliced fast, count of edits which fell back to the parser
-    //thread, and the reason of the last fallback (0 = the last call was
-    //fast, 1..8 = the failed check)
     property FastParseOkCount: integer read FFastParseOkCount;
     property FastParseFailCount: integer read FFastParseFailCount;
     property FastParseFailReason: string read FFastParseFailReason;
