@@ -1526,10 +1526,10 @@ var
     tokenA:= TokensObject._GetItemPtr(AEndTokenIdx+1);
     if tokenA^.Range.PointStart.Y <> ALine then exit;
     //ignore tokenA if length=1, mainly for ';' and ','
-    //token data by its points, not by the econtrol-only char offsets
-    N:= Buffer.CaretToStr(tokenA^.Range.PointStart);
-    if Buffer.CaretToStr(tokenA^.Range.PointEnd)-N <> 1 then exit(true);
-    Inc(N);
+    //a length-1 token is exactly one column wide on its start line
+    if (tokenA^.Range.PointEnd.Y<>tokenA^.Range.PointStart.Y) or
+      (tokenA^.Range.PointEnd.X-tokenA^.Range.PointStart.X<>1) then exit(true);
+    N:= Buffer.CaretToStr(tokenA^.Range.PointStart)+1;
     if N<=Length(Buffer.FText) then
       ch:= Buffer.FText[N]
     else
