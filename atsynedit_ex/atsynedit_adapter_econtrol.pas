@@ -1793,8 +1793,7 @@ var
   Ed: TATSynEdit;
   SLine: UnicodeString;
   SParserReason: string;
-  Lens: array of integer;
-  NCountIndexer, NCountLines, NCaretCol, i: integer;
+  NCountIndexer, NCountLines, NCaretCol: integer;
 begin
   Result:= false;
   //count the call as a fallback from the start, it is corrected at the
@@ -1902,11 +1901,16 @@ begin
   Inc(FFastParseOkCount);
   FFastParseFailReason:= '';
 
-  //the buffer must know the new text: token strings are taken from it
-  SetLength(Lens{%H-}, Ed.Strings.Count);
-  for i:= 0 to High(Lens) do
-    Lens[i]:= Ed.Strings.LinesLen[i];
-  AnClient.Buffer.Setup(Ed.Strings.TextString_Unicode(0), Lens);
+  //the buffer must know the new text: token strings are taken from it by
+  //the rendering, and by the next splice (TypeChangeSafe reads the words
+  //of the old tokens from the buffer text at the positions the previous
+  //splice shifted them to; a stale buffer makes every following edit
+  //fail the fast way with the reason 'parser:type_safe_change').
+  //Only the changed line is patched in place: rebuilding the whole text
+  //and the line-length array is O(text) per keystroke, jerky on huge
+  //files (measured ~45 ms of the 80 ms keystroke on the 9 MB
+  //typescript.js, against ~1 ms for the in-place patch)
+  AnClient.Buffer.ChangeLine(ALine, SLine);
   AnClient.Buffer.Valid:= true;
 
   //the same as after the parsing in the thread
