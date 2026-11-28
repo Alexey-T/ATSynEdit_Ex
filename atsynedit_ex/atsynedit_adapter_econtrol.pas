@@ -516,9 +516,7 @@ begin
       nStartIndex:= -1;
   end
   else
-    nStartIndex:= TokenList.FindNextAt( //not FindAt(), to find token after some indent too
-      AnClient.Buffer.CaretToStr(Point(AX, ALine))
-      );
+    nStartIndex:= TokenList.FindNextAtPoint(AX, ALine); //not FindAtPoint(), to find token after some indent too
 
   part:= Default(TATLinePart);
 
@@ -761,9 +759,18 @@ end;
 
 
 function TATAdapterEControl.GetTokenString(const token: PecSyntToken): string;
+var
+  NFrom: integer;
 begin
   if Assigned(Buffer) then
-    Result:= Utf8Encode(Buffer.SubString(token^.Range.StartPos+1, token^.Range.EndPos-token^.Range.StartPos))
+  begin
+    //token text by its points: token char offsets are econtrol's own data
+    //(only the fast-parse splice keeps them current), the point->offset
+    //conversion below goes over the buffer line table, which every edit
+    //updates in place
+    NFrom:= Buffer.CaretToStr(token^.Range.PointStart);
+    Result:= Utf8Encode(Buffer.SubString(NFrom+1, Buffer.CaretToStr(token^.Range.PointEnd)-NFrom))
+  end
   else
     Result:= '';
 end;
@@ -1105,7 +1112,10 @@ begin
   if Result then
   begin
     Sub:= AnClient.PublicData.SublexRanges.InternalGet(AIndex);
-    if Sub^.Range.StartPos<0 then exit;
+    //defensive point-based twin of the old "Range.StartPos<0" check: no
+    //block is ever created with a negative position (CanOpen adds blocks
+    //with valid StartPos and PointStart only)
+    if Sub^.Range.PointStart.Y<0 then exit;
     AStart:= Sub^.Range.PointStart;
     AEnd:= Sub^.Range.PointEnd;
 
@@ -1516,8 +1526,10 @@ var
     tokenA:= TokensObject._GetItemPtr(AEndTokenIdx+1);
     if tokenA^.Range.PointStart.Y <> ALine then exit;
     //ignore tokenA if length=1, mainly for ';' and ','
-    if tokenA^.Range.Length <> 1 then exit(true);
-    N:= tokenA^.Range.StartPos+1;
+    //token data by its points, not by the econtrol-only char offsets
+    N:= Buffer.CaretToStr(tokenA^.Range.PointStart);
+    if Buffer.CaretToStr(tokenA^.Range.PointEnd)-N <> 1 then exit(true);
+    Inc(N);
     if N<=Length(Buffer.FText) then
       ch:= Buffer.FText[N]
     else
@@ -1715,8 +1727,11 @@ begin
 
     Sub:= AnClient.PublicData.SublexRanges.InternalGet(i);
     if Sub^.Rule=nil then Continue;
-    if Sub^.Range.StartPos<0 then Continue;
-    if Sub^.Range.EndPos<0 then Continue;
+    //point-based sentinels, twins of the old "Range.StartPos<0" and
+    //"Range.EndPos<0" checks; the not-closed block is marked by Reopen()
+    //with PointEnd=(-1,-1) together with EndPos=-1
+    if Sub^.Range.PointStart.Y<0 then Continue;
+    if Sub^.Range.PointEnd.Y<0 then Continue;
 
     Style:= Sub^.Rule.Style;
     if Style=nil then Continue;
@@ -1755,10 +1770,12 @@ begin
       Result:= -1;
   end
   else
+  //point-based search: it doesn't read the token char offsets, which are
+  //maintained (shifted by the length delta) only by the fast-parse splice
   if AExactPos then
-    Result:= AnClient.PublicData.Tokens.FindAt(AnClient.Buffer.CaretToStr(APos))
+    Result:= AnClient.PublicData.Tokens.FindAtPoint(APos.X, APos.Y)
   else
-    Result:= AnClient.PublicData.Tokens.FindPriorAt(AnClient.Buffer.CaretToStr(APos));
+    Result:= AnClient.PublicData.Tokens.FindPriorAtPoint(APos.X, APos.Y);
 end;
 
 procedure TATAdapterEControl.UpdateBufferFromEvent(Sender: TObject);
