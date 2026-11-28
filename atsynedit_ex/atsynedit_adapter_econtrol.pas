@@ -711,8 +711,7 @@ function TATAdapterEControl.LexerAtPos(Pnt: TPoint): TecSyntAnalyzer;
 begin
   Result:= nil;
   if Assigned(AnClient) then
-    Result:= AnClient.AnalyzerAtPos(
-               Buffer.CaretToStr(Pnt),
+    Result:= AnClient.AnalyzerAtPos(Pnt.X, Pnt.Y,
                AnClient.PublicData.SublexRanges);
 end;
 
